@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
- 
-const userSchema = mongoose.Schema(
+
+const userSchema = new mongoose.Schema(
     {
         username: {
             type: String,
@@ -18,8 +18,9 @@ const userSchema = mongoose.Schema(
             },
         },
         password: { type: String, required: true },
-        metamaskKey: { type: String },
+        metamaskKey: { type: Array },
         isAdmin: { type: Boolean, default: false },
+        isSuperAdmin: { type: Boolean, default: false },
         verificationToken: String,
         isVerified: {
             type: Boolean,
@@ -32,8 +33,19 @@ const userSchema = mongoose.Schema(
         passwordTokenExpirationDate: {
             type: Date,
         },
+        referralCode: {
+            type: String,
+            required: true,
+        },
+        refereeCode: {
+            type: String,
+            required: false,
+            default: '',
+        },
     },
     { timestamps: true }
 )
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = {
+    users: mongoose.model('users', userSchema),
+}

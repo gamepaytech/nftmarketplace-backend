@@ -20,12 +20,12 @@ const gamePayTokenRouter = require('./routes/tokensRoute')
 DBConnect()
 
 app.set('trust proxy', 1)
-// app.use(
-//     rateLimiter({
-//         windowMs: 15 * 60 * 1000,
-//         max: 60,
-//     })
-// )
+app.use(
+    rateLimiter({
+        windowMs: 15 * 60 * 1000,
+        max: 400,
+    })
+)
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cors())

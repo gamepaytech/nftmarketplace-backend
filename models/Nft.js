@@ -1,12 +1,12 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const NftSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: [true, "NFT name is required"],
+            required: [true, 'NFT name is required'],
         },
-        jsonHash: { type: String, required: [true, "JSON Hash required"] },
+        jsonHash: { type: String, required: [true, 'JSON Hash required'] },
         nftType: {
             type: String,
         },
@@ -15,7 +15,7 @@ const NftSchema = new mongoose.Schema(
         },
         nftClass: {
             type: String,
-            required:[true, "NFT Class is required"]
+            required: [true, 'NFT Class is required'],
         },
         gender: {
             type: String,
@@ -36,7 +36,7 @@ const NftSchema = new mongoose.Schema(
         tokenId: Number,
         mintedBy: {
             type: String,
-            ref: "User",
+            ref: 'User',
         },
         nftStatus: {
             type: Number,
@@ -51,17 +51,17 @@ const NftSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            default: "image",
+            default: 'image',
         },
         cloudinaryUrl: {
             type: String,
         },
         owner: {
             type: String,
-            ref: "User",
+            ref: 'User',
         },
     },
     { timestamps: true }
-);
+)
 
-module.exports = mongoose.model("Nft", NftSchema);
+module.exports = mongoose.model('Nft', NftSchema)
