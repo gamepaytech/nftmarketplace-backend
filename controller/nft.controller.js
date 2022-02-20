@@ -260,8 +260,7 @@ const buyNft = async (req, res) => {
 
 const ownedNft = async (req, res) => {
     const { wallet } = req.body
-    console.log(wallet)
-    const nfts = await Nft.find({ owner: wallet })
+    const nfts = await Nft.find({ owner: {'$in': wallet} })
     res.status(201).json(nfts)
 }
 
