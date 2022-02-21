@@ -761,11 +761,13 @@ const addWalletKey = async (req, res) => {
                 return
             }
 
-            // const userData = await models.users.find({
-            //     _id: userId,
-            //     metamaskKey: walletAddress,
-            // })
-            // if (userData.length == 0) {
+            const walletInfo = await models.users.find({metamaskKey: {'$in': [req.body.walletAddress]}})
+
+            if (walletInfo && walletInfo.length){
+                res.json({status: 400, msg: "Wallet Address id already used by other email"})
+                return
+            }
+
             const updatedUser = await models.users.updateOne(
                 {
                     _id: req.body.userId,
@@ -783,13 +785,7 @@ const addWalletKey = async (req, res) => {
             })
 
             return
-            // } else {
-            //     res.json({
-            //         status: 400,
-            //         msg: 'User already exists with this wallet',
-            //     })
-            //     return
-            // }
+            
         } else {
             res.json({ status: 400, msg: 'Invalid Credentials!' })
         }
@@ -962,6 +958,8 @@ const updatePercent = async function (req, res) {
         res.json({ status: 400, msg: error.toString() })
     }
 }
+
+
 
 module.exports = {
     register,
