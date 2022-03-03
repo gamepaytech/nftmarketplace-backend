@@ -6,7 +6,7 @@ const sendVerificationEmail = async ({
     verificationToken,
     origin,
 }) => {
-    const verifyEmail = `https://uatmarketplace.chickeychik.com/login/${verificationToken}/${email}`
+    const verifyEmail = `${process.env.APP_FRONTEND_URL}/login/${verificationToken}/${email}`
 
     const message = `<p>Please confirm your email by clicking on the following link : 
     <a href="${verifyEmail}">Verify Email</a> </p>`

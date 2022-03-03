@@ -13,6 +13,7 @@ const {
     getAllData,
     addMyIncome,
     getMyrewards,
+    sellNft,
 } = require('../controller/nft.controller.js')
 const router = express.Router()
 const { authenticateUser } = require('../middleware/authentication')
@@ -26,6 +27,7 @@ router.route('/getAll').get(getNFTByUserId)
 router.route('/getAllData').get(getAllData)
 router.route('/getNftById').post(getNftById)
 router.route('/buy-nft').post(authenticateUser, buyNft)
+router.route('/sell-nft').post(authenticateUser, sellNft)
 router.route('/userNfts').post(authenticateUser, ownedNft)
 router.route('/mint').post(authenticateUser, mintNFT)
 router.route('/approve').post(authenticateUser, approveNFT)

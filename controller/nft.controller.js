@@ -258,9 +258,22 @@ const buyNft = async (req, res) => {
     })
 }
 
+const sellNft = async (req, res) => {
+    const { nftId, newOwner, price } = req.body
+    await Nft.updateOne(
+        { _id: nftId },
+        { nftStatus: 1, owner: newOwner, price: price }
+    )
+    res.send({
+        msg: 'NFT Updates',
+        nftId: nftId,
+        newOwner: newOwner,
+    })
+}
+
 const ownedNft = async (req, res) => {
     const { wallet } = req.body
-    const nfts = await Nft.find({ owner: {'$in': wallet} })
+    const nfts = await Nft.find({ owner: { $in: wallet } })
     res.status(201).json(nfts)
 }
 
@@ -416,6 +429,7 @@ module.exports = {
     getAll,
     mintNFT,
     approveNFT,
+    sellNft,
     getNFTByUserId,
     getAllData,
     buyNft,

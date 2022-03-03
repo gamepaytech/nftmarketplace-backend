@@ -1,1 +1,0 @@
-# GamePay Crypto Services
