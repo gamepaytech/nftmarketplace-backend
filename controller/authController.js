@@ -217,31 +217,44 @@ const verifyEmail = async (req, res) => {
     try {
         const verificationToken = req.query.token
         const email = req.query.email
+
+        if (verificationToken === '' || !verificationToken) {
+            res.status(401).json({ msg: 'Invalid Credentials!' })
+            return
+        }
+
+        if (email === '' || !email) {
+            res.status(401).json({ msg: 'Invalid Credentials!' })
+            return
+        }
+
         const user = await models.users.findOne({ email })
         console.log('JK')
-        if (!user) {
-            res.status(401).json({ msg: 'Invalid Email' })
-        }
+        if (user) {
+            if (user.verificationToken === '') {
+                res.status(401).json({ msg: 'User already verified' })
+                return
+            }
 
-        if (user.verificationToken === '') {
-            res.status(401).json({ msg: 'User already verified' })
-        }
+            if (user.verificationToken !== verificationToken) {
+                res.status(401).json({ msg: 'Invalid verification token' })
+                return
+            }
 
-        if (user.verificationToken !== verificationToken) {
-            res.status(401).json({ msg: 'Invalid verification token' })
-        }
+            try {
+                user.isVerified = true
+                user.verifiedOn = Date.now()
+                user.verificationToken = ''
+                await user.save()
+            } catch (err) {
+                console.log(err.msg)
+                res.status(501).json({ msg: err.msg })
+            }
 
-        try {
-            user.isVerified = true
-            user.verifiedOn = Date.now()
-            user.verificationToken = ''
-            await user.save()
-        } catch (err) {
-            console.log(err.msg)
-            res.status(501).json({ msg: err.msg })
+            res.status(201).json({ msg: 'Email Successfully Verified' })
+        } else {
+            res.status(401).json({ msg: 'Invalid Request' })
         }
-
-        res.status(201).json({ msg: 'Email Successfully Verified' })
     } catch (e) {
         res.status(500).json({ msg: e.msg })
     }
@@ -761,10 +774,15 @@ const addWalletKey = async (req, res) => {
                 return
             }
 
-            const walletInfo = await models.users.find({metamaskKey: {'$in': [req.body.walletAddress]}})
+            const walletInfo = await models.users.find({
+                metamaskKey: { $in: [req.body.walletAddress] },
+            })
 
-            if (walletInfo && walletInfo.length){
-                res.json({status: 400, msg: "Wallet Address id already used by other email"})
+            if (walletInfo && walletInfo.length) {
+                res.json({
+                    status: 400,
+                    msg: 'Wallet Address id already used by other email',
+                })
                 return
             }
 
@@ -785,7 +803,6 @@ const addWalletKey = async (req, res) => {
             })
 
             return
-            
         } else {
             res.json({ status: 400, msg: 'Invalid Credentials!' })
         }
@@ -958,8 +975,6 @@ const updatePercent = async function (req, res) {
         res.json({ status: 400, msg: error.toString() })
     }
 }
-
-
 
 module.exports = {
     register,
