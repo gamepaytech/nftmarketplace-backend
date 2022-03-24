@@ -157,6 +157,7 @@ const login = async (req, res) => {
                 user.password,
                 process.env.PASS_SEC
             ).toString(CryptoJS.enc.Utf8)
+            console.log('LOGIN', hashedPassword)
             if (hashedPassword !== password) {
                 res.status(401).json({ msg: 'Wrong Password!!' })
             }
@@ -193,6 +194,7 @@ const login = async (req, res) => {
                 metamaskKey: user.metamaskKey || '',
                 isSuperAdmin: user.isSuperAdmin,
                 referralCode: user.referralCode,
+                profilePic: user.profilePic || '',
                 accessToken: token,
             })
         }
@@ -332,7 +334,7 @@ const resetPassword = async (req, res) => {
                     msg: 'Invalid Token',
                 })
             }
-            hashedPassword = CryptoJS.AES.encrypt(
+            let hashedPassword = CryptoJS.AES.encrypt(
                 req.body.password,
                 process.env.PASS_SEC
             ).toString()
@@ -615,13 +617,25 @@ const getAllAdmin = async function (req, res) {
 const changeUserStatus = async function (req, res) {
     let userId
     if (req.body.email) {
-        const userData = await models.users.findOne({ email: req.body.email })
-        userId = userData._id
+        const userData = await models.users.findOne({
+            email: { $regex: new RegExp(req.body.email, 'i') },
+        })
+        if (userData) {
+            userId = userData._id
+        } else {
+            res.json({ status: 400, msg: 'User not found' })
+            return
+        }
     } else if (req.body.walletAddr) {
         const userData = await models.users.findOne({
             metamaskKey: req.body.walletAddr,
         })
-        userId = userData._id
+        if (userData) {
+            userId = userData._id
+        } else {
+            res.json({ status: 400, msg: 'User not found' })
+            return
+        }
     }
     try {
         // if (req.body.walletAddress == undefined || req.body.walletAddress == ''){
@@ -643,8 +657,28 @@ const changeUserStatus = async function (req, res) {
         // Status -> 12 [Delete Admin]
         // Status -> 21 [Add Super Admin]
         // Status -> 22 [Delete Super Admin]
-
         const userInfo = await models.users.find({ _id: userId })
+        console.log(userInfo)
+        // if (userInfo.isAdmin && req.body.status === 11) {
+        //     res.json({ status: 400, msg: 'User is already Admin' })
+        //     return
+        // } else if (!userInfo.isAdmin && req.body.status === 12) {
+        //     res.json({
+        //         status: 400,
+        //         msg: 'No Admin exist with these Credentials!',
+        //     })
+        //     return
+        // } else if (userInfo.isSuperAdmin && req.body.status === 21) {
+        //     res.json({ status: 400, msg: 'User is already Super Admin' })
+        //     return
+        // } else if (!userInfo.isSuperAdmin && req.body.status === 22) {
+        //     res.json({
+        //         status: 400,
+        //         msg: 'No Super Admin exist with these Credentials!',
+        //     })
+        //     return
+        // }
+
         if (userInfo && userInfo.length) {
             // let changeUserWalletAddress = await models.users.updateOne(
             //     {metamaskKey: userInfo[0].metamaskKey},
@@ -942,6 +976,21 @@ const getPercent = async function (req, res) {
     }
 }
 
+const setactivity = async function (req, res) {
+    const { activity, timestamp } = req.body
+    await models.users.updateOne(
+        { _id: req.body.userId },
+        { $push: { activity: { activity: activity, timestamp: timestamp } } },
+        { new: true, upsert: true }
+    )
+    res.json('done')
+}
+
+const getactivity = async function (req, res) {
+    const userActivity = await models.users.findOne({ _id: req.body.userId })
+    res.json({ userActivity: userActivity?.activity })
+}
+
 const updatePercent = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
@@ -996,4 +1045,6 @@ module.exports = {
     checkWalletKey,
     getPercent,
     updatePercent,
+    setactivity,
+    getactivity,
 }

@@ -31,9 +31,11 @@ const create = async (req, res) => {
     const jk = 'kkdskds'
     console.log(req, req.body)
     if (!name) {
-        throw new CustomError.BadRequestError('Please provide the nft name')
+        res.status(400).json({ msg: 'Please provide the nft name' })
+        return
     } else if (!nftType) {
-        throw new CustomError.BadRequestError('Please provide the nft type')
+        res.status(400).json({ msg: 'Please provide the nft type' })
+        return
     }
 
     const createObj = {
@@ -206,13 +208,22 @@ const getNftById = async (req, res) => {
     const { nftId } = req.body
 
     if (!nftId) {
-        throw new CustomError.BadRequestError(true, 'Please provide NFT id')
+        res.status(400).json({ msg: 'Please provide NFT id' })
+        return
+    } else if (nftId === 'undefined') {
+        res.status(400).json({ msg: 'Wrong NFT Credentials!!' })
+        return
     }
-    const data = await Nft.findOne({ _id: nftId })
-    res.send({
-        data: data,
-        msg: 'Successfull',
-    })
+    try {
+        const data = await Nft.findOne({ _id: nftId })
+        res.send({
+            data: data,
+            msg: 'Successfull',
+        })
+    } catch (error) {
+        console.log(error.toString())
+        res.json({ status: 400, msg: error.toString() })
+    }
 }
 
 const mintNFT = async (req, res) => {

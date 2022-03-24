@@ -21,6 +21,8 @@ const {
     checkWalletKey,
     getPercent,
     updatePercent,
+    setactivity,
+    getactivity,
 } = require('../controller/authController')
 const { authenticateUser } = require('../middleware/authentication')
 
@@ -42,5 +44,7 @@ router.post('/checkWalletKey', cors(), checkRegisterredWallet)
 router.post('/checkUserWalletKey', cors(), authenticateUser, checkWalletKey)
 router.get('/getPercent', cors(), authenticateUser, getPercent)
 router.post('/updatePercent', cors(), authenticateUser, updatePercent)
+router.post('/activity', cors(), setactivity)
+router.post('/getactivity', cors(), getactivity)
 
 module.exports = router

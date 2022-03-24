@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        profilePic: { type: String },
         verifiedOn: Date,
         passwordToken: {
             type: String,
@@ -41,6 +42,9 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: false,
             default: '',
+        },
+        activity: {
+            type: [],
         },
     },
     { timestamps: true }
