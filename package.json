@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@pinata/sdk": "^1.1.23",
+    "api": "^4.2.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -27,6 +28,7 @@
     "nodemailer": "^6.7.2",
     "nodemon": "^2.0.15",
     "path": "^0.12.7",
+    "uuidv4": "^6.2.13",
     "validator": "^13.7.0",
     "web3": "^1.7.0"
   }

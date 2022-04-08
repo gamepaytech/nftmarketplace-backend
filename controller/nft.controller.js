@@ -474,6 +474,7 @@ const getMyrewards = async function (req, res) {
                         myreferees.push({
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
+                            username: getMyReferees[i].username,
                             rewardDate: myRewards[j].createdDate,
                             reward: myRewards[j].amount,
                         });

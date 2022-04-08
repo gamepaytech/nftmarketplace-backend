@@ -1,24 +1,14 @@
 const sendEmail = require('./sendEmail')
 
-const sendVerificationEmail = async ({
-    name,
+const sendPaymentConfirmation = async ({
+    userName,
     email,
-    verificationToken,
-    origin,
-}) => {
-    const verifyEmail = `${process.env.APP_FRONTEND_URL}/login/${verificationToken}/${email}`
-
-    const message = `<p>Please confirm your email by clicking on the following link : 
-    <a href="${verifyEmail}">Verify Email</a> </p>`
-
-    // console.log(`Verify Message : ${message}`)
-    // console.log(`Send Email function Start()`)
+    quantity,
+    amount
+}) => {    
     return sendEmail({
         to: email,
-        subject: 'Email Confirmation',
-        // html: `<h4> Hello ${name.charAt(0).toUpperCase() + name.slice(1)},</h4>
-        // ${message}
-        // `,
+        subject: 'Payment Confirmation',
         html: `
             <!DOCTYPE html>
             <html lang="en">
@@ -102,7 +92,7 @@ const sendVerificationEmail = async ({
                             <tr>
                             <td>
                                 <table
-                                width="520"
+                                width="480"
                                 align="center"
                                 role="content-container"
                                 class="outer"
@@ -118,69 +108,149 @@ const sendVerificationEmail = async ({
                                         font-family: Arial, Helvetica, sans-serif;
                                         font-size: 30px;
                                         font-weight: bold;
-                                        text-align: center;
+                                        text-align: left;
                                         color: #ffd84d;
                                         margin-top: 0px;
                                         margin-bottom: 0;
                                         line-height: 22px;
                                         "
                                     >
-                                        Please confirm your email address
+                                        Purchase confirmation
                                     </h1>
                                     <p
                                         style="
                                         font-family: Arial, Helvetica, sans-serif;
                                         font-size: 16px;
                                         font-weight: 400;
-                                        text-align: center;
+                                        text-align: left;
                                         color: #ffffff;
                                         margin-top: 20px;
                                         margin-bottom: 0;
                                         line-height: 22px;
                                         "
                                     >
-                                        To finalize the creation of your new Chickey Chik
-                                        Account,<br />
-                                        Please follow the link below to confirm your
-                                        email<br />
-                                        address quisquam perspiciatis.
+                                        You have received ${amount} Chik Token
                                     </p>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding-top: 25px; padding-bottom: 50px">
-                                    <table align="center" valign="center">
-                                        <tr>
+                                    <table
+                                    align="center"
+                                    width="480"
+                                    cellpadding="0"
+                                    cellspacing="0"
+                                    border="0"
+                                    >
+                                    <tr>
                                         <td
-                                            style="
-                                            background-color: #ffd84d;
-                                            border-radius: 30px;
-                                            "
+                                        style="
+                                            padding-top: 25px;
+                                            padding-bottom: 20px;
+                                            width: 160px;
+                                        "
                                         >
-                                            <a
-                                            href="${verifyEmail}"
-                                            style="
+                                        <table align="center" valign="center">
+                                            <tr>
+                                            <p
+                                                style="
                                                 font-family: Arial, Helvetica, sans-serif;
-                                                border: solid 1px #ffd84d;
-                                                border-color: #ffd84d;
-                                                box-sizing: border-box;
-                                                text-decoration: none;
-                                                background-color: #ffd84d;
-                                                color: #141416;
                                                 font-size: 16px;
                                                 font-weight: 400;
-                                                margin: 0;
-                                                padding: 10px 30px;
-                                                display: inline-block;
-                                                border-radius: 30px;
-                                            "
-                                            target="_blank"
-                                            >Confirm your email address</a
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
                                             >
+                                                Username :
+                                            </p>
+                                            <p
+                                                style="
+                                                font-family: Arial, Helvetica, sans-serif;
+                                                font-size: 16px;
+                                                font-weight: 400;
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
+                                            >
+                                                Quantity :
+                                            </p>
+                                            <p
+                                                style="
+                                                font-family: Arial, Helvetica, sans-serif;
+                                                font-size: 16px;
+                                                font-weight: 400;
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
+                                            >
+                                                Deposit time :
+                                            </p>
+                                            </tr>
+                                        </table>
                                         </td>
-                                        </tr>
+                                        <td style="padding-top: 25px; padding-bottom: 20px">
+                                        <table align="center" valign="center">
+                                            <tr>
+                                            <p
+                                                style="
+                                                font-family: Arial, Helvetica, sans-serif;
+                                                font-size: 16px;
+                                                font-weight: 400;
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
+                                            >
+                                                <a
+                                                style="color: #ffffff"
+                                                href="mailto:${email}"
+                                                >
+                                                ${email}</a
+                                                >
+                                            </p>
+                                            <p
+                                                style="
+                                                font-family: Arial, Helvetica, sans-serif;
+                                                font-size: 16px;
+                                                font-weight: 400;
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
+                                            >
+                                                ${quantity}
+                                            </p>
+                                            <p
+                                                style="
+                                                font-family: Arial, Helvetica, sans-serif;
+                                                font-size: 16px;
+                                                font-weight: 400;
+                                                text-align: left;
+                                                color: #ffffff;
+                                                margin-top: 20px;
+                                                margin-bottom: 0;
+                                                line-height: 22px;
+                                                "
+                                            >
+                                                ${new Date().getTime()}
+                                            </p>
+                                            </tr>
+                                        </table>
+                                        </td>
+                                    </tr>
                                     </table>
-                                    </td>
                                 </tr>
                                 </table>
                             </td>
@@ -320,7 +390,13 @@ const sendVerificationEmail = async ({
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td valign="center" style="padding-top: 25px">
+                                            <td
+                                            valign="center"
+                                            style="
+                                                padding-top: 25px;
+                                                padding-bottom: 30px;
+                                            "
+                                            >
                                             <table
                                                 align="center"
                                                 valign="center"
@@ -415,10 +491,8 @@ const sendVerificationEmail = async ({
                 </table>
             </body>
             </html>
-        
         `
     })
-    // console.log(`Send Email function Pending()`)
 }
 
-module.exports = sendVerificationEmail
+export default sendPaymentConfirmation
