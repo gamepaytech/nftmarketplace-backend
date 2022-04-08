@@ -6,7 +6,7 @@ const NftSchema = new mongoose.Schema(
             type: String,
             required: [true, 'NFT name is required'],
         },
-        jsonHash: { type: String, required: [true, 'JSON Hash required'] },
+        jsonHash: { type: String },
         nftType: {
             type: String,
         },
@@ -34,6 +34,7 @@ const NftSchema = new mongoose.Schema(
         },
         mintHash: String,
         tokenId: Number,
+        chikCount: Number,
         mintedBy: {
             type: String,
             ref: 'User',
@@ -60,6 +61,13 @@ const NftSchema = new mongoose.Schema(
             type: String,
             ref: 'User',
         },
+        nftTotalSupply: {
+          type:Number
+        },
+        itemSold: {
+          type:Number,
+          default: 0
+        }
     },
     { timestamps: true }
 )

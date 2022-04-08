@@ -124,8 +124,10 @@ const login = async (req, res) => {
                         isAdmin: user.isAdmin,
                         metamaskKey: user.metamaskKey || '',
                         isSuperAdmin: user.isSuperAdmin,
+                        profilePic: user.profilePic || '',
                         referralCode: user.referralCode,
                         accessToken: token,
+                        updatedAt: user.updatedAt,
                     })
                 } else {
                     res.status(400).json({
@@ -157,7 +159,6 @@ const login = async (req, res) => {
                 user.password,
                 process.env.PASS_SEC
             ).toString(CryptoJS.enc.Utf8)
-            console.log('LOGIN', hashedPassword)
             if (hashedPassword !== password) {
                 res.status(401).json({ msg: 'Wrong Password!!' })
             }
@@ -196,6 +197,7 @@ const login = async (req, res) => {
                 referralCode: user.referralCode,
                 profilePic: user.profilePic || '',
                 accessToken: token,
+                updatedAt: user.updatedAt,
             })
         }
     } catch (e) {

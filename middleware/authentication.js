@@ -3,7 +3,7 @@ const Token = require('../models/Token')
 
 const authenticateUser = async (req, res, next) => {
     try {
-        console.log('AUTHENTICATING...')
+        // console.log('AUTHENTICATING...')
         const accessToken = req.headers['authorization']
         const bearerToken = accessToken.split(' ')[1]
         if (accessToken) {
@@ -13,7 +13,7 @@ const authenticateUser = async (req, res, next) => {
             }
 
             req.user = payload
-            console.log('authenticate')
+            // console.log('authenticate')
 
             return next()
         } else {

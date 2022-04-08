@@ -26,7 +26,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        profilePic: { type: String },
+        profilePic: {
+            type: String,
+            default: 'https://img.icons8.com/office/80/000000/test-account.png',
+        },
         verifiedOn: Date,
         passwordToken: {
             type: String,

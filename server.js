@@ -16,6 +16,9 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware')
 const nftRouter = require('./routes/nftRoutes')
 const userRouter = require('./routes/userRoute')
 const gamePayTokenRouter = require('./routes/tokensRoute')
+const paymentRouter = require('./routes/paymentRoute');
+
+// const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
 DBConnect()
@@ -40,6 +43,8 @@ app.use('/auth', authRouter)
 app.use('/nft', nftRouter)
 app.use('/users', userRouter)
 app.use('/gamePayToken', gamePayTokenRouter)
+app.use('/payment',paymentRouter);
+// app.use('/nftPresale',nftPresaleRouter)
 
 //  Listening
 app.listen(PORT, () => {
