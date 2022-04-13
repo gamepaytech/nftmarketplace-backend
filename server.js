@@ -48,5 +48,5 @@ app.use('/payment',paymentRouter);
 
 //  Listening
 app.listen(PORT, () => {
-    console.log(`All running on http://localhost:${PORT}`)
+    console.log(`All running on http://localhost:${PORT} v1`)
 })
