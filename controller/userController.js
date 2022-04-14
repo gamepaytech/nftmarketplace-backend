@@ -79,7 +79,7 @@ const updateProfile = async (req, res) => {
                     isAdmin: user.isAdmin,
                     metamaskKey: user.metamaskKey || '',
                     isSuperAdmin: user.isSuperAdmin,
-                    profilePic: user.profilePic || '',
+                    profilePic: profilePic || '',
                     referralCode: user.referralCode,
                     accessToken: user.accessToken,
                     updatedAt: user.updatedAt,

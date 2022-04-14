@@ -331,7 +331,6 @@ const userBoughtNft = async (req, res) => {
 const getNftByUserId = async (req, res) => {
     const { userId } = req.body;
     const findNfts = await PresaleBoughtNft.find({ owner: userId });
-
     if (!findNfts) {
         res.status(404).json({
             error: "Error! No nft found",
@@ -340,12 +339,17 @@ const getNftByUserId = async (req, res) => {
     let allNft = new Array();
     for (let i = 0; i < findNfts.length; i++) {
         const findNft = await Nft.find({ _id: findNfts[i].nft });
-        console.log(findNft);
-        allNft.push(findNft);
+        // console.log("nfts ",findNft);
+        if(findNft.length > 0) {
+            allNft[i] = (findNft);
+        }
     }
-
+    const newNft = allNft.filter(function (el) {
+        return el != null;
+    })
+    // console.log("NFTS" ,newNft);
     res.status(200).json({
-        allNft,
+        allNft:newNft,
     });
 };
 
