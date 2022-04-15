@@ -8,10 +8,19 @@ const CirclePaymentSchema = new mongoose.Schema(
     },
     amount : {
       type:String,
-      required: true
+      // required: true
     },
-    uuid: {
+    // uuid: {
+    //   type:String,
+    // },
+    status: {
       type:String,
+    },
+    nftId: {
+      type:String
+    },
+    paymentId:{
+      type:String
     }
   },
   { timestamps: true }

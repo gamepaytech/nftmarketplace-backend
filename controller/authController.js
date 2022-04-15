@@ -989,6 +989,7 @@ const setactivity = async function (req, res) {
 }
 
 const getactivity = async function (req, res) {
+    console.log("user id ",req.body.userId);
     const userActivity = await models.users.findOne({ _id: req.body.userId })
     res.json({ userActivity: userActivity?.activity })
 }

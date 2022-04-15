@@ -5,13 +5,15 @@ const {
     handleCoinbasePayment,
     coinbaseSuccess,
     coinbaseFail,
-    createPaymentAAA
+    createPaymentAAA,
+    saveCirclePaymentData
 } = require("../controller/paymentController");
 
 const router = express.Router();
 const { authenticateUser } = require("../middleware/authentication");
 
 router.route("/create-pay").post(createPayment);
+router.route("/circle-store-pay").post(saveCirclePaymentData);
 router.route("/create-pay-aaa").post(createPaymentAAA);
 router.route("/coin-create-pay/:chikId/:email/:userId").get(coinbasePayment);
 router.route("/coin-handle-pay").post(handleCoinbasePayment);

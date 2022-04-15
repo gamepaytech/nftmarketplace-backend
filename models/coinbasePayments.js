@@ -5,7 +5,7 @@ const CoinbasePaymentSchema = new mongoose.Schema(
     payId: {
       type: String,
     },
-    url : {
+    code : {
       type:String,
     },
     amount: {
@@ -15,6 +15,12 @@ const CoinbasePaymentSchema = new mongoose.Schema(
       type:String
     },
     chickId: {
+      type:String
+    },
+    owner: {
+      type:String
+    },
+    nft: {
       type:String
     }
   },
