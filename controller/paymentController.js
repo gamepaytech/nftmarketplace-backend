@@ -178,7 +178,7 @@ const createPaymentAAA = async (req, res) => {
                       "order_currency": currency,
                       "order_amount": nftAmount*quantity,
                       "notify_email": "1a2d24e8-1594-4569-bc35-079049e4d805@email.webhook.site",
-                      "notify_url": "https://webhook.site/1a2d24e8-1594-4569-bc35-079049e4d805",
+                      "notify_url": "https://webhook.site/54d8488b-a89c-4977-a53d-4fd5c1ca5114",
                       "notify_secret": "Cf9mx4nAvRuy5vwBY2FCtaKr",
                       "notify_txs": true,
                       "payer_id": "TRE1787238200",
@@ -219,6 +219,7 @@ const createPaymentAAA = async (req, res) => {
                       
                       axios(config)
                       .then(function (response) {
+                          console.log("A r",response)
                         res.status(200).json(response.data)
                       })
                       .catch(function (error) {
@@ -238,6 +239,7 @@ const createPaymentAAA = async (req, res) => {
 
                         axios(config)
                             .then(function (response) {
+                                console.log("A ",response);
                                 res.status(200).json(response.data);
                             })
                             .catch(function (error) {
