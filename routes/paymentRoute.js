@@ -6,7 +6,8 @@ const {
     coinbaseSuccess,
     coinbaseFail,
     createPaymentAAA,
-    saveCirclePaymentData
+    saveCirclePaymentData,
+    sendPaymentEmail
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.route("/coin-create-pay/:chikId/:email/:userId").get(coinbasePayment);
 router.route("/coin-handle-pay").post(handleCoinbasePayment);
 router.route("/coin-success-pay").get(coinbaseSuccess);
 router.route("/coin-failure").get(coinbaseFail);
+router.route("/send-confirmation").post(sendPaymentEmail);
 
 module.exports = router;

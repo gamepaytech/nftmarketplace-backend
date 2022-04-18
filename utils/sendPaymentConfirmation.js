@@ -1,7 +1,6 @@
 const sendEmail = require('./sendEmail')
 
 const sendPaymentConfirmation = async ({
-    userName,
     email,
     quantity,
     amount
@@ -495,4 +494,4 @@ const sendPaymentConfirmation = async ({
     })
 }
 
-export default sendPaymentConfirmation
+module.exports = sendPaymentConfirmation

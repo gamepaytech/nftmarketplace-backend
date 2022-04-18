@@ -11,6 +11,7 @@ const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const sendPaymentConfirmation = require('../utils/sendPaymentConfirmation')
 
 const createActivity = async (userId,price,chikId) => {
     await models.users.updateOne(
@@ -178,7 +179,7 @@ const createPaymentAAA = async (req, res) => {
                       "order_currency": currency,
                       "order_amount": nftAmount*quantity,
                       "notify_email": "1a2d24e8-1594-4569-bc35-079049e4d805@email.webhook.site",
-                      "notify_url": "https://webhook.site/54d8488b-a89c-4977-a53d-4fd5c1ca5114",
+                      "notify_url": "https://webhook.site/be6a2571-b447-4834-ae31-1a10d9c31e12",
                       "notify_secret": "Cf9mx4nAvRuy5vwBY2FCtaKr",
                       "notify_txs": true,
                       "payer_id": "TRE1787238200",
@@ -293,7 +294,7 @@ const coinbasePayment = async (req, res) => {
                 binancePrice * parseFloat(buyNft.price / 10 ** 18);
             const chargeData = {
                 name: buyNft.name,
-                description: buyNft.description,
+                description: buyNft.description.substring(0,199),
                 local_price: {
                     amount: nftAmount,
                     currency: "USD",
@@ -311,6 +312,9 @@ const coinbasePayment = async (req, res) => {
             const charge = await Charge.create(chargeData);
 
             // console.log(charge);
+            // for email
+            // sendPaymentConfirmation(emailId, )
+
 
             res.send(charge);
         })
@@ -397,6 +401,19 @@ const coinbaseSuccess = async (req, res) => {
 const coinbaseFail = async (req, res) => {
     res.send("cancel payment");
 };
+const sendPaymentEmail = async (req, res) => {
+    try{
+        console.log(req.body)
+        await sendPaymentConfirmation(req.body.email, req.body.quantity, req.body.amount)
+        return res.json({
+            status: "Email sent",
+        });
+    } catch(err){
+        console.log("error", err);
+        res.status(400).send("failure to send email");
+    }
+}
+
 module.exports = {
     createPayment,
     coinbasePayment,
@@ -405,4 +422,5 @@ module.exports = {
     coinbaseFail,
     createPaymentAAA,
     saveCirclePaymentData,
+    sendPaymentEmail
 };
