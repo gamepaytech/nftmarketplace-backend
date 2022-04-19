@@ -5,8 +5,8 @@ const uploadToPinata = async (req, res, next) => {
     console.log('pinata')
 
     const pinata = pinataSDK(
-        '6aff73d61f9a9377963c',
-        '5fe4bd174a6d80b442b67116f479e40aa6e53ec7a62ff9c8e6f3ff719d7363bb'
+        process.env.PINATA_API_KEY,
+        process.env.PINATA_SECRET_KEY
     )
 
     //   pinata

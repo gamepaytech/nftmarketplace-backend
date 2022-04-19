@@ -60,6 +60,8 @@ const register = async (req, res) => {
             isAdmin: isAdmin == 'True' ? true : false,
             referralCode: referralCode.code,
         }
+
+        console.log("BEFORE SEDING ",verificationToken)
         const user = await models.users.create(createObj)
         const origin = process.env.APP_BACKEND_URL
         await sendVerificationEmail({
@@ -68,6 +70,7 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
+        console.log("AFTER SENDING ",user.verificationToken)
 
         res.status(201).json({
             msg: 'Success! Please check your email to verify account',
@@ -222,18 +225,20 @@ const verifyEmail = async (req, res) => {
         const verificationToken = req.query.token
         const email = req.query.email
 
+        console.log("EMAIL ",email)
+        console.log("TOKEN ",verificationToken)
         if (verificationToken === '' || !verificationToken) {
             res.status(401).json({ msg: 'Invalid Credentials!' })
             return
         }
 
         if (email === '' || !email) {
-            res.status(401).json({ msg: 'Invalid Credentials!' })
+            res.status(401).json({ msg: 'Invalid email or password!' })
             return
         }
 
         const user = await models.users.findOne({ email })
-        console.log('JK')
+        console.log("user ",user);
         if (user) {
             if (user.verificationToken === '') {
                 res.status(401).json({ msg: 'User already verified' })

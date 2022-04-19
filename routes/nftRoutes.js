@@ -40,4 +40,6 @@ router.route('/update-item-sold').put(updateTotalSupply)
 router.route('/add-user-presaleNft').post(userBoughtNft)
 router.route('/get-by-userId').post(getNftByUserId)
 
+router.route("/upload-pinata").post(imageUpload.single("image"), uploadToPinata);
+
 module.exports = router
