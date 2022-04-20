@@ -61,7 +61,7 @@ const register = async (req, res) => {
             referralCode: referralCode.code,
         }
 
-        console.log("BEFORE SEDING ",verificationToken)
+        console.log("BEFORE SEDING--- ",verificationToken)
         const user = await models.users.create(createObj)
         const origin = process.env.APP_BACKEND_URL
         await sendVerificationEmail({
@@ -70,7 +70,7 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
-        console.log("AFTER SENDING ",user.verificationToken)
+        console.log("AFTER SENDING--- ",user.verificationToken)
 
         res.status(201).json({
             msg: 'Success! Please check your email to verify account',
@@ -222,8 +222,8 @@ const logout = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
     try {
-        const verificationToken = req.query.token
-        const email = req.query.email
+        const verificationToken = req.body.token
+        const email = req.body.email
 
         console.log("EMAIL ",email)
         console.log("TOKEN ",verificationToken)
