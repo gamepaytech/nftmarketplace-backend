@@ -15,6 +15,7 @@ const authRouter = require('./routes/authRoute')
 const { notFound, errorHandler } = require('./middleware/errorMiddleware')
 const nftRouter = require('./routes/nftRoutes')
 const gamePayTokenRouter = require('./routes/tokensRoute')
+const preSaleTier = require('./routes/presaleTier')
 
 // Database connection
 DBConnect()
@@ -36,6 +37,7 @@ app.use(express.static('./public'))
 
 // Routes
 app.use('/auth', authRouter)
+app.use('/preSaleTier', preSaleTier)
 app.use('/nft', nftRouter)
 app.use('/gamePayToken', gamePayTokenRouter)
 
