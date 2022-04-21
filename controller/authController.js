@@ -400,24 +400,46 @@ const addMyReferral = async function (req, res) {
                             req.body.password,
                             process.env.PASS_SEC
                         ).toString()
-                        query = {
-                            username: req.body.username,
-                            email: req.body.email,
-                            password: hashedPassword,
-                            metamaskKey: req.body.metamaskKey || '',
-                            verificationToken: verificationToken,
-                            isAdmin:
-                                req.body.isAdmin !== undefined &&
-                                req.body.isAdmin == 'True'
-                                    ? true
-                                    : false,
-                            isSuperAdmin:
-                                req.body.isSuperAdmin !== undefined &&
-                                req.body.isSuperAdmin == 'True'
-                                    ? true
-                                    : false,
-                            referralCode: referralCode.code,
-                            refereeCode: refereeCode,
+                        if(req.body.metamaskKey) {
+                            query = {
+                                username: req.body.username,
+                                email: req.body.email,
+                                password: hashedPassword,
+                                metamaskKey: req.body.metamaskKey,
+                                verificationToken: verificationToken,
+                                isAdmin:
+                                    req.body.isAdmin !== undefined &&
+                                    req.body.isAdmin == 'True'
+                                        ? true
+                                        : false,
+                                isSuperAdmin:
+                                    req.body.isSuperAdmin !== undefined &&
+                                    req.body.isSuperAdmin == 'True'
+                                        ? true
+                                        : false,
+                                referralCode: referralCode.code,
+                                refereeCode: refereeCode,
+                            }
+                        }
+                        else {
+                            query = {
+                                username: req.body.username,
+                                email: req.body.email,
+                                password: hashedPassword,
+                                verificationToken: verificationToken,
+                                isAdmin:
+                                    req.body.isAdmin !== undefined &&
+                                    req.body.isAdmin == 'True'
+                                        ? true
+                                        : false,
+                                isSuperAdmin:
+                                    req.body.isSuperAdmin !== undefined &&
+                                    req.body.isSuperAdmin == 'True'
+                                        ? true
+                                        : false,
+                                referralCode: referralCode.code,
+                                refereeCode: refereeCode,
+                            }
                         }
                         const newUser = new models.users(query)
                         const insertNewReferral = await newUser.save()
@@ -478,24 +500,46 @@ const addMyReferral = async function (req, res) {
                         req.body.password,
                         process.env.PASS_SEC
                     ).toString()
-                    query = {
-                        username: req.body.username,
-                        email: req.body.email,
-                        password: hashedPassword,
-                        metamaskKey: req.body.metamaskKey || '',
-                        verificationToken: verificationToken,
-                        isAdmin:
-                            req.body.isAdmin !== undefined &&
-                            req.body.isAdmin == 'True'
-                                ? true
-                                : false,
-                        isSuperAdmin:
-                            req.body.isSuperAdmin !== undefined &&
-                            req.body.isSuperAdmin == 'True'
-                                ? true
-                                : false,
-                        referralCode: referralCode.code,
-                        refereeCode: refereeCode,
+                    if(req.body.metamaskKey) {
+                        query = {
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: hashedPassword,
+                            metamaskKey: req.body.metamaskKey || '',
+                            verificationToken: verificationToken,
+                            isAdmin:
+                                req.body.isAdmin !== undefined &&
+                                req.body.isAdmin == 'True'
+                                    ? true
+                                    : false,
+                            isSuperAdmin:
+                                req.body.isSuperAdmin !== undefined &&
+                                req.body.isSuperAdmin == 'True'
+                                    ? true
+                                    : false,
+                            referralCode: referralCode.code,
+                            refereeCode: refereeCode,
+                        }
+                    }
+                    else {
+                        query = {
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: hashedPassword,
+                            verificationToken: verificationToken,
+                            isAdmin:
+                                req.body.isAdmin !== undefined &&
+                                req.body.isAdmin == 'True'
+                                    ? true
+                                    : false,
+                            isSuperAdmin:
+                                req.body.isSuperAdmin !== undefined &&
+                                req.body.isSuperAdmin == 'True'
+                                    ? true
+                                    : false,
+                            referralCode: referralCode.code,
+                            refereeCode: refereeCode,
+                        }
                     }
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
@@ -802,12 +846,12 @@ const addWalletKey = async (req, res) => {
         const userInfo = await models.users.find({ _id: userId })
 
         if (userInfo !== undefined || userInfo !== '') {
-            if (userInfo[0].metamaskKey.length == 5) {
+            if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.length == 6) {
                 res.json({ status: 400, msg: 'wallet limit exceed' })
                 return
             }
 
-            if (userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
+            if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
                 res.json({
                     status: 400,
                     msg: 'User already exists with this wallet',
@@ -837,10 +881,12 @@ const addWalletKey = async (req, res) => {
                     },
                 }
             )
+            const userDataUpdated = await models.users.findOne({_id:req.body.userId})
+            console.log("updated user ",userDataUpdated);
             res.json({
                 status: 200,
                 msg: 'Success',
-                data: updatedUser,
+                data: userDataUpdated,
             })
 
             return
