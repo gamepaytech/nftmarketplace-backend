@@ -2,8 +2,9 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 
-const { getPresale } = require('../controller/presaleController')
+const { getPresale, updatePresale } = require('../controller/presaleController')
 
 router.get('/getAll', cors(),getPresale)
+router.put('/update', cors(),updatePresale)
 
 module.exports = router

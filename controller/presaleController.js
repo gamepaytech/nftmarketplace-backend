@@ -20,7 +20,36 @@ const getPresale = async (req, res) => {
       });
   };
 
+  const updatePresale = async(req, res) => {
+    try {
+        const data = await models.presaletiers.updateOne(
+          {
+            _id: req.body.id,
+          },
+          {
+            $set: {
+              tier_type: req.body.tier_type,
+              quantity: req.body.quantity,
+              price: req.body.price,
+              duration_in_days: req.body.duration_in_days,
+            },
+          }
+        );
+        res.json({
+            status:"success",
+            msg: 'Success',
+            data: data,
+        })
 
-  module.exports = {getPresale}
+        return
+    } catch (err) {
+        console.log(err)
+        res.json({ status: 400, msg: 'Something went wrong' })
+        return
+    }
+}
+
+
+  module.exports = {getPresale,updatePresale}
 
 
