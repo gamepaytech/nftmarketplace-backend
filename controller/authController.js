@@ -74,6 +74,7 @@ const register = async (req, res) => {
 
         res.status(201).json({
             msg: 'Success! Please check your email to verify account',
+            status:201
         })
     } catch (err) {
         console.log(err.msg)
@@ -466,6 +467,7 @@ const addMyReferral = async function (req, res) {
                                 if (newUserInfo) {
                                     res.status(201).json({
                                         msg: 'Success! Please check your email to verify account',
+                                        status:201
                                     })
                                 } else {
                                     res.json({
@@ -556,6 +558,7 @@ const addMyReferral = async function (req, res) {
                         if (newUserInfo) {
                             res.status(201).json({
                                 msg: 'Success! Please check your email to verify account',
+                                status:201
                             })
                         } else {
                             res.json({
@@ -945,7 +948,7 @@ const removeWalletKey = async function (req, res) {
 const getAllWallet = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
@@ -955,12 +958,12 @@ const getAllWallet = async function (req, res) {
         )
 
         if (walletInfo && walletInfo.length) {
-            res.json({ status: 200, msg: 'Success', data: walletInfo })
+            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo })
         } else {
-            res.json({ sttaus: 400, msg: 'No Wallets found' })
+            res.status(400).json({ sttaus: 400, msg: 'No Wallets found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: eror.toString() })
+        res.status(400).json({ status: 400, msg: eror.toString() })
     }
 }
 
@@ -968,32 +971,33 @@ const checkRegisterredWallet = async (req, res) => {
     try {
         const walletAddress = req.body.walletAddress
         if (walletAddress == undefined || walletAddress == '') {
-            res.json({ status: 400, msg: 'Wallet Address is required' })
+            res.status(400).json({ status: 400, msg: 'Wallet Address is required' })
             return
         }
-        const userInfo = await models.users.find({
+        const userInfo = await models.users.findOne({
             metamaskKey: walletAddress,
         })
-        if (userInfo !== undefined || userInfo !== '') {
-            res.json({
+        if (userInfo && userInfo !== null) {
+            console.log("A ",userInfo);
+            res.status(200).json({
                 status: 200,
                 msg: 'Success',
                 data: userInfo,
             })
             return
         } else {
-            res.json({ status: 400, msg: 'User not Registered!' })
+            res.status(400).json({ status: 400, msg: 'User not Registered!' })
         }
     } catch (error) {
         console.log(error)
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
@@ -1001,7 +1005,7 @@ const checkWalletKey = async function (req, res) {
             req.body.walletAddress == undefined ||
             req.body.walletAddress == ''
         ) {
-            res.json({ status: 400, msg: 'walletKey is required' })
+            res.status(400).json({ status: 400, msg: 'walletKey is required' })
             return
         }
 
@@ -1011,21 +1015,22 @@ const checkWalletKey = async function (req, res) {
         })
 
         if (walletInfo && walletInfo.length) {
-            res.json({ status: 200, msg: 'Success', data: walletInfo[0] })
+            console.log(walletInfo);
+            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo[0] })
         } else {
-            res.json({ status: 400, msg: 'Wallet not found' })
+            res.status(400).json({ status: 400, msg: 'Wallet not found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
 const getPercent = async function (req, res) {
     try {
         const setting = await referralModel.appsetting.find({})
-        res.json({ status: 200, msg: 'Success', data: setting })
+        res.status(200).json({ status: 200, msg: 'Success', data: setting })
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
@@ -1036,7 +1041,7 @@ const setactivity = async function (req, res) {
         { $push: { activity: { activity: activity, timestamp: timestamp } } },
         { new: true, upsert: true }
     )
-    res.json('done')
+    res.status(200).json('done')
 }
 
 const getactivity = async function (req, res) {
@@ -1048,12 +1053,12 @@ const getactivity = async function (req, res) {
 const updatePercent = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
         if (req.body.percent == undefined || req.body.percent == '') {
-            res.json({ status: 400, msg: 'percent is required' })
+            res.status(400).json({ status: 400, msg: 'percent is required' })
             return
         }
 
@@ -1067,15 +1072,15 @@ const updatePercent = async function (req, res) {
             })
             if (setting.modifiedCount > 0) {
                 const newSetting = await referralModel.appsetting.find({})
-                res.json({ status: 200, msg: 'Success', data: newSetting })
+                res.status(200).json({ status: 200, msg: 'Success', data: newSetting })
             } else {
-                res.json({ status: 400, msg: 'Something went Wrong' })
+                res.status(400).json({ status: 400, msg: 'Something went Wrong' })
             }
         } else {
-            res.json({ status: 400, msg: 'Action Not Permitted' })
+            res.status(400).json({ status: 400, msg: 'Action Not Permitted' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
