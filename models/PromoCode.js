@@ -4,17 +4,19 @@ const Schema = mongoose.Schema
 const PromoCodeSchema = new Schema(
     {
         promoCode: {
-          type:String,
-          required:true
+          type:String
         },
         validTill: {
-          type: Date,
-          required:true
+          type: String
         },
         totalNumberClaimed: {
-          type:Number
+          type:Number,
+          default:0
         },
         totalNumberCode: {
+          type:Number
+        },
+        percentDiscount: {
           type:Number
         }
     },

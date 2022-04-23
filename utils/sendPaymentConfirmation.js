@@ -7,7 +7,7 @@ const sendPaymentConfirmation = async ({
 }) => {    
     return sendEmail({
         to: email,
-        subject: 'Payment Confirmation',
+        subject: 'Gamepay | NFT Payment Confirmation',
         html: `
         <!DOCTYPE html>
         <html lang="en">

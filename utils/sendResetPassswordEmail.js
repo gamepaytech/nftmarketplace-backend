@@ -7,7 +7,7 @@ const sendResetPassswordEmail = async ({ name, email, token, origin }) => {
 
     return sendEmail({
         to: email,
-        subject: 'Reset Password',
+        subject: 'Gamepay | Reset Password Link ',
     //     html: `<h4>Hello ${name.charAt(0).toUpperCase() + name.slice(1)},</h4>
     // ${message}
     // `,

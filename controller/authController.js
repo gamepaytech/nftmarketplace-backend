@@ -20,7 +20,6 @@ const register = async (req, res) => {
             password,
             confirmPassword,
             metamaskKey,
-            isAdmin,
         } = req.body
         if (!email) {
             res.status(401).json({ msg: 'Please provide an email' })
@@ -32,17 +31,17 @@ const register = async (req, res) => {
             res.status(401).json({ msg: 'Password not match' })
         }
         const emailAlreadyExists = await models.users.findOne({
-            email: { $regex: new RegExp(email, 'i') },
+            email: email,
         })
         if (emailAlreadyExists) {
-            res.status(401).json({ msg: 'Email already exists' })
+            res.status(401).json({ msg: 'Email or username already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
-            username: { $regex: new RegExp(username, 'i') },
+            username: username,
         })
         if (usernameAlreadyExists) {
-            res.status(500).json({ msg: 'Username already exists' })
+            res.status(500).json({ msg: 'Email or username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
@@ -57,7 +56,7 @@ const register = async (req, res) => {
             password: hashedPassword,
             metamaskKey: metamaskKey,
             verificationToken: verificationToken,
-            isAdmin: isAdmin == 'True' ? true : false,
+            // isAdmin: isAdmin == 'True' ? true : false,
             referralCode: referralCode.code,
         }
 
@@ -98,6 +97,7 @@ const login = async (req, res) => {
             })
 
             if (user) {
+                
                 if (user.isVerified) {
                     const tokenUser = createWalletAddressPayload(
                         user,
@@ -158,7 +158,7 @@ const login = async (req, res) => {
                 res.status(401).json({ msg: `User doesn't exists` })
             }
 
-            // console.log(user)
+            
             const hashedPassword = CryptoJS.AES.decrypt(
                 user.password,
                 process.env.PASS_SEC
@@ -189,8 +189,21 @@ const login = async (req, res) => {
 
             // console.log(userToken)
             await Token.create(userToken)
-
-            res.json({
+            console.log("user ",user)
+            console.log("SD ",{
+                _id: user._id,
+                email: user.email,
+                username: user.username,
+                isVerified: user.isVerified,
+                isAdmin: user.isAdmin,
+                metamaskKey: user.metamaskKey || '',
+                isSuperAdmin: user.isSuperAdmin,
+                referralCode: user.referralCode,
+                profilePic: user.profilePic || '',
+                accessToken: token,
+                updatedAt: user.updatedAt,
+            })
+            res.status(200).json({
                 _id: user._id,
                 email: user.email,
                 username: user.username,
@@ -378,12 +391,12 @@ const addMyReferral = async function (req, res) {
         query = { email: req.body.email }
         const checkMail = await models.users.findOne(query)
         if (checkMail) {
-            res.json({ status: 400, msg: 'Email already in use' })
+            res.json({ status: 400, msg: 'Email or Username already in use' })
         } else {
             query = { username: { $regex: new RegExp(req.body.username, 'i') } }
             const checkUserName = await models.users.findOne(query)
             if (checkUserName) {
-                res.json({ status: 400, msg: 'Username already exists' })
+                res.json({ status: 400, msg: 'Email or Username already in use' })
             } else {
                 let checkReferee = false
                 if (refereeCode != '') {

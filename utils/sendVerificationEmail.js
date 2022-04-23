@@ -15,7 +15,7 @@ const sendVerificationEmail = async ({
     // console.log(`Send Email function Start()`)
     return sendEmail({
         to: email,
-        subject: 'Email Confirmation',
+        subject: 'Verification for Gamepay registration',
         // html: `<h4> Hello ${name.charAt(0).toUpperCase() + name.slice(1)},</h4>
         // ${message}
         // `,
