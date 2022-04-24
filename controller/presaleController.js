@@ -36,6 +36,8 @@ const getPresale = async (req, res) => {
                 $set: {
                   price: getPreSale.price,
                   tier_type: getPreSale.tier_type,
+                  itemSold: 0,
+                  presale_status: "started",
                   start_date:new Date(Date.now()).toISOString()
                 },
               },
@@ -124,6 +126,20 @@ const getPresale = async (req, res) => {
                 );
               }
             }
+          }else{
+            await nftModels.presalenftsales.updateOne(
+              {
+                _id:nft.id
+              },
+              [
+                {
+                  $set: {
+                    presale_status:"ended",
+                  },
+                },
+              ],
+              { upsert: false }
+            );
           }
         });
 

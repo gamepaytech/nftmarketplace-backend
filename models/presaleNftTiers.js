@@ -65,6 +65,9 @@ let NftSchema = new mongoose.Schema(
         tier_type: {
             type: String,
         },
+        presale_status: {
+            type: String,
+        },
         start_date: {
             type: String,
         },
