@@ -1052,6 +1052,7 @@ const getactivity = async function (req, res) {
 
 const updatePercent = async function (req, res) {
     try {
+        console.log("kfjjkdsngfjkdshfk")
         if (req.body.userId == undefined || req.body.userId == '') {
             res.status(400).json({ status: 400, msg: 'userId is required' })
             return
@@ -1070,6 +1071,12 @@ const updatePercent = async function (req, res) {
             const setting = await referralModel.appsetting.updateOne({
                 referralPercent: req.body.percent,
             })
+            console.log(setting, "setting")
+            if(setting.modifiedCount === 0){
+                await referralModel.appsetting.create({referralPercent: req.body.percent,})
+                setting.modifiedCount = 1
+                console.log("created settings")
+            }
             if (setting.modifiedCount > 0) {
                 const newSetting = await referralModel.appsetting.find({})
                 res.status(200).json({ status: 200, msg: 'Success', data: newSetting })
