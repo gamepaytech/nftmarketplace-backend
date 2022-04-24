@@ -68,7 +68,7 @@ let NftSchema = new mongoose.Schema(
         presale_status: {
             type: String,
         },
-        start_date: {
+        presale_start_date: {
             type: String,
         },
         owner: {
@@ -87,6 +87,6 @@ let presalesetting = new mongoose.Schema({
 })
 
 module.exports = {
-    presalenftsales: mongoose.model('presalenftsales', NftSchema),
-    settingpresalenftsale: mongoose.model('settingpresalenftsales', presalesetting),
+    presalenfts: mongoose.model('presalenfts', NftSchema),
+    settingpresalenfts: mongoose.model('settingpresalenfts', presalesetting),
 }
