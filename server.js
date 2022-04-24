@@ -19,7 +19,7 @@ const userRouter = require("./routes/userRoute");
 const gamePayTokenRouter = require("./routes/tokensRoute");
 const paymentRouter = require("./routes/paymentRoute");
 const promoRouter = require("./routes/promoRoutes");
-
+const preSaleTier = require('./routes/presaleTier')
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
@@ -51,6 +51,7 @@ app.use(express.static("./public"));
 // Routes
 app.use("/auth", authRouter);
 app.use("/nft", nftRouter);
+app.use('/preSaleTier', preSaleTier)
 app.use("/users", userRouter);
 app.use("/gamePayToken", gamePayTokenRouter);
 app.use("/payment", paymentRouter);
