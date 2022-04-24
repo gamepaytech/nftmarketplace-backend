@@ -14,6 +14,9 @@ const {
     addMyIncome,
     getMyrewards,
     sellNft,
+    updateTotalSupply,
+    userBoughtNft,
+    getNftByUserId
 } = require('../controller/nft.controller.js')
 const router = express.Router()
 const { authenticateUser } = require('../middleware/authentication')
@@ -33,5 +36,10 @@ router.route('/mint').post(authenticateUser, mintNFT)
 router.route('/approve').post(authenticateUser, approveNFT)
 router.route('/addMyAmount').post(authenticateUser, addMyIncome)
 router.route('/getMyRewards').post(authenticateUser, getMyrewards)
+router.route('/update-item-sold').put(updateTotalSupply)
+router.route('/add-user-presaleNft').post(userBoughtNft)
+router.route('/get-by-userId').post(getNftByUserId)
+
+router.route("/upload-pinata").post(imageUpload.single("image"), uploadToPinata);
 
 module.exports = router

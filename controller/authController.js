@@ -20,7 +20,6 @@ const register = async (req, res) => {
             password,
             confirmPassword,
             metamaskKey,
-            isAdmin,
         } = req.body
         if (!email) {
             res.status(401).json({ msg: 'Please provide an email' })
@@ -32,17 +31,17 @@ const register = async (req, res) => {
             res.status(401).json({ msg: 'Password not match' })
         }
         const emailAlreadyExists = await models.users.findOne({
-            email: { $regex: new RegExp(email, 'i') },
+            email: email,
         })
         if (emailAlreadyExists) {
-            res.status(401).json({ msg: 'Email already exists' })
+            res.status(401).json({ msg: 'Email or username already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
-            username: { $regex: new RegExp(username, 'i') },
+            username: username,
         })
         if (usernameAlreadyExists) {
-            res.status(500).json({ msg: 'Username already exists' })
+            res.status(500).json({ msg: 'Email or username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
@@ -57,9 +56,11 @@ const register = async (req, res) => {
             password: hashedPassword,
             metamaskKey: metamaskKey,
             verificationToken: verificationToken,
-            isAdmin: isAdmin == 'True' ? true : false,
+            // isAdmin: isAdmin == 'True' ? true : false,
             referralCode: referralCode.code,
         }
+
+        console.log("BEFORE SEDING--- ",verificationToken)
         const user = await models.users.create(createObj)
         const origin = process.env.APP_BACKEND_URL
         await sendVerificationEmail({
@@ -68,9 +69,11 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
+        console.log("AFTER SENDING--- ",user.verificationToken)
 
         res.status(201).json({
             msg: 'Success! Please check your email to verify account',
+            status:201
         })
     } catch (err) {
         console.log(err.msg)
@@ -94,6 +97,7 @@ const login = async (req, res) => {
             })
 
             if (user) {
+                
                 if (user.isVerified) {
                     const tokenUser = createWalletAddressPayload(
                         user,
@@ -124,8 +128,10 @@ const login = async (req, res) => {
                         isAdmin: user.isAdmin,
                         metamaskKey: user.metamaskKey || '',
                         isSuperAdmin: user.isSuperAdmin,
+                        profilePic: user.profilePic || '',
                         referralCode: user.referralCode,
                         accessToken: token,
+                        updatedAt: user.updatedAt,
                     })
                 } else {
                     res.status(400).json({
@@ -145,14 +151,14 @@ const login = async (req, res) => {
             }
 
             const user = await models.users.findOne({
-                email: { $regex: new RegExp(email, 'i') },
+                email: email,
             })
 
             if (!user) {
                 res.status(401).json({ msg: `User doesn't exists` })
             }
 
-            // console.log(user)
+            
             const hashedPassword = CryptoJS.AES.decrypt(
                 user.password,
                 process.env.PASS_SEC
@@ -183,8 +189,7 @@ const login = async (req, res) => {
 
             // console.log(userToken)
             await Token.create(userToken)
-
-            res.json({
+            res.status(200).json({
                 _id: user._id,
                 email: user.email,
                 username: user.username,
@@ -193,7 +198,9 @@ const login = async (req, res) => {
                 metamaskKey: user.metamaskKey || '',
                 isSuperAdmin: user.isSuperAdmin,
                 referralCode: user.referralCode,
+                profilePic: user.profilePic || '',
                 accessToken: token,
+                updatedAt: user.updatedAt,
             })
         }
     } catch (e) {
@@ -215,21 +222,23 @@ const logout = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
     try {
-        const verificationToken = req.query.token
-        const email = req.query.email
+        const verificationToken = req.body.token
+        const email = req.body.email
 
+        console.log("EMAIL ",email)
+        console.log("TOKEN ",verificationToken)
         if (verificationToken === '' || !verificationToken) {
             res.status(401).json({ msg: 'Invalid Credentials!' })
             return
         }
 
         if (email === '' || !email) {
-            res.status(401).json({ msg: 'Invalid Credentials!' })
+            res.status(401).json({ msg: 'Invalid email or password!' })
             return
         }
 
         const user = await models.users.findOne({ email })
-        console.log('JK')
+        console.log("user ",user);
         if (user) {
             if (user.verificationToken === '') {
                 res.status(401).json({ msg: 'User already verified' })
@@ -332,7 +341,7 @@ const resetPassword = async (req, res) => {
                     msg: 'Invalid Token',
                 })
             }
-            hashedPassword = CryptoJS.AES.encrypt(
+            let hashedPassword = CryptoJS.AES.encrypt(
                 req.body.password,
                 process.env.PASS_SEC
             ).toString()
@@ -368,12 +377,12 @@ const addMyReferral = async function (req, res) {
         query = { email: req.body.email }
         const checkMail = await models.users.findOne(query)
         if (checkMail) {
-            res.json({ status: 400, msg: 'Email already in use' })
+            res.json({ status: 400, msg: 'Email or Username already in use' })
         } else {
             query = { username: { $regex: new RegExp(req.body.username, 'i') } }
             const checkUserName = await models.users.findOne(query)
             if (checkUserName) {
-                res.json({ status: 400, msg: 'Username already exists' })
+                res.json({ status: 400, msg: 'Email or Username already in use' })
             } else {
                 let checkReferee = false
                 if (refereeCode != '') {
@@ -391,24 +400,46 @@ const addMyReferral = async function (req, res) {
                             req.body.password,
                             process.env.PASS_SEC
                         ).toString()
-                        query = {
-                            username: req.body.username,
-                            email: req.body.email,
-                            password: hashedPassword,
-                            metamaskKey: req.body.metamaskKey || '',
-                            verificationToken: verificationToken,
-                            isAdmin:
-                                req.body.isAdmin !== undefined &&
-                                req.body.isAdmin == 'True'
-                                    ? true
-                                    : false,
-                            isSuperAdmin:
-                                req.body.isSuperAdmin !== undefined &&
-                                req.body.isSuperAdmin == 'True'
-                                    ? true
-                                    : false,
-                            referralCode: referralCode.code,
-                            refereeCode: refereeCode,
+                        if(req.body.metamaskKey) {
+                            query = {
+                                username: req.body.username,
+                                email: req.body.email,
+                                password: hashedPassword,
+                                metamaskKey: req.body.metamaskKey,
+                                verificationToken: verificationToken,
+                                isAdmin:
+                                    req.body.isAdmin !== undefined &&
+                                    req.body.isAdmin == 'True'
+                                        ? true
+                                        : false,
+                                isSuperAdmin:
+                                    req.body.isSuperAdmin !== undefined &&
+                                    req.body.isSuperAdmin == 'True'
+                                        ? true
+                                        : false,
+                                referralCode: referralCode.code,
+                                refereeCode: refereeCode,
+                            }
+                        }
+                        else {
+                            query = {
+                                username: req.body.username,
+                                email: req.body.email,
+                                password: hashedPassword,
+                                verificationToken: verificationToken,
+                                isAdmin:
+                                    req.body.isAdmin !== undefined &&
+                                    req.body.isAdmin == 'True'
+                                        ? true
+                                        : false,
+                                isSuperAdmin:
+                                    req.body.isSuperAdmin !== undefined &&
+                                    req.body.isSuperAdmin == 'True'
+                                        ? true
+                                        : false,
+                                referralCode: referralCode.code,
+                                refereeCode: refereeCode,
+                            }
                         }
                         const newUser = new models.users(query)
                         const insertNewReferral = await newUser.save()
@@ -435,6 +466,7 @@ const addMyReferral = async function (req, res) {
                                 if (newUserInfo) {
                                     res.status(201).json({
                                         msg: 'Success! Please check your email to verify account',
+                                        status:201
                                     })
                                 } else {
                                     res.json({
@@ -469,24 +501,46 @@ const addMyReferral = async function (req, res) {
                         req.body.password,
                         process.env.PASS_SEC
                     ).toString()
-                    query = {
-                        username: req.body.username,
-                        email: req.body.email,
-                        password: hashedPassword,
-                        metamaskKey: req.body.metamaskKey || '',
-                        verificationToken: verificationToken,
-                        isAdmin:
-                            req.body.isAdmin !== undefined &&
-                            req.body.isAdmin == 'True'
-                                ? true
-                                : false,
-                        isSuperAdmin:
-                            req.body.isSuperAdmin !== undefined &&
-                            req.body.isSuperAdmin == 'True'
-                                ? true
-                                : false,
-                        referralCode: referralCode.code,
-                        refereeCode: refereeCode,
+                    if(req.body.metamaskKey) {
+                        query = {
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: hashedPassword,
+                            metamaskKey: req.body.metamaskKey || '',
+                            verificationToken: verificationToken,
+                            isAdmin:
+                                req.body.isAdmin !== undefined &&
+                                req.body.isAdmin == 'True'
+                                    ? true
+                                    : false,
+                            isSuperAdmin:
+                                req.body.isSuperAdmin !== undefined &&
+                                req.body.isSuperAdmin == 'True'
+                                    ? true
+                                    : false,
+                            referralCode: referralCode.code,
+                            refereeCode: refereeCode,
+                        }
+                    }
+                    else {
+                        query = {
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: hashedPassword,
+                            verificationToken: verificationToken,
+                            isAdmin:
+                                req.body.isAdmin !== undefined &&
+                                req.body.isAdmin == 'True'
+                                    ? true
+                                    : false,
+                            isSuperAdmin:
+                                req.body.isSuperAdmin !== undefined &&
+                                req.body.isSuperAdmin == 'True'
+                                    ? true
+                                    : false,
+                            referralCode: referralCode.code,
+                            refereeCode: refereeCode,
+                        }
                     }
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
@@ -503,6 +557,7 @@ const addMyReferral = async function (req, res) {
                         if (newUserInfo) {
                             res.status(201).json({
                                 msg: 'Success! Please check your email to verify account',
+                                status:201
                             })
                         } else {
                             res.json({
@@ -615,13 +670,25 @@ const getAllAdmin = async function (req, res) {
 const changeUserStatus = async function (req, res) {
     let userId
     if (req.body.email) {
-        const userData = await models.users.findOne({ email: req.body.email })
-        userId = userData._id
+        const userData = await models.users.findOne({
+            email: { $regex: new RegExp(req.body.email, 'i') },
+        })
+        if (userData) {
+            userId = userData._id
+        } else {
+            res.json({ status: 400, msg: 'User not found' })
+            return
+        }
     } else if (req.body.walletAddr) {
         const userData = await models.users.findOne({
             metamaskKey: req.body.walletAddr,
         })
-        userId = userData._id
+        if (userData) {
+            userId = userData._id
+        } else {
+            res.json({ status: 400, msg: 'User not found' })
+            return
+        }
     }
     try {
         // if (req.body.walletAddress == undefined || req.body.walletAddress == ''){
@@ -643,8 +710,28 @@ const changeUserStatus = async function (req, res) {
         // Status -> 12 [Delete Admin]
         // Status -> 21 [Add Super Admin]
         // Status -> 22 [Delete Super Admin]
-
         const userInfo = await models.users.find({ _id: userId })
+        console.log(userInfo)
+        // if (userInfo.isAdmin && req.body.status === 11) {
+        //     res.json({ status: 400, msg: 'User is already Admin' })
+        //     return
+        // } else if (!userInfo.isAdmin && req.body.status === 12) {
+        //     res.json({
+        //         status: 400,
+        //         msg: 'No Admin exist with these Credentials!',
+        //     })
+        //     return
+        // } else if (userInfo.isSuperAdmin && req.body.status === 21) {
+        //     res.json({ status: 400, msg: 'User is already Super Admin' })
+        //     return
+        // } else if (!userInfo.isSuperAdmin && req.body.status === 22) {
+        //     res.json({
+        //         status: 400,
+        //         msg: 'No Super Admin exist with these Credentials!',
+        //     })
+        //     return
+        // }
+
         if (userInfo && userInfo.length) {
             // let changeUserWalletAddress = await models.users.updateOne(
             //     {metamaskKey: userInfo[0].metamaskKey},
@@ -761,12 +848,12 @@ const addWalletKey = async (req, res) => {
         const userInfo = await models.users.find({ _id: userId })
 
         if (userInfo !== undefined || userInfo !== '') {
-            if (userInfo[0].metamaskKey.length == 5) {
+            if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.length == 6) {
                 res.json({ status: 400, msg: 'wallet limit exceed' })
                 return
             }
 
-            if (userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
+            if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
                 res.json({
                     status: 400,
                     msg: 'User already exists with this wallet',
@@ -796,10 +883,12 @@ const addWalletKey = async (req, res) => {
                     },
                 }
             )
+            const userDataUpdated = await models.users.findOne({_id:req.body.userId})
+            console.log("updated user ",userDataUpdated);
             res.json({
                 status: 200,
                 msg: 'Success',
-                data: updatedUser,
+                data: userDataUpdated,
             })
 
             return
@@ -858,7 +947,7 @@ const removeWalletKey = async function (req, res) {
 const getAllWallet = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
@@ -868,12 +957,12 @@ const getAllWallet = async function (req, res) {
         )
 
         if (walletInfo && walletInfo.length) {
-            res.json({ status: 200, msg: 'Success', data: walletInfo })
+            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo })
         } else {
-            res.json({ sttaus: 400, msg: 'No Wallets found' })
+            res.status(400).json({ sttaus: 400, msg: 'No Wallets found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: eror.toString() })
+        res.status(400).json({ status: 400, msg: eror.toString() })
     }
 }
 
@@ -881,32 +970,33 @@ const checkRegisterredWallet = async (req, res) => {
     try {
         const walletAddress = req.body.walletAddress
         if (walletAddress == undefined || walletAddress == '') {
-            res.json({ status: 400, msg: 'Wallet Address is required' })
+            res.status(400).json({ status: 400, msg: 'Wallet Address is required' })
             return
         }
-        const userInfo = await models.users.find({
+        const userInfo = await models.users.findOne({
             metamaskKey: walletAddress,
         })
-        if (userInfo !== undefined || userInfo !== '') {
-            res.json({
+        if (userInfo && userInfo !== null) {
+            console.log("A ",userInfo);
+            res.status(200).json({
                 status: 200,
                 msg: 'Success',
                 data: userInfo,
             })
             return
         } else {
-            res.json({ status: 400, msg: 'User not Registered!' })
+            res.status(400).json({ status: 400, msg: 'User not Registered!' })
         }
     } catch (error) {
         console.log(error)
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
@@ -914,43 +1004,61 @@ const checkWalletKey = async function (req, res) {
             req.body.walletAddress == undefined ||
             req.body.walletAddress == ''
         ) {
-            res.json({ status: 400, msg: 'walletKey is required' })
+            res.status(400).json({ status: 400, msg: 'walletKey is required' })
             return
         }
 
         const walletInfo = await models.users.find({
             _id: req.body.userId,
-            metamaskKey: req.body.walletAddress,
+            metamaskKey: (req.body.walletAddress),
         })
+        console.log(req.body.walletAddress)
 
         if (walletInfo && walletInfo.length) {
-            res.json({ status: 200, msg: 'Success', data: walletInfo[0] })
+            console.log(walletInfo);
+            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo[0] })
         } else {
-            res.json({ status: 400, msg: 'Wallet not found' })
+            res.status(400).json({ status: 400, msg: 'Wallet not found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
 const getPercent = async function (req, res) {
     try {
         const setting = await referralModel.appsetting.find({})
-        res.json({ status: 200, msg: 'Success', data: setting })
+        res.status(200).json({ status: 200, msg: 'Success', data: setting })
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
+}
+
+const setactivity = async function (req, res) {
+    const { activity, timestamp } = req.body
+    await models.users.updateOne(
+        { _id: req.body.userId },
+        { $push: { activity: { activity: activity, timestamp: timestamp } } },
+        { new: true, upsert: true }
+    )
+    res.status(200).json('done')
+}
+
+const getactivity = async function (req, res) {
+    console.log("user id ",req.body.userId);
+    const userActivity = await models.users.findOne({ _id: req.body.userId })
+    res.json({ userActivity: userActivity?.activity })
 }
 
 const updatePercent = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            res.status(400).json({ status: 400, msg: 'userId is required' })
             return
         }
 
         if (req.body.percent == undefined || req.body.percent == '') {
-            res.json({ status: 400, msg: 'percent is required' })
+            res.status(400).json({ status: 400, msg: 'percent is required' })
             return
         }
 
@@ -964,15 +1072,15 @@ const updatePercent = async function (req, res) {
             })
             if (setting.modifiedCount > 0) {
                 const newSetting = await referralModel.appsetting.find({})
-                res.json({ status: 200, msg: 'Success', data: newSetting })
+                res.status(200).json({ status: 200, msg: 'Success', data: newSetting })
             } else {
-                res.json({ status: 400, msg: 'Something went Wrong' })
+                res.status(400).json({ status: 400, msg: 'Something went Wrong' })
             }
         } else {
-            res.json({ status: 400, msg: 'Action Not Permitted' })
+            res.status(400).json({ status: 400, msg: 'Action Not Permitted' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
 
@@ -996,4 +1104,6 @@ module.exports = {
     checkWalletKey,
     getPercent,
     updatePercent,
+    setactivity,
+    getactivity,
 }

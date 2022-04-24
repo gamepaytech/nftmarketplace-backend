@@ -1,24 +1,13 @@
 const sendEmail = require('./sendEmail')
 
-const sendVerificationEmail = async ({
-    name,
+const sendPaymentConfirmation = async ({
     email,
-    verificationToken,
-    origin,
-}) => {
-    const verifyEmail = `${process.env.APP_FRONTEND_URL}/login/${verificationToken}/${email}`
-
-    const message = `<p>Please confirm your email by clicking on the following link : 
-    <a href="${verifyEmail}">Verify Email</a> </p>`
-
-    // console.log(`Verify Message : ${message}`)
-    // console.log(`Send Email function Start()`)
+    quantity,
+    amount
+}) => {    
     return sendEmail({
         to: email,
-        subject: 'Verification for Gamepay registration',
-        // html: `<h4> Hello ${name.charAt(0).toUpperCase() + name.slice(1)},</h4>
-        // ${message}
-        // `,
+        subject: 'Gamepay | NFT Payment Confirmation',
         html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -30,7 +19,7 @@ const sendVerificationEmail = async ({
             <meta http-equiv="X-UA-Compatible" content="IE=edge" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
             <meta name="format-detection" content="telephone=no" />
-            <title>Gamepay</title>
+            <title>Chickey Chik</title>
         </head>
         
         <body style="margin: 0;padding: 0;">
@@ -59,33 +48,52 @@ const sendVerificationEmail = async ({
                 <tr>
                     <table align="center" width="650" border="0" cellspacing="0" cellpadding="0" bgcolor="#141416">
                         <tr>
-                            <td style="padding-top: 50px;padding-bottom: 0px;">
+                            <td style="padding-top: 50px;padding-bottom: 30px;">
                                 <table width="650" align="center" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
                                     <tr>
                                         <td>
-                                            <table width="520" align="center" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
+                                            <table width="480" align="center" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
                                                 <tr>
         
                                                     <td>
                                                         <h1 style="font-family:Arial, Helvetica, sans-serif;font-size:30px;font-weight:bold;
-                                                    text-align:center;color:#00dcff;margin-top:0px;margin-bottom: 0;line-height: 22px;">Please confirm your email address </h1>
+                                                    text-align:left;color:#00dcff;margin-top:0px;margin-bottom: 0;line-height: 22px;">Purchase confirmation</h1>
                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                          text-align:center;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">To finalize the creation of your new Gamepay Account,<br/> Please follow the link below to confirm your email<br/> address.
+                                                          text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">ceived ${amount} Chik TokeYou have ren
+        
                                                         </p>
                                                     </td>
         
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding-top: 25px;padding-bottom: 50px;">
-                                                        <table align="center" valign="center">
-                                                            <tr>
-                                                                <td style="background-color: #00dcff;border-radius:30px">
-                                                                    <a href="${verifyEmail}" style="font-family:Arial, Helvetica, sans-serif;border:solid 1px #00dcff;border-color:#00dcff; box-sizing:border-box;text-decoration:none;background-color:#00dcff;color:#141416;
-                                                 font-size:16px;font-weight:400;margin:0;padding:10px 30px;display:inline-block;border-radius:30px" target="_blank">Confirm your email address</a>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
+                                                    <table align="center" width="480" cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="padding-top: 25px;padding-bottom: 20px; width: 160px;">
+                                                                <table align="center" valign="center">
+                                                                    <tr>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">Username : </p>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">Quantity : ${quantity}</p>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">Deposit time : </p>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td style="padding-top: 25px;padding-bottom: 20px;">
+                                                                <table align="center" valign="center">
+                                                                    <tr>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"><a style="color: #ffffff;" href="mailto:text@123.com"> text@123.com</a></p>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">5,00,000 </p>
+                                                                        <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">Deposit time</p>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </tr>
                                             </table>
                                         </td>
@@ -184,7 +192,6 @@ const sendVerificationEmail = async ({
         </html>
         `
     })
-    // console.log(`Send Email function Pending()`)
 }
 
-module.exports = sendVerificationEmail
+module.exports = sendPaymentConfirmation
