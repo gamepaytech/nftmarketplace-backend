@@ -2,11 +2,13 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 
-const { getPresale, updatePresale, startPresale, schedulePreSale } = require('../controller/presaleController')
+const { getPresale, updatePresale, startPresale, schedulePreSale, getPreSaleTierById } = require('../controller/presaleController')
+const { authenticateUser } = require('../middleware/authentication')
 
-router.get('/getAll', cors(),getPresale)
-router.get('/startPreSale', cors(),startPresale)
-router.get('/schedulePreSale', cors(),schedulePreSale)
-router.put('/update', cors(),updatePresale)
+router.get('/getAll', cors(),authenticateUser,getPresale)
+router.get('/:id', cors(),authenticateUser,getPreSaleTierById)
+router.get('/startPreSale', cors(),authenticateUser,startPresale)
+router.get('/schedulePreSale', cors(),authenticateUser,schedulePreSale)
+router.put('/update', cors(),authenticateUser,updatePresale)
 
 module.exports = router
