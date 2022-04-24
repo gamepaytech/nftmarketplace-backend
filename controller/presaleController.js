@@ -208,8 +208,19 @@ myDate.setDate(myDate.getDate() + parseInt(days));
 return myDate;
 }
 
+  function isEmptyOrSpaces(str){
+    return str === null || str.match(/^ *$/) !== null;
+  }
+  
   const updatePresale = async(req, res) => {
     try {
+        const keys = ['id','tier_type', 'quantity','price','duration_in_days'];
+        for (i in keys) {
+            if (req.body[keys[i]] == undefined || isEmptyOrSpaces(req.body[keys[i]])) {
+                res.json({ status: "error", msg: keys[i] + ' are required' })
+                return
+            }
+        }
         const data = await models.presaletiers.updateOne(
           {
             _id: req.body.id,
