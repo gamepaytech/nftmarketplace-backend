@@ -151,7 +151,7 @@ const login = async (req, res) => {
             }
 
             const user = await models.users.findOne({
-                email: { $regex: new RegExp(email, 'i') },
+                email: email,
             })
 
             if (!user) {
@@ -189,20 +189,6 @@ const login = async (req, res) => {
 
             // console.log(userToken)
             await Token.create(userToken)
-            console.log("user ",user)
-            console.log("SD ",{
-                _id: user._id,
-                email: user.email,
-                username: user.username,
-                isVerified: user.isVerified,
-                isAdmin: user.isAdmin,
-                metamaskKey: user.metamaskKey || '',
-                isSuperAdmin: user.isSuperAdmin,
-                referralCode: user.referralCode,
-                profilePic: user.profilePic || '',
-                accessToken: token,
-                updatedAt: user.updatedAt,
-            })
             res.status(200).json({
                 _id: user._id,
                 email: user.email,
@@ -1024,8 +1010,9 @@ const checkWalletKey = async function (req, res) {
 
         const walletInfo = await models.users.find({
             _id: req.body.userId,
-            metamaskKey: req.body.walletAddress,
+            metamaskKey: (req.body.walletAddress),
         })
+        console.log(req.body.walletAddress)
 
         if (walletInfo && walletInfo.length) {
             console.log(walletInfo);

@@ -18,6 +18,10 @@ const PromoCodeSchema = new Schema(
         },
         percentDiscount: {
           type:Number
+        },
+        promoCodeStatus: {
+          type:Boolean,
+          default:true
         }
     },
     { timestamps: true }

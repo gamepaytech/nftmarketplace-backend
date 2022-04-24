@@ -1,5 +1,6 @@
 const PromoCode = require("../models/PromoCode");
 var voucher_codes = require('voucher-code-generator');
+const models = require("../models/User");
 
 function addDays(date, days) {
   var result = new Date(date);
@@ -30,6 +31,15 @@ const createPromoCode = async (req,res) => {
         err:"Please provide the percent discount."
       })
     }
+    const checkCode = await PromoCode.findOne({
+      promoCode:req.body.promoCode
+    })
+    if(checkCode !== null) {
+      return res.status(400).json({
+        err:"Code already exists!",
+        status:400
+      })
+    }
     //valid till get in days
     validTill = addDays(new Date(),validTill);
     let voucherCode = voucher_codes.generate({
@@ -38,9 +48,6 @@ const createPromoCode = async (req,res) => {
       length: 6,
       count: 1
     });
-
-    console.log("Voucher code ",voucherCode);
-    console.log("VALID TILL", validTill);
 
     let createObj = {
       promoCode:voucherCode[0],
@@ -51,7 +58,6 @@ const createPromoCode = async (req,res) => {
 
     const createCode = await PromoCode.create(createObj);
 
-    console.log("create code ",createCode);
     res
       .status(200)
       .json({
@@ -82,30 +88,40 @@ const getPromoCode = async (req,res) => {
 
     if(!checkCode) {
       return res.status(404).json({
-        err:"Promo code isn't valid.",
+        err:"VALIDATION_ERR: Promo code isn't valid.",
         status:401
       });
     }
 
-    console.log("Promo code DB ",checkCode.promoCode);
-    console.log("Promo code USR ",promoCode);
     let isValid;
-
     //3 checks 
-    //1st date
-    //2nd Matches with db
-    //3rd total claimed is less than total coupons available
+    //1st date --> validity > currDate
+    //2nd Matches with db --> checkCode.promoCode === promoCode
+    //3rd total claimed is less than total coupons available --> checkCode.totalNumberCode < checkCode.totalNumberClaimed
+    const currDate = Date.parse(new Date());
+    const validity = Date.parse(checkCode.validTill);
 
-    if(checkCode.promoCode === promoCode) {
+    if(
+      checkCode.totalNumberCode > checkCode.totalNumberClaimed &&
+      validity > currDate &&  
+      checkCode.promoCode === promoCode) {
       isValid = true;
     }
     else {
       isValid = false
     }
+    console.log("isValid ",isValid)
+    if(!isValid) {
+      return res.status(400).json({
+        err:"Validation Error: Promo code isn't valid",
+        status:400
+      })
+    }
  
     res.status(200).json({
       msg:"Promo Code has been successfully applied!",
       isValid:isValid,
+      discount:checkCode.percentDiscount,
       status:200
     });
 
@@ -145,4 +161,43 @@ const getAllCheckCode = async (req,res) => {
   }
 }
 
-module.exports = { createPromoCode, getPromoCode, getAllCheckCode }
+const updateCouponCode = async (req,res) => {
+  try {
+    console.log("IN ")
+    const findUser = await models.users.findOne({
+      _id:req.body.userId
+    })
+    if(!findUser?.isAdmin || !findUser?.isSuperAdmin) {
+      return res.status(400).json({
+        err:"Invalid Operation: Authorization failed."
+      })
+    }
+    const checkCode = await PromoCode.findOne({
+      promoCode:req.body.promoCode
+    })
+    let message = '';
+    if(checkCode.promoCodeStatus == true) {
+      message = 'Promo Code has been disabled!'
+    } 
+    else {
+      message = 'Promo Code has been enabled!'
+    }
+    checkCode.promoCodeStatus = !checkCode.promoCodeStatus;
+    await checkCode.save();
+
+    res.status(200).json({
+      promoCodeStatus:!checkCode.promoCodeStatus,
+      msg:message,
+      staus:200
+    })
+  }
+  catch(err) {
+    console.log(err);
+    res.status(401).json({
+      err:"401: Internal Server Error",
+      status:401
+    })
+  }
+}
+
+module.exports = { createPromoCode, getPromoCode, getAllCheckCode, updateCouponCode }
