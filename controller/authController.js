@@ -22,26 +22,26 @@ const register = async (req, res) => {
             metamaskKey,
         } = req.body
         if (!email) {
-            res.status(401).json({ msg: 'Please provide an email' })
+            res.status(400).json({ msg: 'Please provide an email' })
         } else if (!username) {
-            res.status(401).json({ msg: 'Please provide the username' })
+            res.status(400).json({ msg: 'Please provide the username' })
         } else if (!password) {
-            res.status(401).json({ msg: 'Please provide the password' })
+            res.status(400).json({ msg: 'Please provide the password' })
         } else if (password !== confirmPassword) {
-            res.status(401).json({ msg: 'Password not match' })
+            res.status(400).json({ msg: 'Password not match' })
         }
         const emailAlreadyExists = await models.users.findOne({
             email: email,
         })
         if (emailAlreadyExists) {
-            res.status(401).json({ msg: 'Email or username already exists' })
+            res.status(406).json({ msg: 'Email or username already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
             username: username,
         })
         if (usernameAlreadyExists) {
-            res.status(500).json({ msg: 'Email or username already exists' })
+            res.status(406).json({ msg: 'Email or username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
@@ -56,7 +56,6 @@ const register = async (req, res) => {
             password: hashedPassword,
             metamaskKey: metamaskKey,
             verificationToken: verificationToken,
-            // isAdmin: isAdmin == 'True' ? true : false,
             referralCode: referralCode.code,
         }
 
@@ -77,8 +76,7 @@ const register = async (req, res) => {
         })
     } catch (err) {
         console.log(err.msg)
-        res.status(400)
-        // throw new Error('Error Occured')
+        res.status(500).json({ msg: 'Error occured while processing the request' })
     }
 }
 
@@ -91,13 +89,11 @@ const login = async (req, res) => {
         const { email, password, walletAddress } = req.body
 
         if (walletAddress && walletAddress.length > 0) {
-            // var regex = new RegExp(`^${walletAddress.trim()}$`, 'ig')
             const user = await models.users.findOne({
                 metamaskKey: walletAddress,
             })
 
             if (user) {
-                
                 if (user.isVerified) {
                     const tokenUser = createWalletAddressPayload(
                         user,
@@ -134,12 +130,12 @@ const login = async (req, res) => {
                         updatedAt: user.updatedAt,
                     })
                 } else {
-                    res.status(400).json({
+                    res.status(401).json({
                         msg: `Please verify your Email Address ${user.email}`,
                     })
                 }
             } else {
-                res.status(400).json({ msg: 'Wallet Address Not Registered' })
+                res.status(401).json({ msg: 'Wallet Address Not Registered' })
             }
         } else {
             if (!email || email === '') {
@@ -155,16 +151,15 @@ const login = async (req, res) => {
             })
 
             if (!user) {
-                res.status(401).json({ msg: `User doesn't exists` })
+                res.status(401).json({ msg: `User doesn't exist` })
             }
-
             
             const hashedPassword = CryptoJS.AES.decrypt(
                 user.password,
                 process.env.PASS_SEC
             ).toString(CryptoJS.enc.Utf8)
             if (hashedPassword !== password) {
-                res.status(401).json({ msg: 'Wrong Password!!' })
+                res.status(401).json({ msg: 'Incorrect credentials!!' })
             }
 
             // Following code will run and see if user has verified email // update model when you will use nodmailer
@@ -205,15 +200,14 @@ const login = async (req, res) => {
         }
     } catch (e) {
         console.log(e.msg)
-        res.status(400)
-        // throw new Error('Invalid Credentials')
+        res.status(400).json({msg : 'An error occured'})
     }
 }
 
 const logout = async (req, res) => {
     try {
         await Token.findOneAndDelete({ user: req.user.userId })
-        res.status(201).json({ msg: 'User logged out!' })
+        res.status(200).json({ msg: 'User logged out!' })
     } catch (e) {
         console.log('Error: ' + e.msg)
         res.status(500).json({ msg: e.msg })
@@ -241,7 +235,7 @@ const verifyEmail = async (req, res) => {
         console.log("user ",user);
         if (user) {
             if (user.verificationToken === '') {
-                res.status(401).json({ msg: 'User already verified' })
+                res.status(406).json({ msg: 'User already verified' })
                 return
             }
 
@@ -257,12 +251,11 @@ const verifyEmail = async (req, res) => {
                 await user.save()
             } catch (err) {
                 console.log(err.msg)
-                res.status(501).json({ msg: err.msg })
+                res.status(500).json({ msg: err.msg })
             }
-
-            res.status(201).json({ msg: 'Email Successfully Verified' })
+            res.status(200).json({ msg: 'Email Successfully Verified' })
         } else {
-            res.status(401).json({ msg: 'Invalid Request' })
+            res.status(400).json({ msg: 'Invalid Request' })
         }
     } catch (e) {
         res.status(500).json({ msg: e.msg })
@@ -273,7 +266,7 @@ const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body
         if (!email) {
-            res.status(401).json({ msg: 'Please provide valid email' })
+            res.status(400).json({ msg: 'Please provide valid email' })
         }
 
         const user = await models.users.findOne({
@@ -306,7 +299,7 @@ const forgotPassword = async (req, res) => {
                 msg: 'Please check your email for reset password link',
             })
         } else {
-            res.status(401).json({ msg: 'Invalid User' })
+            res.status(400).json({ msg: 'Invalid User' })
         }
     } catch (e) {
         res.status(500).json({ msg: e.msg })
@@ -317,11 +310,11 @@ const resetPassword = async (req, res) => {
     try {
         const { token, email, password } = req.body
         if (!email) {
-            res.status(401).json({ msg: 'Please provide an email' })
+            res.status(400).json({ msg: 'Please provide an email' })
         } else if (!password) {
-            res.status(401).json({ msg: 'Please provide the password' })
+            res.status(400).json({ msg: 'Please provide the password' })
         } else if (!token) {
-            res.status(401).json({ msg: 'Please provide the token' })
+            res.status(400).json({ msg: 'Please provide the token' })
         }
 
         const user = await models.users.findOne({
@@ -337,7 +330,7 @@ const resetPassword = async (req, res) => {
                     user.passwordTokenExpirationDate > currentDate
                 )
             ) {
-                res.status(200).json({
+                res.status(401).json({
                     msg: 'Invalid Token',
                 })
             }
@@ -349,16 +342,14 @@ const resetPassword = async (req, res) => {
             user.passwordToken = null
             user.passwordTokenExpirationDate = null
             await user.save()
-            // $2a$10$NI/cqg38P7DhL8cpx50WxuXbmCr78v4yZ8pJButCQt.ZXLoE73HtG
-            // $2a$10$NI/cqg38P7DhL8cpx50WxuXbmCr78v4yZ8pJButCQt.ZXLoE73HtG
             res.status(200).json({
                 msg: 'Password has been successfully updated',
             })
         } else {
-            res.status(200).json({ msg: 'Invalid User' })
+            res.status(401).json({ msg: 'Invalid User' })
         }
     } catch (e) {
-        res.status(501).json({ msg: e.msg })
+        res.status(500).json({ msg: e.msg })
     }
 }
 
@@ -369,7 +360,7 @@ const addMyReferral = async function (req, res) {
         let keys = ['email', 'username', 'password']
         for (i in keys) {
             if (req.body[keys[i]] == undefined || req.body[keys[i]] == '') {
-                res.json({ status: 401, msg: keys[i] + ' are required' })
+                res.json({ status: 400, msg: keys[i] + ' are required' })
                 return
             }
         }
@@ -377,12 +368,12 @@ const addMyReferral = async function (req, res) {
         query = { email: req.body.email }
         const checkMail = await models.users.findOne(query)
         if (checkMail) {
-            res.json({ status: 400, msg: 'Email or Username already in use' })
+            res.json({ status: 406, msg: 'Email or Username already in use' })
         } else {
             query = { username: { $regex: new RegExp(req.body.username, 'i') } }
             const checkUserName = await models.users.findOne(query)
             if (checkUserName) {
-                res.json({ status: 400, msg: 'Email or Username already in use' })
+                res.json({ status: 406, msg: 'Email or Username already in use' })
             } else {
                 let checkReferee = false
                 if (refereeCode != '') {
@@ -575,7 +566,7 @@ const addMyReferral = async function (req, res) {
             }
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -615,7 +606,6 @@ const getAllMyReferrals = async function (req, res) {
         if (getMyReferralsId.length) {
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids } },
-                // { _id: getMyReferralsId[0].userId },
                 { __v: 0 }
             )
             if (getMyReferrals) {
@@ -632,10 +622,10 @@ const getAllMyReferrals = async function (req, res) {
                 })
             }
         } else {
-            res.json({ status: 400, msg: 'No Referrals Found' })
+            res.json({ status: 200, msg: 'No Referrals Found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -649,7 +639,7 @@ const getAllSuperAdmin = async function (req, res) {
             res.json({ status: 200, msg: 'No SuperUser Found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -663,7 +653,7 @@ const getAllAdmin = async function (req, res) {
             res.json({ status: 200, msg: 'No SuperUser Found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -676,7 +666,7 @@ const changeUserStatus = async function (req, res) {
         if (userData) {
             userId = userData._id
         } else {
-            res.json({ status: 400, msg: 'User not found' })
+            res.json({ status: 200, msg: 'User not found' })
             return
         }
     } else if (req.body.walletAddr) {
@@ -686,16 +676,11 @@ const changeUserStatus = async function (req, res) {
         if (userData) {
             userId = userData._id
         } else {
-            res.json({ status: 400, msg: 'User not found' })
+            res.json({ status: 200, msg: 'User not found' })
             return
         }
     }
     try {
-        // if (req.body.walletAddress == undefined || req.body.walletAddress == ''){
-        //     res.json({status: 400, msg: "walletAddress is required"})
-        //     return
-        // }
-
         if (req.body.status == undefined || req.body.status == 0) {
             res.json({ status: 400, msg: 'status is required' })
             return
@@ -706,37 +691,10 @@ const changeUserStatus = async function (req, res) {
             return
         }
 
-        // Status -> 11 [Add Admin]
-        // Status -> 12 [Delete Admin]
-        // Status -> 21 [Add Super Admin]
-        // Status -> 22 [Delete Super Admin]
         const userInfo = await models.users.find({ _id: userId })
         console.log(userInfo)
-        // if (userInfo.isAdmin && req.body.status === 11) {
-        //     res.json({ status: 400, msg: 'User is already Admin' })
-        //     return
-        // } else if (!userInfo.isAdmin && req.body.status === 12) {
-        //     res.json({
-        //         status: 400,
-        //         msg: 'No Admin exist with these Credentials!',
-        //     })
-        //     return
-        // } else if (userInfo.isSuperAdmin && req.body.status === 21) {
-        //     res.json({ status: 400, msg: 'User is already Super Admin' })
-        //     return
-        // } else if (!userInfo.isSuperAdmin && req.body.status === 22) {
-        //     res.json({
-        //         status: 400,
-        //         msg: 'No Super Admin exist with these Credentials!',
-        //     })
-        //     return
-        // }
 
         if (userInfo && userInfo.length) {
-            // let changeUserWalletAddress = await models.users.updateOne(
-            //     {metamaskKey: userInfo[0].metamaskKey},
-            //     {'$set': {metamaskKey: req.body.walletAddr}}
-            // )
             if (req.body.status === 11 || req.body.status === 12) {
                 try {
                     const makeAdmin = await models.users.updateOne(
@@ -762,7 +720,7 @@ const changeUserStatus = async function (req, res) {
                     return
                 } catch (err) {
                     console.log(err)
-                    res.json({ status: 400, msg: 'Something went wrong' })
+                    res.json({ status: 500, msg: 'Something went wrong' })
                     return
                 }
             } else if (req.body.status === 21 || req.body.status === 22) {
@@ -788,47 +746,15 @@ const changeUserStatus = async function (req, res) {
                     return
                 } catch (err) {
                     console.log(err)
-                    res.json({ status: 400, msg: 'Something went wrong' })
+                    res.json({ status: 500, msg: 'Something went wrong' })
                     return
                 }
             }
-            // let changeUserStatus
-            // if (changeUserWalletAddress.modifiedCount == 1) {
-            //     if (req.body.status == 1) {
-            //         changeUserStatus = await models.users.updateOne(
-            //             { isSuperAdmin: userInfo[0].isSuperAdmin },
-            //             {
-            //                 $set: {
-            //                     isSuperAdmin:
-            //                         req.body.status == 1 ? true : false,
-            //                 },
-            //             }
-            //         )
-            //     } else {
-            //         changeUserStatus = await models.users.updateOne(
-            //             { isAdmin: userInfo[0].isAdmin },
-            //             {
-            //                 $set: {
-            //                     isAdmin: req.body.status == 1 ? true : false,
-            //                 },
-            //             }
-            //         )
-            //     }
-            // }
-
-            // if (changeUserStatus.modifiedCount == 1) {
-            //     const updatedUserInfo = await models.users.find({
-            //         _id: req.body.userId,
-            //     })
-            //     res.json({ status: 200, msg: 'Success', data: updatedUserInfo })
-            // } else {
-            //     res.json({ status: 400, msg: 'Something went wrong' })
-            // }
         } else {
-            res.json({ status: 400, msg: 'User not found' })
+            res.json({ status: 200, msg: 'User not found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -849,13 +775,13 @@ const addWalletKey = async (req, res) => {
 
         if (userInfo !== undefined || userInfo !== '') {
             if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.length == 6) {
-                res.json({ status: 400, msg: 'wallet limit exceed' })
+                res.json({ status: 416, msg: 'wallet limit exceed' })
                 return
             }
 
             if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
                 res.json({
-                    status: 400,
+                    status: 406,
                     msg: 'User already exists with this wallet',
                 })
                 return
@@ -867,7 +793,7 @@ const addWalletKey = async (req, res) => {
 
             if (walletInfo && walletInfo.length) {
                 res.json({
-                    status: 400,
+                    status: 406,
                     msg: 'Wallet Address id already used by other email',
                 })
                 return
@@ -893,11 +819,11 @@ const addWalletKey = async (req, res) => {
 
             return
         } else {
-            res.json({ status: 400, msg: 'Invalid Credentials!' })
+            res.json({ status: 401, msg: 'Invalid Credentials!' })
         }
     } catch (error) {
         console.log(error)
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -934,13 +860,13 @@ const removeWalletKey = async function (req, res) {
                     data: updateUserInfo,
                 })
             } else {
-                res.json({ status: 400, msg: 'Wallet Not Removed' })
+                res.json({ status: 204, msg: 'Wallet Not Removed' })
             }
         } else {
-            res.json({ status: 400, msg: 'user not found' })
+            res.json({ status: 204, msg: 'user not found' })
         }
     } catch (error) {
-        res.json({ status: 400, msg: error.toString() })
+        res.json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -959,10 +885,10 @@ const getAllWallet = async function (req, res) {
         if (walletInfo && walletInfo.length) {
             res.status(200).json({ status: 200, msg: 'Success', data: walletInfo })
         } else {
-            res.status(400).json({ sttaus: 400, msg: 'No Wallets found' })
+            res.status(400).json({ sttaus: 204, msg: 'No Wallets found' })
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: eror.toString() })
+        res.status(500).json({ status: 400, msg: eror.toString() })
     }
 }
 
@@ -985,11 +911,11 @@ const checkRegisterredWallet = async (req, res) => {
             })
             return
         } else {
-            res.status(400).json({ status: 400, msg: 'User not Registered!' })
+            res.status(204).json({ status: 400, msg: 'User not Registered!' })
         }
     } catch (error) {
         console.log(error)
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(500).json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -1018,10 +944,10 @@ const checkWalletKey = async function (req, res) {
             console.log(walletInfo);
             res.status(200).json({ status: 200, msg: 'Success', data: walletInfo[0] })
         } else {
-            res.status(400).json({ status: 400, msg: 'Wallet not found' })
+            res.status(204).json({ status: 204, msg: 'Wallet not found' })
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(500).json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -1030,7 +956,7 @@ const getPercent = async function (req, res) {
         const setting = await referralModel.appsetting.find({})
         res.status(200).json({ status: 200, msg: 'Success', data: setting })
     } catch (error) {
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(500).json({ status: 500, msg: error.toString() })
     }
 }
 
@@ -1041,7 +967,7 @@ const setactivity = async function (req, res) {
         { $push: { activity: { activity: activity, timestamp: timestamp } } },
         { new: true, upsert: true }
     )
-    res.status(200).json('done')
+    res.status(201).json('done')
 }
 
 const getactivity = async function (req, res) {
@@ -1074,13 +1000,13 @@ const updatePercent = async function (req, res) {
                 const newSetting = await referralModel.appsetting.find({})
                 res.status(200).json({ status: 200, msg: 'Success', data: newSetting })
             } else {
-                res.status(400).json({ status: 400, msg: 'Something went Wrong' })
+                res.status(500).json({ status: 500, msg: 'Something went Wrong' })
             }
         } else {
-            res.status(400).json({ status: 400, msg: 'Action Not Permitted' })
+            res.status(403).json({ status: 403, msg: 'Action Not Permitted' })
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(500).json({ status: 500, msg: error.toString() })
     }
 }
 
