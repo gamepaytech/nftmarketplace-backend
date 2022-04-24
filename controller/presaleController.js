@@ -211,7 +211,23 @@ return myDate;
   function isEmptyOrSpaces(str){
     return str === null || str.match(/^ *$/) !== null;
   }
-  
+
+  const getPreSaleTierById = async(req, res) => {
+    const id = req.params.id;
+    models.presaletiers.findById(id)
+        .then(data => {
+            if (!data)
+                res.status(200).json({status:"error", message: "Not found Campaign with id " + id });
+            else res.status(200).json({status:"success", data:data});
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .json({status:"error", message: "Error retrieving Campaign with id=" + id });
+        });
+  }
+
+
   const updatePresale = async(req, res) => {
     try {
         const keys = ['id','tier_type', 'quantity','price','duration_in_days'];
@@ -249,6 +265,6 @@ return myDate;
 }
 
 
-  module.exports = {getPresale,updatePresale,startPresale,schedulePreSale}
+  module.exports = {getPresale,getPreSaleTierById,updatePresale,startPresale,schedulePreSale}
 
 
