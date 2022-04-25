@@ -318,7 +318,7 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId } = req.body;
+    const { nftId, userId, promoCode } = req.body;
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // console.log("NFT ",findNftById)
 
@@ -326,7 +326,7 @@ const userBoughtNft = async (req, res) => {
         nftIdOwned: nftId,
         owner: userId,
         nft: ObjectId(nftId),
-        promoApplied
+        promoCode
     });
     console.log(updatePresale);
     res.status(200).json({
@@ -400,7 +400,7 @@ const addMyIncome = async function (req, res) {
         const userInfo = await models.users.find({ _id: req.body.userId });
 
         if (userInfo && userInfo[0].refereeCode != "") {
-            const data = await Nft.findOne({ _id: req.body.nftId });
+            const data = await Nft.presalenfts.findOne({ _id: req.body.nftId });
             const setting = await referralModel.appsetting.findOne({});
             let referralIncome =
                 (data.price / 100) * setting.referralPercent;
@@ -419,7 +419,7 @@ const addMyIncome = async function (req, res) {
             await addMyIncome.save();
 
             const totalIncome = await referralModel.referralIncome.find({
-                userId: req.body.userId,
+                userId: getMyreferral[0]._id,
             });
             let totalAmount = 0;
             for (let i = 0; i < totalIncome.length; i++) {
@@ -429,11 +429,11 @@ const addMyIncome = async function (req, res) {
             res.json({
                 sttaus: 200,
                 msg: "Success",
-                totalAmoutn: totalAmount,
+                totalAmount: totalAmount,
             });
         } else {
             const totalIncome = await referralModel.referralIncome.find({
-                userId: req.body.userId,
+                userId: getMyreferral[0]._id,
             });
             let totalAmount = 0;
             for (let i = 0; i < totalIncome.length; i++) {
