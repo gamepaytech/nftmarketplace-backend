@@ -93,7 +93,7 @@ const login = async (req, res) => {
         if (walletAddress && walletAddress.length > 0) {
             // var regex = new RegExp(`^${walletAddress.trim()}$`, 'ig')
             const user = await models.users.findOne({
-                metamaskKey: walletAddress,
+                metamaskKey: walletAddress[0],
             })
 
             if (user) {
@@ -974,8 +974,17 @@ const checkRegisterredWallet = async (req, res) => {
             return
         }
         const userInfo = await models.users.findOne({
-            metamaskKey: walletAddress,
+            metamaskKey: walletAddress[0],
         })
+        console.log(userInfo, walletAddress);
+        if(!userInfo) {
+            return res.status(404).json({ status: 404, err: 'User not Registered!' })
+        }
+        if(!userInfo?.isVerified) {
+            return res.status(400).json({
+                err:"Please verify your email first!"
+            })
+        }
         if (userInfo && userInfo !== null) {
             console.log("A ",userInfo);
             res.status(200).json({
@@ -989,7 +998,7 @@ const checkRegisterredWallet = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(500).json({ status: 500, err: "500: Internal Server Error" })
     }
 }
 
@@ -1010,18 +1019,22 @@ const checkWalletKey = async function (req, res) {
 
         const walletInfo = await models.users.find({
             _id: req.body.userId,
-            metamaskKey: (req.body.walletAddress),
+            // metamaskKey: (req.body.walletAddress),
         })
-        console.log(req.body.walletAddress)
+        console.log('l',req.body.walletAddress)
+        console.log('k',walletInfo)
 
-        if (walletInfo && walletInfo.length) {
+        if (walletInfo && walletInfo.length > 0 && walletInfo.includes(req.body.walletAddress)) {
             console.log(walletInfo);
-            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo[0] })
+            res
+            .status(200)
+            .json(
+                { status: 200, msg: 'Success', exists:true, data: walletInfo[0] })
         } else {
-            res.status(400).json({ status: 400, msg: 'Wallet not found' })
+            res.status(200).json({ status: 200, msg: 'Wallet not found', exists:false })
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: error.toString() })
+        res.status(400).json({ status: 400, msg: "Internal Server Error!" })
     }
 }
 

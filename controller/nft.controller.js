@@ -313,7 +313,7 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId } = req.body;
+    const { nftId, userId, promoApplied } = req.body;
     const findNftById = await Nft.find({ _id: nftId });
     // console.log("NFT ",findNftById)
 
@@ -321,6 +321,7 @@ const userBoughtNft = async (req, res) => {
         nftIdOwned: nftId,
         owner: userId,
         nft: ObjectId(nftId),
+        promoApplied
     });
     console.log(updatePresale);
     res.status(200).json({
