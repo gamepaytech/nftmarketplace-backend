@@ -1,6 +1,6 @@
 
 const models = require("../models/presaleTier")
-const nftModels = require("../models/presaleNftTiers");
+const nftModels = require("../models/presaleNfts");
 const { mapReduce } = require("../models/Token");
 
 const startPresale = async (req, res) => {
