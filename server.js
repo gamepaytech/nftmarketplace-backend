@@ -19,6 +19,7 @@ const userRouter = require("./routes/userRoute");
 const gamePayTokenRouter = require("./routes/tokensRoute");
 const paymentRouter = require("./routes/paymentRoute");
 const promoRouter = require("./routes/promoRoutes");
+const claimRouter = require('./routes/claimRoutes')
 const preSaleTier = require('./routes/presaleTier')
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
@@ -56,8 +57,9 @@ app.use("/users", userRouter);
 app.use("/gamePayToken", gamePayTokenRouter);
 app.use("/payment", paymentRouter);
 app.use("/promo",promoRouter);
+app.use("/claim", claimRouter)
 // app.use('/nftPresale',nftPresaleRouter)
-
+ 
 //  Listening
 app.listen(PORT, () => {
     console.log(`All running on http://localhost:${PORT}`);
