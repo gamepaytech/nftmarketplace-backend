@@ -16,7 +16,8 @@ const {
     sellNft,
     updateTotalSupply,
     userBoughtNft,
-    getNftByUserId
+    getNftByUserId,
+    getPresaleSetting
 } = require('../controller/nft.controller.js')
 const router = express.Router()
 const { authenticateUser } = require('../middleware/authentication')
@@ -25,6 +26,7 @@ const { uploadToPinata } = require('../middleware/upload-pinata')
 
 router.route('/').get(getAll).post(create)
 // router.route("/:tokenId").get(getNFTByTokenId);
+router.route('/presale-setting').get(getPresaleSetting)
 router.route('/searchNftsFilter').post(searchNftsFilter)
 router.route('/getAll').get(getNFTByUserId)
 router.route('/getAllData').get(getAllData)
