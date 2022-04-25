@@ -1,6 +1,6 @@
 
 const models = require("../models/presaleTier")
-const nftModels = require("../models/presaleNftTiers");
+const nftModels = require("../models/presaleNfts");
 const { mapReduce } = require("../models/Token");
 
 const startPresale = async (req, res) => {
@@ -176,7 +176,7 @@ const getPresale = async (req, res) => {
     let total = await models.presaletiers.count({});
     models.presaletiers.find({})
       // .select("name")
-      .sort({ name: "asc" })
+      .sort({ price:1 })
       .limit(pageSize)
       .skip(pageSize * page)
       .then((results) => {

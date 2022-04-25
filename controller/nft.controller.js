@@ -1,4 +1,4 @@
-const Nft = require("../models/Nft");
+const Nft = require("../models/presaleNfts");
 const models = require("../models/User");
 const mongoose = require("mongoose");
 const NFTStates = require("../models/NFT-States");
@@ -6,6 +6,11 @@ const referralModel = require("../models/referralModel");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
+
+const getPresaleSetting = async (req, res) => {
+    const data = await Nft.settingpresalenfts.findOne({});
+    res.status(201).json({ "msg":"success", data: data });
+};
 
 const create = async (req, res) => {
     const {
@@ -67,7 +72,7 @@ const create = async (req, res) => {
         nftTotalSupply,
     };
     console.log(createObj);
-    const data = await Nft.create(createObj);
+    const data = await Nft.presalenfts.create(createObj);
     // console.log("data ",data);
     res.status(200).json({ data: data });
 };
@@ -81,7 +86,7 @@ const updateTotalSupply = async (req, res) => {
         });
     }
 
-    const findNft = await Nft.findOne({ _id: id });
+    const findNft = await Nft.presalenfts.findOne({ _id: id });
     findNft.itemSold = parseInt(findNft.itemSold) + parseInt(updateCount);
     await findNft.save();
     res.status(200).json({
@@ -99,26 +104,26 @@ const getAllData = async (req, res) => {
 
     if (type && !limit && !time) {
         if (type === "sold") {
-            const nfts = await Nft.find({ nftStatus: 2 }).sort({
+            const nfts = await Nft.presalenfts.find({ nftStatus: 2 }).sort({
                 createdAt: -1,
             });
             res.status(201).json({ data: nfts });
         } else {
-            const nfts = await Nft.find({ nftStatus: 1 }).sort({
+            const nfts = await Nft.presalenfts.find({ nftStatus: 1 }).sort({
                 createdAt: -1,
             });
             res.status(201).json({ data: nfts });
         }
     } else if (type && limit && !time) {
         if (type === "sold") {
-            const nfts = await Nft.find({ nftStatus: 2 })
+            const nfts = await Nft.presalenfts.find({ nftStatus: 2 })
                 .sort({
                     createdAt: -1,
                 })
                 .limit(limit);
             res.status(201).json({ data: nfts });
         } else {
-            const nfts = await Nft.find({ nftStatus: 1 })
+            const nfts = await Nft.presalenfts.find({ nftStatus: 1 })
                 .sort({
                     createdAt: -1,
                 })
@@ -135,7 +140,7 @@ const getAllData = async (req, res) => {
         console.log(lastWeek);
         console.log(lastDay);
         console.log(lastMonth);
-        const nfts = await Nft.aggregate([
+        const nfts = await Nft.presalenfts.aggregate([
             { $match: { createdAt: { $gte: lastMonth } } },
             {
                 $project: {
@@ -152,7 +157,7 @@ const getAllData = async (req, res) => {
         ]);
         res.status(201).json({ data: nfts });
     } else {
-        const nfts = await Nft.find();
+        const nfts = await Nft.presalenfts.find();
         res.status(201).json({ data: nfts });
     }
 };
@@ -196,7 +201,7 @@ const searchNftsFilter = async (req, res) => {
     }
     // console.log(array, 'HI')
 
-    nftFilter = await Nft.find({
+    nftFilter = await Nft.presalenfts.find({
         $and: array,
     });
 
@@ -209,7 +214,7 @@ const searchNftsFilter = async (req, res) => {
 const getNFTByTokenId = async (req, res) => {
     const tokenId = req.params.tokenId;
     console.log(tokenId);
-    const nft = await Nft.findOne({
+    const nft = await Nft.presalenfts.findOne({
         tokenId,
     });
     console.log(nft);
@@ -218,13 +223,13 @@ const getNFTByTokenId = async (req, res) => {
 
 const getAll = async (req, res) => {
     const userId = req.user.userId;
-    const nfts = await Nft.find({ owner: userId });
+    const nfts = await Nft.presalenfts.find({ owner: userId });
     res.status(201).json({ data: nfts });
 };
 
 const getNFTByUserId = async (req, res) => {
     // const userId = req.params.userId;
-    const nfts = await Nft.find();
+    const nfts = await Nft.presalenfts.find();
     res.status(201).json(nfts);
 };
 // fetch NFT using nft id
@@ -239,7 +244,7 @@ const getNftById = async (req, res) => {
         return;
     }
     try {
-        const data = await Nft.findOne({ _id: nftId });
+        const data = await Nft.presalenfts.findOne({ _id: nftId });
         res.send({
             data: data,
             msg: "Successfull",
@@ -272,7 +277,7 @@ const mintNFT = async (req, res) => {
             mintedBy: receipt.from,
         };
 
-        await Nft.updateOne({ _id: ObjectId(nftId) }, updateObj);
+        await Nft.presalenfts.updateOne({ _id: ObjectId(nftId) }, updateObj);
         await NFTStates.create({
             nftId: ObjectId(nftId),
             state: "Mint",
@@ -285,7 +290,7 @@ const mintNFT = async (req, res) => {
 
 const buyNft = async (req, res) => {
     const { nftId, newOwner } = req.body;
-    await Nft.updateOne({ _id: nftId }, { nftStatus: 2, owner: newOwner });
+    await Nft.presalenfts.updateOne({ _id: nftId }, { nftStatus: 2, owner: newOwner });
     res.send({
         msg: "NFT Updates",
         nftId: nftId,
@@ -295,7 +300,7 @@ const buyNft = async (req, res) => {
 
 const sellNft = async (req, res) => {
     const { nftId, newOwner, price } = req.body;
-    await Nft.updateOne(
+    await Nft.presalenfts.updateOne(
         { _id: nftId },
         { nftStatus: 1, owner: newOwner, price: price }
     );
@@ -308,13 +313,13 @@ const sellNft = async (req, res) => {
 
 const ownedNft = async (req, res) => {
     const { wallet } = req.body;
-    const nfts = await Nft.find({ owner: { $in: wallet } });
+    const nfts = await Nft.presalenfts.find({ owner: { $in: wallet } });
     res.status(201).json(nfts);
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId, promoApplied } = req.body;
-    const findNftById = await Nft.find({ _id: nftId });
+    const { nftId, userId } = req.body;
+    const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // console.log("NFT ",findNftById)
 
     const updatePresale = await PresaleBoughtNft.create({
@@ -339,7 +344,7 @@ const getNftByUserId = async (req, res) => {
     }
     let allNft = new Array();
     for (let i = 0; i < findNfts.length; i++) {
-        const findNft = await Nft.find({ _id: findNfts[i].nft });
+        const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
         // console.log("nfts ",findNft);
         if(findNft.length > 0) {
             allNft[i] = (findNft);
@@ -361,7 +366,7 @@ const approveNFT = async (req, res) => {
     } else if (!approveHash) {
         res.status(400).json({ msg: "Please provide the approve hash" });
     } else {
-        await Nft.updateOne(
+        await Nft.presalenfts.updateOne(
             { _id: ObjectId(nftId) },
             { isApproved: true, approvedAt: new Date(), approveHash }
         );
@@ -398,7 +403,7 @@ const addMyIncome = async function (req, res) {
             const userInfo = await models.users.find({ _id: req.body.userId });
 
             if (userInfo && userInfo[0].refereeCode != "") {
-                const data = await Nft.findOne({ _id: req.body.nftId });
+                const data = await Nft.presalenfts.findOne({ _id: req.body.nftId });
                 const setting = await referralModel.appsetting.findOne({});
                 let referralIncome =
                     (data.price / 100) * setting.referralPercent;
@@ -502,6 +507,7 @@ const getMyrewards = async function (req, res) {
 };
 
 module.exports = {
+    getPresaleSetting,
     create,
     getNFTByTokenId,
     getAll,
