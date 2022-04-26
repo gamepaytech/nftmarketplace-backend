@@ -579,6 +579,8 @@ const addMyReferral = async function (req, res) {
                             status: 400,
                             msg: 'User not created. Please try again',
                         })
+
+                        
                     }
                 }
             }
