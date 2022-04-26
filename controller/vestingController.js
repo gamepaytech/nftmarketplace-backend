@@ -179,8 +179,9 @@ const getVestingByWallet = async (req, res) => {
 
 const getLockedTokens = async (req, res) => {
     try {
+      console.log("A ",req.body.wallet_address);
         const getData = await LockedToken.find({
-            wallet_address: req.body.walletAddress,
+            wallet_address: req.body.wallet_address,
         });
         if (!getData) {
             res.status(404).json({
