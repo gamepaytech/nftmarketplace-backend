@@ -365,8 +365,8 @@ const resetPassword = async (req, res) => {
 const addMyReferral = async function (req, res) {
     try {
         let refereeCode = ''
-        if(req.query.code) {
-            refereeCode = req.query.code;
+        if(req.body.code) {
+            refereeCode = req.body.code;
         }
 
         let keys = ['email', 'username', 'password']
