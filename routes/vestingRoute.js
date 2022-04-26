@@ -4,12 +4,13 @@ const cors = require('cors')
 
 const {
   vestingGetData,
-  getVestingByWallet
+  getVestingByWallet,
+  getLockedTokens
 } = require("../controller/vestingController");
 
 const { authenticateUser } = require('../middleware/authentication')
 
 router.post("/get-vesting-by-wallet",cors(),getVestingByWallet);
-// router.get("/")
+router.post("/get-locked-tokens-by-wallet",cors(),getLockedTokens);
 
 module.exports = router

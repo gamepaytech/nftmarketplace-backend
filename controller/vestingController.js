@@ -1,7 +1,7 @@
 const Nft = require("../models/presaleNfts");
 const models = require("../models/User");
 const Vesting = require("../models/vesting");
-
+const LockedToken = require("../models/lockedTokens");
 
 // const createVestingData = async (req,res) => [
 //   try {
@@ -51,7 +51,7 @@ const vestingGetData = async (req,res) => {
 
 const getVestingByWallet = async (req,res) => {
   try {
-    const findByWallet = await Vesting.find({
+    const findByWallet = await Vesting.findOne({
       wallet_address:req.body.walletAddress
     })
 
@@ -73,9 +73,30 @@ const getVestingByWallet = async (req,res) => {
   }
 }
 
+const getLockedTokens = async (req,res) => {
+  try {
+    const getData = await LockedToken.find({
+      wallet_address:req.body.walletAddress
+    });
+    if(!getData) {
+      res.status(404).json({
+        err:"Internal Server Error!"
+      })
+    }
+
+    res.status(200).json({
+      data:getData,
+      status:200
+    })
+  }
+  catch(err) {
+    console.log(err);
+  }
+}
 
 
 module.exports = {
   vestingGetData,
-  getVestingByWallet
+  getVestingByWallet,
+  getLockedTokens
 }
