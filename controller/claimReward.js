@@ -95,7 +95,7 @@ const withdrawDetails = async(req, res) =>{
     try {
         const user = req.body.id;
         var claimedAlready = await Claimed.find({ "userId": user })
-        console.log(claimedAlready,"here")
+        console.log(claimedAlready.reverse(),"here")
         res.status(200).json({claimedAlready})
     } catch (error) {
         res.status(500).json(error)
