@@ -364,7 +364,10 @@ const resetPassword = async (req, res) => {
 
 const addMyReferral = async function (req, res) {
     try {
-        let refereeCode = req.query.code || ''
+        let refereeCode = ''
+        if(req.query.code) {
+            refereeCode = req.query.code;
+        }
 
         let keys = ['email', 'username', 'password']
         for (i in keys) {
@@ -451,13 +454,14 @@ const addMyReferral = async function (req, res) {
                             const newReferral = new referralModel.myReferral(
                                 query
                             )
-                            const addMyIncome= await new referralModel.referralIncome({
+                            const addMyIncome= new referralModel.referralIncome({
                                 userId: checkReferralCode._id,
                                 amount: 0,
                                 nftId: -1,
                                 recievedFrom: insertNewReferral._id,
                             });
-                
+                            
+                            console.log("ADD MY INCOME ",addMyIncome);
                             await addMyIncome.save();
                 
                             const mapReferral = await newReferral.save()

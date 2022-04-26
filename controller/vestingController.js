@@ -3,6 +3,28 @@ const models = require("../models/User");
 const Vesting = require("../models/vesting");
 
 
+// const createVestingData = async (req,res) => [
+//   try {
+//     const { 
+//       wallet_address,
+//         amount_invested,
+//         allotted_qty,
+//         unit_price,
+//         unit_currency
+//         amount_invested: { type:String},
+//         allotted_qty: { type:String},
+//         unit_price: { type:String},
+//         unit_currency: { type:String}
+//     } = req.body;
+//   }
+//   catch(err) {
+//     console.log(err);
+//     res.status(500).json({
+//       err:"Internal Server Error!"
+//     })
+//   }
+// ]
+
 const vestingGetData = async (req,res) => {
   try {
     const findData = await Vesting.find({});
