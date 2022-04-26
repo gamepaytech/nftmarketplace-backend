@@ -28,7 +28,7 @@ const authenticateUser = async (req, res, next) => {
 }
 
 
-const authenticateAdmin = async (req,res) => {
+const authenticateAdmin = async (req,res, next) => {
     try {
         const accessToken = req.headers['authorization']
         const bearerToken = accessToken.split(' ')[1]
@@ -39,7 +39,10 @@ const authenticateAdmin = async (req,res) => {
             }
 
             req.user = payload
-            // console.log('authenticate')
+            
+            if(!req.user.isAdmin) {
+                return res.status(401).json({err:"Invalid Authorization: No access Granted!"});
+            }
 
             return next()
         } else {
