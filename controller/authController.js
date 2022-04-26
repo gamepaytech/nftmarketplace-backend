@@ -451,6 +451,15 @@ const addMyReferral = async function (req, res) {
                             const newReferral = new referralModel.myReferral(
                                 query
                             )
+                            const addMyIncome= await new referralModel.referralIncome({
+                                userId: checkReferralCode._id,
+                                amount: 0,
+                                nftId: -1,
+                                recievedFrom: insertNewReferral._id,
+                            });
+                
+                            await addMyIncome.save();
+                
                             const mapReferral = await newReferral.save()
                             if (mapReferral) {
                                 const newUserInfo = await models.users.findById(
