@@ -5,6 +5,7 @@ const sendPaymentConfirmation = async ({
     quantity,
     amount
 }) => {    
+    console.log(email,"email")
     return sendEmail({
         to: email,
         subject: 'Gamepay | NFT Payment Confirmation',
@@ -84,11 +85,11 @@ const sendPaymentConfirmation = async ({
                                                                 <table align="center" valign="center">
                                                                     <tr>
                                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"><a style="color: #ffffff;" href="mailto:text@123.com"> text@123.com</a></p>
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"><a style="color: #ffffff;" href="mailto:${email}"> ${email}</a></p>
                                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">5,00,000 </p>
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">${amount} </p>
                                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">Deposit time</p>
+                                                                        text-align:left;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">${new Date()}</p>
                                                                     </tr>
                                                                 </table>
                                                             </td>

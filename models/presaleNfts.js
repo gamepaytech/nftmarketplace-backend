@@ -6,7 +6,7 @@ let NftSchema = new mongoose.Schema(
             type: String,
             required: [true, 'NFT name is required'],
         },
-        jsonHash: { type: String, required: [true, 'JSON Hash required'] },
+        jsonHash: { type: String},
         nftType: {
             type: String,
         },
@@ -34,6 +34,7 @@ let NftSchema = new mongoose.Schema(
         },
         itemSold: {
             type: Number,
+            default: 0
         },
         nftTotalSupply: {
             type: Number,
@@ -64,9 +65,11 @@ let NftSchema = new mongoose.Schema(
         },
         tier_type: {
             type: String,
+            default:"hatch0"
         },
         presale_status: {
             type: String,
+            default:"started"
         },
         presale_start_date: {
             type: String,
@@ -75,6 +78,7 @@ let NftSchema = new mongoose.Schema(
             type: String,
             ref: 'User',
         },
+        chikCount: Number,
     },
     { timestamps: true }
 )

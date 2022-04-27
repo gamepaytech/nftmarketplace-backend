@@ -403,9 +403,9 @@ const coinbaseFail = async (req, res) => {
 };
 const sendPaymentEmail = async (req, res) => {
     try{
-        console.log(req.body)
-        await sendPaymentConfirmation(req.body.email, req.body.quantity, req.body.amount)
-        return res.json({
+        console.log(req.body.email)
+        await sendPaymentConfirmation(req.body)
+        res.status(200).json({
             status: "Email sent",
         });
     } catch(err){

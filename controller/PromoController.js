@@ -104,7 +104,8 @@ const getPromoCode = async (req,res) => {
     if(
       checkCode.totalNumberCode > checkCode.totalNumberClaimed &&
       validity > currDate &&  
-      checkCode.promoCode === promoCode) {
+      checkCode.promoCode === promoCode && 
+      checkCode.promoCodeStatus) {
       isValid = true;
     }
     else {
@@ -163,7 +164,6 @@ const getAllCheckCode = async (req,res) => {
 
 const updateCouponCode = async (req,res) => {
   try {
-    console.log("IN ")
     const findUser = await models.users.findOne({
       _id:req.body.userId
     })
@@ -200,4 +200,40 @@ const updateCouponCode = async (req,res) => {
   }
 }
 
-module.exports = { createPromoCode, getPromoCode, getAllCheckCode, updateCouponCode }
+const claimPromoCode = async (req,res) => {
+  try {
+    const checkCode = await PromoCode.findOne({
+      promoCode:req.body.promoCode
+    })
+    if(!checkCode) {
+      return res.status(404).json({
+        err:"Promo code not found!"
+      })
+    }
+    if(checkCode.promoCodeStatus == false) {
+      return res.status(400).json({
+        err:"Pomo code isn't valid!"
+      })
+    }
+    checkCode.totalNumberClaimed = checkCode.totalNumberClaimed + 1;
+    await checkCode.save();
+
+    res.status(200).json({
+      msg:"Promo code has been applied!",
+      staus:200
+    })
+  }
+  catch(err) {
+    console.log(err);
+    res.status(500).json({
+      err:"401: Internal Server Error",
+      status:401
+    })
+  }
+}
+
+module.exports = { createPromoCode, 
+  getPromoCode, 
+  getAllCheckCode, 
+  updateCouponCode,
+  claimPromoCode }
