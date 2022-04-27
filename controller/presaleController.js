@@ -280,7 +280,6 @@ const schedulePreSale = async(req,res) =>{
             msg: "Presale Tier Updated",
           });
     
-        } 
         }else{
           await nftModels.presalenfts.updateOne(
             {
