@@ -319,24 +319,26 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId, promoApplied } = req.body;
+    const { nftId, userId, promoApplied, quantity } = req.body;
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // console.log("NFT ",findNftById)
-    var promoDiv = 100
+    var promoDiv = 0
     if(promoApplied !== "false"){
         console.log(promoApplied,"promo")
-        const promoData = await PromoCode.findOne({promoCode:promoApplied});
-        promoDiv = promoData.percentDiscount;
+        const promo = await PromoCode.findOne({promoCode:promoApplied})
+        console.log(promo)
+        promoDiv= promo.percentDiscount
     }
     console.log(promoDiv,findNftById)
     const amountTotal = (findNftById[0].price *(100 - promoDiv))/100
     console.log(amountTotal,"amountTotal")
     const updatePresale = await PresaleBoughtNft.create({
-        nftIdOwned: nftId,
-        owner: userId,
-        nft: ObjectId(nftId),
-        amountSpent: amountTotal,
-        promoCode : promoApplied
+        nftIdOwned : nftId,
+        owner : userId,
+        nft : ObjectId(nftId),
+        amountSpent : amountTotal,
+        promoCode : promoApplied,
+        quantity : quantity
     });
     console.log(updatePresale);
     res.status(200).json({
@@ -407,6 +409,7 @@ const addMyIncome = async function (req, res) {
         if (userInfo && userInfo[0].refereeCode != "") {
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             const setting = await referralModel.appsetting.findOne({});
+            console.log("bought ",bought);
             let referralIncome =
                 (bought.amountSpent / 100) * setting.referralPercent;
 

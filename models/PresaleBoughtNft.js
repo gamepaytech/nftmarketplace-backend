@@ -20,6 +20,10 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
         },
         promoCode: {
             type: String,
+        },
+        quantity: {
+            type: String,
+            default: 1
         }
     },
     { timestamps: true }
