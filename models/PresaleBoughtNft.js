@@ -10,12 +10,17 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        nft: { 
-          type: mongoose.Types.ObjectId, 
-          ref: "Nft" },
-          promoApplied : {
-              type:String
-          }
+        nft: {
+            type: mongoose.Types.ObjectId,
+            ref: "Nft"
+        },
+        amountSpent: {
+            type: Number,
+            required: true,
+        },
+        promoCode: {
+            type: String,
+        }
     },
     { timestamps: true }
 );

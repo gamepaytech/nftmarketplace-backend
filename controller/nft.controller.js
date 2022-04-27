@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const NFTStates = require("../models/NFT-States");
 const referralModel = require("../models/referralModel");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
+const PromoCode = require("../models/PromoCode")
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
 
@@ -318,15 +319,23 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId, promoCode } = req.body;
+    const { nftId, userId, promoApplied } = req.body;
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // console.log("NFT ",findNftById)
-
+    var promoDiv = 100
+    if(promoApplied !== "false"){
+        console.log(promoApplied,"promo")
+        promoDiv= await PromoCode.findOne({promoCode:promoApplied})
+    }
+    console.log(promoDiv,findNftById)
+    const amountTotal = (findNftById[0].price *(100 - promoDiv.percentDiscount))/100
+    console.log(amountTotal,"amountTotal")
     const updatePresale = await PresaleBoughtNft.create({
         nftIdOwned: nftId,
         owner: userId,
         nft: ObjectId(nftId),
-        promoCode
+        amountSpent: amountTotal,
+        promoCode : promoApplied
     });
     console.log(updatePresale);
     res.status(200).json({
@@ -392,18 +401,13 @@ const addMyIncome = async function (req, res) {
             return;
         }
 
-        const query = await referralModel.referralIncome.find({
-            receivedFrom: req.body.userId,
-            nftId: req.body.nftId,
-        });
-
         const userInfo = await models.users.find({ _id: req.body.userId });
 
         if (userInfo && userInfo[0].refereeCode != "") {
-            const data = await Nft.presalenfts.findOne({ _id: req.body.nftId });
+            const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             const setting = await referralModel.appsetting.findOne({});
             let referralIncome =
-                (data.price / 100) * setting.referralPercent;
+                (bought.amountSpent / 100) * setting.referralPercent;
 
             const getMyreferral = await models.users.find({
                 referralCode: userInfo[0].refereeCode,
@@ -416,7 +420,7 @@ const addMyIncome = async function (req, res) {
                 recievedFrom: req.body.userId,
             });
 
-            await addMyIncome.save();
+            await addMyIncome.save();   
 
             const totalIncome = await referralModel.referralIncome.find({
                 userId: getMyreferral[0]._id,

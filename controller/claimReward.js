@@ -26,11 +26,9 @@ const updateClaimed = async (req, res) => {
         for (let i = 0; i < rewards.length; i++) {
             totalRewards += rewards[i].amount
         }
-        const value = await axios.get(
-            'https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=USD'
-        )
 
-        const claimAmount = (value.data.binancecoin.usd * (totalRewards - totalClaimed)) / Math.pow(10, 18)
+
+        const claimAmount = (totalRewards - totalClaimed) / Math.pow(10, 6)
         const provider = new Provider(process.env.PRIVATE_KEY, process.env.RPC);
         const web3 = new Web3(provider)
         const contract = new web3.eth.Contract(abi, address);

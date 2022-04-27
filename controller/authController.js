@@ -95,7 +95,6 @@ const login = async (req, res) => {
             const user = await models.users.findOne({
                 metamaskKey: walletAddress[0],
             })
-
             if (user) {
                 
                 if (user.isVerified) {
@@ -156,9 +155,7 @@ const login = async (req, res) => {
 
             if (!user) {
                 res.status(401).json({ msg: `User doesn't exists` })
-            }
-
-            
+            }            
             const hashedPassword = CryptoJS.AES.decrypt(
                 user.password,
                 process.env.PASS_SEC

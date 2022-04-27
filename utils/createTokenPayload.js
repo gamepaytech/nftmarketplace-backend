@@ -3,6 +3,7 @@ const createTokenPayload = (user) => {
         username: user.username,
         userId: user._id,
         isAdmin: user.isAdmin,
+        isSuperAdmin: user.isSuperAdmin
     }
 }
 
