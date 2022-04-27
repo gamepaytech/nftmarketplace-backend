@@ -14,7 +14,7 @@ const updateClaimed = async (req, res) => {
         const wallet = req.body.wallet
 
         var claimedAlready = await Claimed.find({ userId: user })
-        const rewards = await referralModel.referralIncome.find({ username: user })
+        const rewards = await referralModel.referralIncome.find({ userId: user })
         const userInfo = await models.users.findOne({ _id: user })
         var totalClaimed = 0
         if(claimedAlready !== null){
@@ -63,7 +63,7 @@ const updateClaimed = async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json(error)
+        res.status(500).json({err:"Internal Server Error"})
     }
 }
 
@@ -95,7 +95,7 @@ const withdrawDetails = async(req, res) =>{
     try {
         const user = req.body.id;
         var claimedAlready = await Claimed.find({ "userId": user })
-        console.log(claimedAlready,"here")
+        console.log(claimedAlready.reverse(),"here")
         res.status(200).json({claimedAlready})
     } catch (error) {
         res.status(500).json(error)

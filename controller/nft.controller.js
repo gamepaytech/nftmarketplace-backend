@@ -547,6 +547,8 @@ const getMyrewards = async function (req, res) {
             _id: { $in: Ids },
         });
 
+        console.log(myRewards,"getMyReferees")
+
         let myreferees = [];
         if (getMyReferees && getMyReferees.length) {
             for (let i = 0; i < getMyReferees.length; i++) {
