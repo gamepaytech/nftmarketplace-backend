@@ -348,18 +348,24 @@ const userBoughtNft = async (req, res) => {
 };
 const getNftByUserId = async (req, res) => {
     const { userId } = req.body;
-    const findNfts = await PresaleBoughtNft.find({ owner: userId });
+
+    const findNfts = await PresaleBoughtNft.find({ owner: userId })
+    // .populate({path:'type'}).exec();
     if (!findNfts) {
         res.status(404).json({
             error: "Error! No nft found",
         });
     }
+    console.log(findNfts,"FIND NFTS")
     let allNft = new Array();
     for (let i = 0; i < findNfts.length; i++) {
         const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
         // console.log("nfts ",findNft);
         if (findNft.length > 0) {
-            allNft[i] = (findNft);
+            allNft[i] = {
+                buyData:findNfts,
+                nfts:findNft
+            };
         }
     }
     const newNft = allNft.filter(function (el) {
@@ -403,20 +409,19 @@ const addMyIncome = async function (req, res) {
             res.json({ status: 400, msg: "nftId is required" });
             return;
         }
+        
 
         const userInfo = await models.users.find({ _id: req.body.userId });
-
+        const getMyreferral = await models.users.find({
+            referralCode: userInfo[0].refereeCode,
+        });
+        console.log("GET MY REFERRAL ",getMyreferral[0]._id)
         if (userInfo && userInfo[0].refereeCode != "") {
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             const setting = await referralModel.appsetting.findOne({});
             console.log("bought ",bought);
             let referralIncome =
                 (bought.amountSpent / 100) * setting.referralPercent;
-
-            const getMyreferral = await models.users.find({
-                referralCode: userInfo[0].refereeCode,
-            });
-
             const addMyIncome = await new referralModel.referralIncome({
                 userId: getMyreferral[0]._id,
                 amount: referralIncome,
@@ -435,7 +440,7 @@ const addMyIncome = async function (req, res) {
             }
 
             res.json({
-                sttaus: 200,
+                stauts: 200,
                 msg: "Success",
                 totalAmount: totalAmount,
             });
