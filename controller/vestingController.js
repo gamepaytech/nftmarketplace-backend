@@ -156,6 +156,11 @@ const deleteVestingDataById = async (req, res) => {
 
 const getVestingByWallet = async (req, res) => {
     try {
+        if(!req.body.walletAddress) {
+          return res.status(404).json({
+            err:"Error! Please provide the wallet address."
+          });
+        }
         const findByWallet = await Vesting.findOne({
             wallet_address: req.body.walletAddress,
         });
