@@ -325,10 +325,11 @@ const userBoughtNft = async (req, res) => {
     var promoDiv = 100
     if(promoApplied !== "false"){
         console.log(promoApplied,"promo")
-        promoDiv= await PromoCode.findOne({promoCode:promoApplied})
+        const promoData = await PromoCode.findOne({promoCode:promoApplied});
+        promoDiv = promoData.percentDiscount;
     }
     console.log(promoDiv,findNftById)
-    const amountTotal = (findNftById[0].price *(100 - promoDiv.percentDiscount))/100
+    const amountTotal = (findNftById[0].price *(100 - promoDiv))/100
     console.log(amountTotal,"amountTotal")
     const updatePresale = await PresaleBoughtNft.create({
         nftIdOwned: nftId,
