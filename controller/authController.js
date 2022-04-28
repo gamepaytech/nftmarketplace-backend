@@ -129,6 +129,7 @@ const login = async (req, res) => {
                         isSuperAdmin: user.isSuperAdmin,
                         profilePic: user.profilePic || '',
                         referralCode: user.referralCode,
+                        refereeCode: user.refereeCode || '',
                         accessToken: token,
                         updatedAt: user.updatedAt,
                     })
