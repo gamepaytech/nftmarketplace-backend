@@ -17,7 +17,7 @@ const authenticateUser = async (req, res, next) => {
 
             return next()
         } else {
-            console.log('authentication failed')
+            // console.log('authentication failed')
 
             return res.status(500).json({ error: 'Invalid Token' })
         }
@@ -39,14 +39,15 @@ const authenticateAdmin = async (req,res, next) => {
             }
 
             req.user = payload
-            console.log(req.user,"sdfd");
-            if(!req.user.isAdmin || !req.user.isSuperAdmin) {
+            // console.log(req.user,"sdfd");
+            // console.log(!req.user.isAdmin);
+            if(!req.user.isAdmin) {
                 return res.status(401).json({err:"100: Invalid Authorization: No access Granted!"});
             }
 
             return next()
         } else {
-            console.log('authentication failed')
+            // console.log('authentication failed')
 
             return res.status(500).json({ error: 'Invalid Token' })
         }
@@ -74,7 +75,7 @@ const authenticateSuperAdmin = async (req,res, next) => {
 
             return next()
         } else {
-            console.log('authentication failed')
+            // console.log('authentication failed')
 
             return res.status(500).json({ error: 'Invalid Token' })
         }

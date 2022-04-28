@@ -915,7 +915,7 @@ const addWalletKey = async (req, res) => {
 
 const removeWalletKey = async function (req, res) {
     try {
-        if (req.body.userId == undefined || req.body.userId == '') {
+        if (req.user.userId == undefined || req.user.userId == '') {
             res.json({ status: 400, msg: 'userId is required' })
             return
         }
@@ -929,21 +929,23 @@ const removeWalletKey = async function (req, res) {
         }
 
         const userInfo = await models.users.findOne({
-            _id: req.body.userId,
+            _id: req.user.userId,
             metamaskKey: req.body.walletAddress,
         })
 
         if (userInfo) {
             const updateUserInfo = await models.users.updateOne(
-                { _id: req.body.userId },
+                { _id: req.user.userId },
                 { $pull: { metamaskKey: req.body.walletAddress } }
             )
 
             if (updateUserInfo.modifiedCount > 0) {
+                const userDataUpdated = await models.users.findOne({_id:req.user.userId})
                 res.json({
                     status: 200,
                     msg: 'Wallet Removed',
-                    data: updateUserInfo,
+                    info: updateUserInfo,
+                    data:userDataUpdated
                 })
             } else {
                 res.json({ status: 400, msg: 'Wallet Not Removed' })
