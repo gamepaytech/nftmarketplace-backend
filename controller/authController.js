@@ -911,9 +911,9 @@ const addWalletKey = async (req, res) => {
 
 const removeWalletKey = async function (req, res) {
     try {
-        if (req.body.userId == undefined || req.body.userId == '') {
+        if (req.user.userId == undefined || req.user.userId == '') {
             const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
-            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'UserId is required' })
             return
         }
 
@@ -927,22 +927,24 @@ const removeWalletKey = async function (req, res) {
         }
 
         const userInfo = await models.users.findOne({
-            _id: req.body.userId,
+            _id: req.user.userId,
             metamaskKey: req.body.walletAddress,
         })
 
         if (userInfo) {
             const updateUserInfo = await models.users.updateOne(
-                { _id: req.body.userId },
+                { _id: req.user.userId },
                 { $pull: { metamaskKey: req.body.walletAddress } }
             )
 
             if (updateUserInfo.modifiedCount > 0) {
+                const userDataUpdated = await models.users.findOne({_id:req.user.userId})
                 const sysMsg = await getSystemMessage('GPAY_00041_WALLET_REMOVED')
                 res.json({
                     status: 200,
                     msg: sysMsg ? sysMsg.message : 'Wallet Removed',
-                    data: updateUserInfo,
+                    info: updateUserInfo,
+                    data:userDataUpdated
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00042_WALLET_NOT_REMOVED')
