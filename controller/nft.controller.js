@@ -347,34 +347,44 @@ const userBoughtNft = async (req, res) => {
     });
 };
 const getNftByUserId = async (req, res) => {
-    const { userId } = req.body;
+    try {
+        const { userId } = req.body;
 
-    const findNfts = await PresaleBoughtNft.find({ owner: userId })
-    // .populate({path:'type'}).exec();
+    const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
+        path:"nft"
+    });
+    // console.log("findnfts ",findNfts);
     if (!findNfts) {
-        res.status(404).json({
+        return res.status(404).json({
             error: "Error! No nft found",
         });
     }
-    console.log(findNfts,"FIND NFTS")
-    let allNft = new Array();
-    for (let i = 0; i < findNfts.length; i++) {
-        const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
-        // console.log("nfts ",findNft);
-        if (findNft.length > 0) {
-            allNft[i] = {
-                buyData:findNfts,
-                nfts:findNft
-            };
-        }
-    }
-    const newNft = allNft.filter(function (el) {
-        return el != null;
-    })
+    // console.log(findNfts,"FIND NFTS")
+    // let allNft = new Array();
+    // for (let i = 0; i < findNfts.length; i++) {
+    //     const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
+    //     // console.log("nfts ",findNft);
+    //     if (findNft.length > 0) {
+    //         allNft[i] = {
+    //             buyData:findNfts,
+    //             nfts:findNft
+    //         };
+    //     }
+    // }
+    // const newNft = allNft.filter(function (el) {
+    //     return el != null;
+    // })
     // console.log("NFTS" ,newNft);
     res.status(200).json({
-        allNft: newNft,
+        allNft: findNfts,
     });
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).json({
+            err:"Internal Server Error!"
+        })
+    }
 };
 
 const approveNFT = async (req, res) => {

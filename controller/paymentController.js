@@ -8,6 +8,7 @@ const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
 const { uuid } = require("uuidv4");
 const axios = require("axios");
 const CirclePayment = require("../models/circlePayments.js");
+const TripleaPayment = require("../models/TripleaPayment.js");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
 const mongoose = require("mongoose");
@@ -46,13 +47,14 @@ const createPayment = async (req, res) => {
             sessionId,
             cvvEncrpytion,
             keyIdEncrpytion,
+            quantity
             // encryptedData
         } = req.body;
         const buyNft = await Nft.presalenfts.find({ _id: nftId });
-        // console.log("bb ",buyNft);
+        console.log("bb ",buyNft[0].price,quantity);
 
         const nftAmount =
-            parseFloat(buyNft[0].price / 10 ** 6);
+            parseFloat(buyNft[0].price / 10 ** 6) * quantity;
 
         if (nftAmount < 0.5) {
             return res.status(400).json({
@@ -60,6 +62,27 @@ const createPayment = async (req, res) => {
             });
         }
         console.log("NFT AMOUNT", nftAmount.toFixed(2).toString());
+
+        console.log("DATA ",{
+            metadata: {
+                email: email,
+                sessionId: sessionId,
+                ipAddress: "172.33.222.1",
+            },
+            amount: {
+                amount: nftAmount.toFixed(2).toString(),
+                currency: "USD",
+            },
+            autoCapture: true,
+            source: { id: cardId, type: "card" },
+            idempotencyKey: uuid(),
+            verification: "cvv",
+            encryptedData: cvvEncrpytion.encryptedMessage,
+            keyId: "key1",
+            // verificationSuccessUrl: "http://localhost:3000/payment_success",
+            // verificationFailureUrl: "http://localhost:3000/payment_failure",
+        },"SDF");
+
         sdk.auth(process.env.CIRCLE_TOKEN);
         sdk.createPayment({
             metadata: {
@@ -88,7 +111,7 @@ const createPayment = async (req, res) => {
                 });
             })
             .catch((err) => {
-                console.error(err);
+                console.log("A",err);
                 res.status(400).json({ error: "a.Some error ocurred" });
             });
 
@@ -101,14 +124,14 @@ const createPayment = async (req, res) => {
 };
 const saveCirclePaymentData = async (req, res) => {
     try {
-        const { email, amount, status, nftId, paymentId } = req.body;
+        const { email, amount, status, nftId, paymentId, quantity } = req.body;
 
-        const createObj = { email, amount, status, nftId, paymentId };
+        const createObj = { email, amount, status, nftId, paymentId, quantity };
 
         const storeData = await CirclePayment.create(createObj);
 
         res.status(200).json({
-            message: "Data saved successfully",
+            message: "Data saved successfully!",
         });
     } catch (err) {
         console.log("save circle pay ", err);
@@ -127,13 +150,14 @@ const createPaymentAAA = async (req, res) => {
             cancleUrl,
             quantity,
             currency,
+            
         } = req.body;
 
         const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
         const user = await models.users.findOne({ _id: userId });
 
         var nftAmount =
-            parseFloat(buyNft.price / 10 ** 6);
+            parseFloat(buyNft.price / 10 ** 6) * quantity;
         nftAmount = Math.round(nftAmount);
         console.log("Price ", nftAmount);
 
@@ -164,11 +188,10 @@ const createPaymentAAA = async (req, res) => {
                     type: "widget",
                     merchant_key: "mkey-cl1x8nff8005y34th0ktk2o2u",
                     order_currency: currency,
-                    order_amount: nftAmount * quantity,
-                    notify_email:
-                        "1a2d24e8-1594-4569-bc35-079049e4d805@email.webhook.site",
+                    order_amount: nftAmount ,
+                    notify_email: user.email,
                     notify_url:
-                        `https://15d5-2401-4900-1c1a-1e42-49f5-54f5-dac0-a06f.ngrok.io/payment/webhook-payment`,
+                        `${process.env.APP_BACKEND_URL}/payment/triplea-webhook-payment`,
                     notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
                     notify_txs: true,
                     payer_id: orderId,
@@ -197,6 +220,9 @@ const createPaymentAAA = async (req, res) => {
                     },
                     webhook_data: {
                         order_id: orderId,
+                        quantity: quantity,
+                        userId: userId,
+                        nftId: nftId,
                     },
                 });
                 var config = {
@@ -215,10 +241,7 @@ const createPaymentAAA = async (req, res) => {
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        console.log("error");
-                        //    return  res.status(400).json({
-                        //         error: "Some...",
-                        //     });
+                        console.log("error",error);
                         var config = {
                             method: "post",
                             url: reqPayment,
@@ -266,7 +289,12 @@ const { Charge } = resources;
 Client.init(process.env.COINBASE_TOKEN);
 
 const coinbasePayment = async (req, res) => {
-    const { chikId, email, userId } = req.params;
+    const { chikId, email, userId, quantity } = req.params;
+    if(!email) {
+        return res.status(404).json({
+            err:"USER NOT FOUND"
+        })
+    }
 
     try {
         const buyNft = await Nft.presalenfts.findOne({ _id: chikId });
@@ -277,7 +305,7 @@ const coinbasePayment = async (req, res) => {
             });
         }
         const nftAmount =
-            parseFloat(buyNft?.price / 10 ** 6);
+            parseFloat(buyNft?.price / 10 ** 6) * quantity;
         const chargeData = {
             name: buyNft.name,
             description: buyNft.description.substring(0, 199),
@@ -291,6 +319,7 @@ const coinbasePayment = async (req, res) => {
                 customer_id: userId,
                 customer_email: email,
                 nftId: chikId,
+                quantity: quantity
             },
             redirect_url: `${process.env.DOMAIN}/profile`,
             cancel_url: `${process.env.DOMAIN}/chik/${chikId}?status=payment-failed-canceled`,
@@ -309,6 +338,7 @@ const coinbasePayment = async (req, res) => {
         });
     }
 };
+
 const handleCoinbasePayment = async (req, res) => {
     const rawBody = req.rawBody;
     console.log("req body ", rawBody);
@@ -344,6 +374,7 @@ const handleCoinbasePayment = async (req, res) => {
                 nftIdOwned: event.data.metadata.nftId,
                 owner: event.data.metadata.customer_id,
                 nft: ObjectId(event.data.metadata.nftId),
+                quantity: event.data.metadata.quantity
             });
 
             const coinbaseRecord = await CoinbasePayment.create({
@@ -354,6 +385,7 @@ const handleCoinbasePayment = async (req, res) => {
                 chickId: event.data.metadata.nftId,
                 owner: event.data.metadata.customer_id,
                 nft: event.data.metadata.nftId,
+                quantity: event.data.metadata.quantity
             });
             await createActivity(
                 owner,
@@ -404,6 +436,7 @@ const sendPaymentEmail = async (req, res) => {
 
 const tripleAWebhook = async (req, res) => {
     const sig = req.headers["triplea-signature"];
+    const { webhook_data, event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount } = req.body;
 
     let timestamp, signature;
     for (let sig_part of sig.split(",")) {
@@ -433,7 +466,27 @@ const tripleAWebhook = async (req, res) => {
         // &&  Math.abs(curr_timestamp - timestamp) <= 300 // timestamp within tolerance
     ) {
         // signature validates ... do stuff
-        console.log("HURRAHH___________________________ WORKING HOOOK")
+        console.log("___________________________ WORKING HOOOK")
+
+        
+ 
+        if(status == 'good') {
+            const createPresale = await PresaleBoughtNft.create({
+                nftIdOwned: webhook_data.nftId,
+                owner: webhook_data.userId,
+                nft: ObjectId(webhook_data.nftId),
+                quantity: webhook_data.quantity
+            });
+    
+            const tripleaRecord = await TripleaPayment.create({  event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount,
+            orderId:webhook_data.orderId });
+        }
+        
+        await createActivity(
+            owner,
+            event.data.pricing.local.amount,
+            event.data.metadata.nftId
+        );
         return res.status(200).end();
     } else {
         return res.status(400).end();
