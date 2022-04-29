@@ -73,7 +73,7 @@ const createPayment = async (req, res) => {
                 amount: nftAmount.toFixed(2).toString(),
                 currency: "USD",
             },
-            autoCapture: true,
+            autoCapture: true, 
             source: { id: cardId, type: "card" },
             idempotencyKey: uuid(),
             verification: "cvv",
