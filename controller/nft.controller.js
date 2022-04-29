@@ -559,6 +559,8 @@ const getMyrewards = async function (req, res) {
             Ids.push(myRewards[i].recievedFrom);
         }
 
+        console.log(Ids,"idssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss")
+
         const getMyReferees = await models.users.find({
             _id: { $in: Ids },
         });
