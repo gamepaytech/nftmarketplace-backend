@@ -22,6 +22,10 @@ const CoinbasePaymentSchema = new mongoose.Schema(
     },
     nft: {
       type:String
+    },
+    quantity: {
+      type:String,
+      default:1
     }
   },
   { timestamps: true }

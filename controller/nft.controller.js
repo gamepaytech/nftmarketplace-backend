@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const NFTStates = require("../models/NFT-States");
 const referralModel = require("../models/referralModel");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
+const PromoCode = require("../models/PromoCode")
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
 
@@ -318,15 +319,26 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId, promoCode } = req.body;
+    const { nftId, userId, promoApplied, quantity } = req.body;
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // console.log("NFT ",findNftById)
-
+    var promoDiv = 0
+    if(promoApplied !== "false"){
+        console.log(promoApplied,"promo")
+        const promo = await PromoCode.findOne({promoCode:promoApplied})
+        console.log(promo)
+        promoDiv= promo.percentDiscount
+    }
+    console.log(promoDiv,findNftById)
+    const amountTotal = (findNftById[0].price *(100 - promoDiv))/100
+    console.log(amountTotal,"amountTotal")
     const updatePresale = await PresaleBoughtNft.create({
-        nftIdOwned: nftId,
-        owner: userId,
-        nft: ObjectId(nftId),
-        promoCode
+        nftIdOwned : nftId,
+        owner : userId,
+        nft : ObjectId(nftId),
+        amountSpent : amountTotal,
+        promoCode : promoApplied,
+        quantity : quantity
     });
     console.log(updatePresale);
     res.status(200).json({
@@ -335,28 +347,44 @@ const userBoughtNft = async (req, res) => {
     });
 };
 const getNftByUserId = async (req, res) => {
-    const { userId } = req.body;
-    const findNfts = await PresaleBoughtNft.find({ owner: userId });
+    try {
+        const { userId } = req.body;
+
+    const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
+        path:"nft"
+    });
+    // console.log("findnfts ",findNfts);
     if (!findNfts) {
-        res.status(404).json({
+        return res.status(404).json({
             error: "Error! No nft found",
         });
     }
-    let allNft = new Array();
-    for (let i = 0; i < findNfts.length; i++) {
-        const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
-        // console.log("nfts ",findNft);
-        if (findNft.length > 0) {
-            allNft[i] = (findNft);
-        }
-    }
-    const newNft = allNft.filter(function (el) {
-        return el != null;
-    })
+    // console.log(findNfts,"FIND NFTS")
+    // let allNft = new Array();
+    // for (let i = 0; i < findNfts.length; i++) {
+    //     const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
+    //     // console.log("nfts ",findNft);
+    //     if (findNft.length > 0) {
+    //         allNft[i] = {
+    //             buyData:findNfts,
+    //             nfts:findNft
+    //         };
+    //     }
+    // }
+    // const newNft = allNft.filter(function (el) {
+    //     return el != null;
+    // })
     // console.log("NFTS" ,newNft);
     res.status(200).json({
-        allNft: newNft,
+        allNft: findNfts,
     });
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).json({
+            err:"Internal Server Error!"
+        })
+    }
 };
 
 const approveNFT = async (req, res) => {
@@ -391,24 +419,19 @@ const addMyIncome = async function (req, res) {
             res.json({ status: 400, msg: "nftId is required" });
             return;
         }
-
-        const query = await referralModel.referralIncome.find({
-            receivedFrom: req.body.userId,
-            nftId: req.body.nftId,
-        });
+        
 
         const userInfo = await models.users.find({ _id: req.body.userId });
-
+        const getMyreferral = await models.users.find({
+            referralCode: userInfo[0].refereeCode,
+        });
+        console.log("GET MY REFERRAL ",getMyreferral[0]._id)
         if (userInfo && userInfo[0].refereeCode != "") {
-            const data = await Nft.presalenfts.findOne({ _id: req.body.nftId });
+            const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             const setting = await referralModel.appsetting.findOne({});
+            console.log("bought ",bought);
             let referralIncome =
-                (data.price / 100) * setting.referralPercent;
-
-            const getMyreferral = await models.users.find({
-                referralCode: userInfo[0].refereeCode,
-            });
-
+                (bought.amountSpent / 100) * setting.referralPercent;
             const addMyIncome = await new referralModel.referralIncome({
                 userId: getMyreferral[0]._id,
                 amount: referralIncome,
@@ -416,7 +439,7 @@ const addMyIncome = async function (req, res) {
                 recievedFrom: req.body.userId,
             });
 
-            await addMyIncome.save();
+            await addMyIncome.save();   
 
             const totalIncome = await referralModel.referralIncome.find({
                 userId: getMyreferral[0]._id,
@@ -427,7 +450,7 @@ const addMyIncome = async function (req, res) {
             }
 
             res.json({
-                sttaus: 200,
+                stauts: 200,
                 msg: "Success",
                 totalAmount: totalAmount,
             });

@@ -6,6 +6,7 @@ const {
 const sendVerificationEmail = require('./sendVerificationEmail')
 const sendResetPassswordEmail = require('./sendResetPassswordEmail')
 const createHash = require('./createHash')
+const getSystemMessage = require('./getSystemMessage')
 
 module.exports = {
     createJWT,
@@ -16,4 +17,5 @@ module.exports = {
     sendResetPassswordEmail,
     sendVerificationEmail,
     createHash,
+    getSystemMessage,
 }

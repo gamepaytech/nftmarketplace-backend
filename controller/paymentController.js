@@ -8,6 +8,7 @@ const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
 const { uuid } = require("uuidv4");
 const axios = require("axios");
 const CirclePayment = require("../models/circlePayments.js");
+const TripleaPayment = require("../models/TripleaPayment.js");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
 const mongoose = require("mongoose");
@@ -22,7 +23,7 @@ const createActivity = async (userId, price, chikId) => {
                 activity: {
                     activity: `You have put chik #${chikId} for sale for ${price.toFixed(
                         2
-                    )} BNB`,
+                    )} USDT`,
                     timestamp: new Date(),
                 },
             },
@@ -33,97 +34,104 @@ const createActivity = async (userId, price, chikId) => {
 
 const createPayment = async (req, res) => {
     try {
-        axios
-            .get(
-                `https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd`
-            )
-            .then(async (price) => {
-                // console.log(price.data["matic-network"]); //in currency
-                binancePrice = price.data["binancecoin"].usd;
-                console.log(binancePrice);
+        const {
+            cardId,
+            email,
+            network,
+            status,
+            expMonth,
+            expYear,
+            fingerprint,
+            fundingType,
+            nftId,
+            sessionId,
+            cvvEncrpytion,
+            keyIdEncrpytion,
+            quantity
+            // encryptedData
+        } = req.body;
+        const buyNft = await Nft.presalenfts.find({ _id: nftId });
+        console.log("bb ",buyNft[0].price,quantity);
 
-                const {
-                    cardId,
-                    email,
-                    network,
-                    status,
-                    expMonth,
-                    expYear,
-                    fingerprint,
-                    fundingType,
-                    nftId,
-                    sessionId,
-                    cvvEncrpytion,
-                    keyIdEncrpytion,
-                    // encryptedData
-                } = req.body;
-                const buyNft = await Nft.presalenfts.find({ _id: nftId });
-                // console.log("bb ",buyNft);
+        const nftAmount =
+            parseFloat(buyNft[0].price / 10 ** 6) * quantity;
 
-                const nftAmount =
-                    binancePrice * parseFloat(buyNft[0].price / 10 ** 18);
+        if (nftAmount < 0.5) {
+            return res.status(400).json({
+                error: "Price is less than 0.5$",
+            });
+        }
+        console.log("NFT AMOUNT", nftAmount.toFixed(2).toString());
 
-                if (nftAmount < 0.5) {
-                    return res.status(400).json({
-                        error: "Price is less than 0.5$",
-                    });
-                }
-                console.log("NFT AMOUNT", nftAmount.toFixed(2).toString());
-                sdk.auth(process.env.CIRCLE_TOKEN);
-                sdk.createPayment({
-                    metadata: {
-                        email: email,
-                        sessionId: sessionId,
-                        ipAddress: "172.33.222.1",
-                    },
-                    amount: {
-                        amount: nftAmount.toFixed(2).toString(),
-                        currency: "USD",
-                    },
-                    autoCapture: true,
-                    source: { id: cardId, type: "card" },
-                    idempotencyKey: uuid(),
-                    verification: "cvv",
-                    encryptedData: cvvEncrpytion.encryptedMessage,
-                    keyId: "key1",
-                    // verificationSuccessUrl: "http://localhost:3000/payment_success",
-                    // verificationFailureUrl: "http://localhost:3000/payment_failure",
-                })
-                    .then((ares) => {
-                        console.log("AAA ", ares);
-                        res.status(200).json({
-                            message: "Success",
-                            res: ares.data,
-                        });
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                        res.status(400).json({ error: "a.Some error ocurred" });
-                    });
+        console.log("DATA ",{
+            metadata: {
+                email: email,
+                sessionId: sessionId,
+                ipAddress: "172.33.222.1",
+            },
+            amount: {
+                amount: nftAmount.toFixed(2).toString(),
+                currency: "USD",
+            },
+            autoCapture: true,
+            source: { id: cardId, type: "card" },
+            idempotencyKey: uuid(),
+            verification: "cvv",
+            encryptedData: cvvEncrpytion.encryptedMessage,
+            keyId: "key1",
+            // verificationSuccessUrl: "http://localhost:3000/payment_success",
+            // verificationFailureUrl: "http://localhost:3000/payment_failure",
+        },"SDF");
+
+        sdk.auth(process.env.CIRCLE_TOKEN);
+        sdk.createPayment({
+            metadata: {
+                email: email,
+                sessionId: sessionId,
+                ipAddress: "172.33.222.1",
+            },
+            amount: {
+                amount: nftAmount.toFixed(2).toString(),
+                currency: "USD",
+            },
+            autoCapture: true,
+            source: { id: cardId, type: "card" },
+            idempotencyKey: uuid(),
+            verification: "cvv",
+            encryptedData: cvvEncrpytion.encryptedMessage,
+            keyId: "key1",
+            // verificationSuccessUrl: "http://localhost:3000/payment_success",
+            // verificationFailureUrl: "http://localhost:3000/payment_failure",
+        })
+            .then((ares) => {
+                console.log("AAA ", ares);
+                res.status(200).json({
+                    message: "Success",
+                    res: ares.data,
+                });
             })
             .catch((err) => {
-                console.log(err.message);
-                res.status(400).json({
-                    error: "b.Some error ocurred...",
-                });
+                console.log("A",err);
+                res.status(400).json({ error: "a.Some error ocurred" });
             });
+
     } catch (err) {
-        console.log(err);
-        res.status(400).json({
-            error: "c.Some error ocurred",
-        });
-    }
+    console.log(err);
+    res.status(400).json({
+        error: "c.Some error ocurred",
+    });
+}
 };
 const saveCirclePaymentData = async (req, res) => {
     try {
-        const { email, amount, status, nftId, paymentId } = req.body;
+        const { email, amount, status, nftId, paymentId, quantity } = req.body;
 
-        const createObj = { email, amount, status, nftId, paymentId };
+        const createObj = { email, amount, status, nftId, paymentId, quantity };
 
         const storeData = await CirclePayment.create(createObj);
 
         res.status(200).json({
-            message: "Data saved successfully",
+            message: "Data saved successfully!",
         });
     } catch (err) {
         console.log("save circle pay ", err);
@@ -135,93 +143,105 @@ const saveCirclePaymentData = async (req, res) => {
 
 const createPaymentAAA = async (req, res) => {
     try {
-        axios
-            .get(
-                `https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd`
-            )
-            .then(async (price) => {
-                // console.log(price.data["matic-network"]); //in currency
-                binancePrice = price.data["binancecoin"].usd;
+        const {
+            userId,
+            nftId,
+            successUrl,
+            cancleUrl,
+            quantity,
+            currency,
+            
+        } = req.body;
 
-                const {
-                    userId,
-                    nftId,
-                    successUrl,
-                    cancleUrl,
-                    quantity,
-                    currency,
-                } = req.body;
+        const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
+        const user = await models.users.findOne({ _id: userId });
 
-                const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
-                const user = await models.users.findOne({ _id: userId });
+        var nftAmount =
+            parseFloat(buyNft.price / 10 ** 6) * quantity;
+        nftAmount = Math.round(nftAmount);
+        console.log("Price ", nftAmount);
 
-                var nftAmount =
-                    binancePrice * parseFloat(buyNft.price / 10 ** 18);
-                nftAmount = Math.round(nftAmount);
-                console.log("Price ", nftAmount);
+        if (nftAmount < 0.1) {
+            return res.status(400).json({
+                error: "Price is less than 0.1$",
+            });
+        }
+        var bodyData = qs.stringify({
+            client_id: process.env.CLIENTID_AAA,
+            client_secret: process.env.SECRETID_AAA,
+            grant_type: "client_credentials",
+        });
+        var config = {
+            method: "post",
+            url: tokenGen,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: bodyData,
+        };
 
-                if (nftAmount < 0.1) {
-                    return res.status(400).json({
-                        error: "Price is less than 0.1$",
-                    });
-                }
-                var bodyData = qs.stringify({
-                    client_id: process.env.CLIENTID_AAA,
-                    client_secret: process.env.SECRETID_AAA,
-                    grant_type: "client_credentials",
+        await axios(config)
+            .then(async function (response) {
+                console.log(response.data);
+                const orderId = uuid();
+                var dataPay = JSON.stringify({
+                    type: "widget",
+                    merchant_key: "mkey-cl1x8nff8005y34th0ktk2o2u",
+                    order_currency: currency,
+                    order_amount: nftAmount ,
+                    notify_email: user.email,
+                    notify_url:
+                        `${process.env.APP_BACKEND_URL}/payment/triplea-webhook-payment`,
+                    notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
+                    notify_txs: true,
+                    payer_id: orderId,
+                    payer_name: user.username,
+                    payer_email: user.email,
+                    payer_phone: "+6591234567",
+                    payer_address:
+                        "1 Parliament Place, Singapore 178880",
+                    payer_poi:
+                        "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
+                    success_url: successUrl,
+                    cancel_url: cancleUrl,
+                    account_api_id: "ETH1649834142vuT",
+                    cart: {
+                        items: [
+                            {
+                                sku: buyNft.name,
+                                label: "Chiky Chik",
+                                quantity: quantity,
+                                amount: nftAmount,
+                            },
+                        ],
+                        shipping_cost: 0,
+                        shipping_discount: 0,
+                        tax_cost: 0,
+                    },
+                    webhook_data: {
+                        order_id: orderId,
+                        quantity: quantity,
+                        userId: userId,
+                        nftId: nftId,
+                    },
                 });
                 var config = {
                     method: "post",
-                    url: tokenGen,
+                    url: reqPayment,
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
+                        Authorization: `Bearer ${response.data.access_token}`,
+                        "Content-Type": "application/json",
                     },
-                    data: bodyData,
+                    data: dataPay,
                 };
 
-                await axios(config)
-                    .then(async function (response) {
-                        console.log(response.data);
-                        const orderId = uuid();
-                        var dataPay = JSON.stringify({
-                            type: "widget",
-                            merchant_key: "mkey-cl1x8nff8005y34th0ktk2o2u",
-                            order_currency: currency,
-                            order_amount: nftAmount * quantity,
-                            notify_email:
-                                "1a2d24e8-1594-4569-bc35-079049e4d805@email.webhook.site",
-                            notify_url:
-                                `https://15d5-2401-4900-1c1a-1e42-49f5-54f5-dac0-a06f.ngrok.io/payment/webhook-payment`,
-                            notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
-                            notify_txs: true,
-                            payer_id: orderId,
-                            payer_name: user.username,
-                            payer_email: user.email,
-                            payer_phone: "+6591234567",
-                            payer_address:
-                                "1 Parliament Place, Singapore 178880",
-                            payer_poi:
-                                "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
-                            success_url: successUrl,
-                            cancel_url: cancleUrl,
-                            account_api_id: "ETH1649834142vuT",
-                            cart: {
-                                items: [
-                                    {
-                                        sku: buyNft.name,
-                                        label: "Chiky Chik",
-                                        quantity: quantity,
-                                        amount: nftAmount,
-                                    },
-                                ],
-                                shipping_cost: 0,
-                                shipping_discount: 0,
-                                tax_cost: 0,
-                            },
-                            webhook_data: {
-                                order_id: orderId,
-                            },
-                        });
+                axios(config)
+                    .then(function (response) {
+                        console.log("A r", response);
+                        res.status(200).json(response.data);
+                    })
+                    .catch(function (error) {
+                        console.log("error",error);
                         var config = {
                             method: "post",
                             url: reqPayment,
@@ -234,53 +254,27 @@ const createPaymentAAA = async (req, res) => {
 
                         axios(config)
                             .then(function (response) {
-                                console.log("A r", response);
+                                console.log("A ", response);
                                 res.status(200).json(response.data);
                             })
                             .catch(function (error) {
-                                console.log("error");
-                            //    return  res.status(400).json({
-                            //         error: "Some...",
-                            //     });
-                                var config = {
-                                    method: "post",
-                                    url: reqPayment,
-                                    headers: {
-                                        Authorization: `Bearer ${response.data.access_token}`,
-                                        "Content-Type": "application/json",
-                                    },
-                                    data: dataPay,
-                                };
-
-                                axios(config)
-                                    .then(function (response) {
-                                        console.log("A ", response);
-                                        res.status(200).json(response.data);
-                                    })
-                                    .catch(function (error) {
-                                        console.log("error",error);
-                                        res.status(400).json({
-                                            error: "Some...",
-                                        });
-                                    });
-                            })
-                            .catch(function (error) {
-                                console.log("error");
+                                console.log("error", error);
+                                res.status(400).json({
+                                    error: "Some...",
+                                });
                             });
                     })
-                    .catch((ecr) => {
-                        console.log(ecr);
-                        res.status(400).json({
-                            error: "Some error...",
-                        });
+                    .catch(function (error) {
+                        console.log("error");
                     });
             })
-            .catch((err) => {
-                console.log(err);
+            .catch((ecr) => {
+                console.log(ecr);
                 res.status(400).json({
                     error: "Some error...",
                 });
             });
+
     } catch (err) {
         console.log(err);
         res.status(400).json({
@@ -295,55 +289,56 @@ const { Charge } = resources;
 Client.init(process.env.COINBASE_TOKEN);
 
 const coinbasePayment = async (req, res) => {
-    const { chikId, email, userId } = req.params;
-    axios
-        .get(
-            `https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd`
-        )
-        .then(async (price) => {
-            // console.log(price.data["binancecoin"]); //in currency
-            binancePrice = price.data["binancecoin"].usd;
-            const buyNft = await Nft.presalenfts.findOne({ _id: chikId });
-            console.log(buyNft);
-            if (!buyNft) {
-                return res.status(404).json({
-                    err: "NFT not found!",
-                });
-            }
-            const nftAmount =
-                binancePrice * parseFloat(buyNft?.price / 10 ** 18);
-            const chargeData = {
-                name: buyNft.name,
-                description: buyNft.description.substring(0, 199),
-                local_price: {
-                    amount: nftAmount,
-                    currency: "USD",
-                },
-                pricing_type: "fixed_price",
-                logo_url: buyNft.cloudinaryUrl,
-                metadata: {
-                    customer_id: userId,
-                    customer_email: email,
-                    nftId: chikId,
-                },
-                redirect_url: `${process.env.DOMAIN}/profile`,
-                cancel_url: `${process.env.DOMAIN}/chik/${chikId}?status=payment-failed-canceled`,
-            };
-            const charge = await Charge.create(chargeData);
-
-            // console.log(charge);
-            // for email
-            // sendPaymentConfirmation(emailId, )
-
-            res.send(charge);
+    const { chikId, email, userId, quantity } = req.params;
+    if(!email) {
+        return res.status(404).json({
+            err:"USER NOT FOUND"
         })
-        .catch((err) => {
-            console.log(err);
-            res.status(404).json({
-                error: "Data not found",
+    }
+
+    try {
+        const buyNft = await Nft.presalenfts.findOne({ _id: chikId });
+        console.log(buyNft);
+        if (!buyNft) {
+            return res.status(404).json({
+                err: "NFT not found!",
             });
+        }
+        const nftAmount =
+            parseFloat(buyNft?.price / 10 ** 6) * quantity;
+        const chargeData = {
+            name: buyNft.name,
+            description: buyNft.description.substring(0, 199),
+            local_price: {
+                amount: nftAmount,
+                currency: "USD",
+            },
+            pricing_type: "fixed_price",
+            logo_url: buyNft.cloudinaryUrl,
+            metadata: {
+                customer_id: userId,
+                customer_email: email,
+                nftId: chikId,
+                quantity: quantity
+            },
+            redirect_url: `${process.env.DOMAIN}/profile`,
+            cancel_url: `${process.env.DOMAIN}/chik/${chikId}?status=payment-failed-canceled`,
+        };
+        const charge = await Charge.create(chargeData);
+
+        // console.log(charge);
+        // for email
+        // sendPaymentConfirmation(emailId, )
+
+        res.send(charge);
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            error: "Data not found",
         });
+    }
 };
+
 const handleCoinbasePayment = async (req, res) => {
     const rawBody = req.rawBody;
     console.log("req body ", rawBody);
@@ -379,6 +374,7 @@ const handleCoinbasePayment = async (req, res) => {
                 nftIdOwned: event.data.metadata.nftId,
                 owner: event.data.metadata.customer_id,
                 nft: ObjectId(event.data.metadata.nftId),
+                quantity: event.data.metadata.quantity
             });
 
             const coinbaseRecord = await CoinbasePayment.create({
@@ -389,6 +385,7 @@ const handleCoinbasePayment = async (req, res) => {
                 chickId: event.data.metadata.nftId,
                 owner: event.data.metadata.customer_id,
                 nft: event.data.metadata.nftId,
+                quantity: event.data.metadata.quantity
             });
             await createActivity(
                 owner,
@@ -439,6 +436,7 @@ const sendPaymentEmail = async (req, res) => {
 
 const tripleAWebhook = async (req, res) => {
     const sig = req.headers["triplea-signature"];
+    const { webhook_data, event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount } = req.body;
 
     let timestamp, signature;
     for (let sig_part of sig.split(",")) {
@@ -468,7 +466,27 @@ const tripleAWebhook = async (req, res) => {
         // &&  Math.abs(curr_timestamp - timestamp) <= 300 // timestamp within tolerance
     ) {
         // signature validates ... do stuff
-        console.log("HURRAHH___________________________ WORKING HOOOK")
+        console.log("___________________________ WORKING HOOOK")
+
+        
+ 
+        if(status == 'good') {
+            const createPresale = await PresaleBoughtNft.create({
+                nftIdOwned: webhook_data.nftId,
+                owner: webhook_data.userId,
+                nft: ObjectId(webhook_data.nftId),
+                quantity: webhook_data.quantity
+            });
+    
+            const tripleaRecord = await TripleaPayment.create({  event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount,
+            orderId:webhook_data.orderId });
+        }
+        
+        await createActivity(
+            owner,
+            event.data.pricing.local.amount,
+            event.data.metadata.nftId
+        );
         return res.status(200).end();
     } else {
         return res.status(400).end();

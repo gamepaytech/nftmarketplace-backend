@@ -10,6 +10,7 @@ const {
     sendResetPassswordEmail,
     createHash,
     createWalletAddressPayload,
+    getSystemMessage
 } = require('../utils')
 
 const register = async (req, res) => {
@@ -22,26 +23,32 @@ const register = async (req, res) => {
             metamaskKey,
         } = req.body
         if (!email) {
-            res.status(401).json({ msg: 'Please provide an email' })
+            const sysMsg = await getSystemMessage('GPAY_00001_EMAIL_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Please provide an email' })
         } else if (!username) {
-            res.status(401).json({ msg: 'Please provide the username' })
+            const sysMsg = await getSystemMessage('GPAY_00002_USERNAME_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Please provide the username' })
         } else if (!password) {
-            res.status(401).json({ msg: 'Please provide the password' })
+            const sysMsg = await getSystemMessage('GPAY_00003_PASSWORD_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Please provide the password' })
         } else if (password !== confirmPassword) {
-            res.status(401).json({ msg: 'Password not match' })
+            const sysMsg = await getSystemMessage('GPAY_00004_PASSWORD_MISMATCH')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Password not match' })
         }
         const emailAlreadyExists = await models.users.findOne({
             email: email,
         })
         if (emailAlreadyExists) {
-            res.status(401).json({ msg: 'Email or username already exists' })
+            const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
             username: username,
         })
         if (usernameAlreadyExists) {
-            res.status(500).json({ msg: 'Email or username already exists' })
+            const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
@@ -56,11 +63,10 @@ const register = async (req, res) => {
             password: hashedPassword,
             metamaskKey: metamaskKey,
             verificationToken: verificationToken,
-            // isAdmin: isAdmin == 'True' ? true : false,
             referralCode: referralCode.code,
         }
 
-        console.log("BEFORE SEDING--- ",verificationToken)
+        console.log('BEFORE SEDING--- ',verificationToken)
         const user = await models.users.create(createObj)
         const origin = process.env.APP_BACKEND_URL
         await sendVerificationEmail({
@@ -69,16 +75,16 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
-        console.log("AFTER SENDING--- ",user.verificationToken)
-
+        console.log('AFTER SENDING--- ',user.verificationToken)
+        
+        const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
-            msg: 'Success! Please check your email to verify account',
+            msg: sysMsg ? sysMsg.message : 'Success! Please check your email to verify account',
             status:201
         })
     } catch (err) {
         console.log(err.msg)
         res.status(400)
-        // throw new Error('Error Occured')
     }
 }
 
@@ -91,13 +97,11 @@ const login = async (req, res) => {
         const { email, password, walletAddress } = req.body
 
         if (walletAddress && walletAddress.length > 0) {
-            // var regex = new RegExp(`^${walletAddress.trim()}$`, 'ig')
             const user = await models.users.findOne({
                 metamaskKey: walletAddress[0],
             })
 
             if (user) {
-                
                 if (user.isVerified) {
                     const tokenUser = createWalletAddressPayload(
                         user,
@@ -133,20 +137,24 @@ const login = async (req, res) => {
                         accessToken: token,
                         updatedAt: user.updatedAt,
                     })
-                } else {
+                } else {                   
+                    const sysMsg = await getSystemMessage('GPAY_00007_VERIFY_EMAIL_AT')
                     res.status(400).json({
-                        msg: `Please verify your Email Address ${user.email}`,
+                        msg: sysMsg ? (sysMsg.message + user.email) : `Please verify your Email Address ${user.email}`,
                     })
                 }
             } else {
-                res.status(400).json({ msg: 'Wallet Address Not Registered' })
+                const sysMsg = await getSystemMessage('GPAY_00008_WALLET_ADDRESS_NOT_REGISTERED')
+                res.status(400).json({ msg: sysMsg ? sysMsg.message : 'Wallet Address Not Registered' })
             }
         } else {
             if (!email || email === '') {
-                res.status(401).json({ msg: 'Please provide an email.' })
+                const sysMsg = await getSystemMessage('GPAY_00001_EMAIL_REQUIRED')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message :'Please provide an email' })
                 return
             } else if (!password || password === '') {
-                res.status(401).json({ msg: 'Please enter the password' })
+                const sysMsg = await getSystemMessage('GPAY_00009_ENTER_PASSWORD')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please enter the password' })
                 return
             }
 
@@ -155,22 +163,24 @@ const login = async (req, res) => {
             })
 
             if (!user) {
-                res.status(401).json({ msg: `User doesn't exists` })
+                const sysMsg = await getSystemMessage('GPAY_00010_USER_NOT_EXISTS')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : `User doesn't exist` })
             }
-
             
             const hashedPassword = CryptoJS.AES.decrypt(
                 user.password,
                 process.env.PASS_SEC
             ).toString(CryptoJS.enc.Utf8)
             if (hashedPassword !== password) {
-                res.status(401).json({ msg: 'Wrong Password!!' })
+                const sysMsg = await getSystemMessage('GPAY_00011_WRONG_PASSWORD')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Wrong Password!!' })
             }
 
             // Following code will run and see if user has verified email // update model when you will use nodmailer
 
-            if (!user.isVerified) {
-                res.status(401).json({ msg: 'Please verify your email' })
+            if (!user.isVerified) {                
+                const sysMsg = await getSystemMessage('GPAY_00012_VERIFY_EMAIL')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please verify your email' })
             }
 
             const tokenUser = createTokenPayload(user)
@@ -187,7 +197,6 @@ const login = async (req, res) => {
             const ip = req.ip
             const userToken = { token, ip, userAgent, user: user._id }
 
-            // console.log(userToken)
             await Token.create(userToken)
             res.status(200).json({
                 _id: user._id,
@@ -213,7 +222,8 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
     try {
         await Token.findOneAndDelete({ user: req.user.userId })
-        res.status(201).json({ msg: 'User logged out!' })
+        const sysMsg = await getSystemMessage('GPAY_00013_USER_LOGGED_OUT')
+        res.status(201).json({ msg: sysMsg ? sysMsg.message : 'User logged out!' })
     } catch (e) {
         console.log('Error: ' + e.msg)
         res.status(500).json({ msg: e.msg })
@@ -225,28 +235,32 @@ const verifyEmail = async (req, res) => {
         const verificationToken = req.body.token
         const email = req.body.email
 
-        console.log("EMAIL ",email)
-        console.log("TOKEN ",verificationToken)
+        console.log('EMAIL ',email)
+        console.log('TOKEN ',verificationToken)
         if (verificationToken === '' || !verificationToken) {
-            res.status(401).json({ msg: 'Invalid Credentials!' })
+            const sysMsg = await getSystemMessage('GPAY_00014_INVALID_CREDENTIALS')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid Credentials!' })
             return
         }
 
         if (email === '' || !email) {
-            res.status(401).json({ msg: 'Invalid email or password!' })
+            const sysMsg = await getSystemMessage('GPAY_00015_INVALID_EMAIL_OR_PASSWORD')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid email or password!' })
             return
         }
 
         const user = await models.users.findOne({ email })
-        console.log("user ",user);
+        console.log('user ',user);
         if (user) {
             if (user.verificationToken === '') {
-                res.status(401).json({ msg: 'User already verified' })
+                const sysMsg = await getSystemMessage('GPAY_00016_USER_ALREADY_VERIFIED')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : 'User already verified' })
                 return
             }
 
             if (user.verificationToken !== verificationToken) {
-                res.status(401).json({ msg: 'Invalid verification token' })
+                const sysMsg = await getSystemMessage('GPAY_00017_INVALID_TOKEN')
+                res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid verification token' })
                 return
             }
 
@@ -259,10 +273,11 @@ const verifyEmail = async (req, res) => {
                 console.log(err.msg)
                 res.status(501).json({ msg: err.msg })
             }
-
-            res.status(201).json({ msg: 'Email Successfully Verified' })
+            const sysMsg = await getSystemMessage('GPAY_00018_EMAIL_VERIFIED')
+            res.status(201).json({ msg: sysMsg ? sysMsg.message : 'Email Successfully Verified' })
         } else {
-            res.status(401).json({ msg: 'Invalid Request' })
+            const sysMsg = await getSystemMessage('GPAY_00019_INVAILD_REQUEST')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid Request' })
         }
     } catch (e) {
         res.status(500).json({ msg: e.msg })
@@ -272,8 +287,9 @@ const verifyEmail = async (req, res) => {
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body
-        if (!email) {
-            res.status(401).json({ msg: 'Please provide valid email' })
+        if (!email) {            
+            const sysMsg = await getSystemMessage('GPAY_00020_VAILD_EMAIL')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please provide valid email' })
         }
 
         const user = await models.users.findOne({
@@ -302,11 +318,13 @@ const forgotPassword = async (req, res) => {
             user.passwordTokenExpirationDate = passwordTokenExpirationDate
             await user.save()
 
+            const sysMsg = await getSystemMessage('GPAY_00021_CHECK_EMAIL_RESET_LINK')
             res.status(200).json({
-                msg: 'Please check your email for reset password link',
+                msg: sysMsg ? sysMsg.message : 'Please check your email for reset password link',
             })
         } else {
-            res.status(401).json({ msg: 'Invalid User' })
+            const sysMsg = await getSystemMessage('GPAY_00022_INVALID_USER')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid User' })
         }
     } catch (e) {
         res.status(500).json({ msg: e.msg })
@@ -317,11 +335,14 @@ const resetPassword = async (req, res) => {
     try {
         const { token, email, password } = req.body
         if (!email) {
-            res.status(401).json({ msg: 'Please provide an email' })
+            const sysMsg = await getSystemMessage('GPAY_00001_EMAIL_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please provide an email' })
         } else if (!password) {
-            res.status(401).json({ msg: 'Please provide the password' })
-        } else if (!token) {
-            res.status(401).json({ msg: 'Please provide the token' })
+            const sysMsg = await getSystemMessage('GPAY_00003_PASSWORD_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please provide the password' })
+        } else if (!token) {            
+            const sysMsg = await getSystemMessage('GPAY_00023_TOKEN_REQUIRED')
+            res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Please provide the token' })
         }
 
         const user = await models.users.findOne({
@@ -336,9 +357,10 @@ const resetPassword = async (req, res) => {
                     user.passwordToken === createHash(token) &&
                     user.passwordTokenExpirationDate > currentDate
                 )
-            ) {
+            ) {                
+                const sysMsg = await getSystemMessage('GPAY_00024_INVALID_TOKEN')
                 res.status(200).json({
-                    msg: 'Invalid Token',
+                    msg: sysMsg ? sysMsg.message : 'Invalid Token',
                 })
             }
             let hashedPassword = CryptoJS.AES.encrypt(
@@ -349,13 +371,14 @@ const resetPassword = async (req, res) => {
             user.passwordToken = null
             user.passwordTokenExpirationDate = null
             await user.save()
-            // $2a$10$NI/cqg38P7DhL8cpx50WxuXbmCr78v4yZ8pJButCQt.ZXLoE73HtG
-            // $2a$10$NI/cqg38P7DhL8cpx50WxuXbmCr78v4yZ8pJButCQt.ZXLoE73HtG
+            
+            const sysMsg = await getSystemMessage('GPAY_00025_PASSWORD_UPDATED')
             res.status(200).json({
-                msg: 'Password has been successfully updated',
+                msg: sysMsg ? sysMsg.message : 'Password has been successfully updated',
             })
         } else {
-            res.status(200).json({ msg: 'Invalid User' })
+            const sysMsg = await getSystemMessage('GPAY_00022_INVALID_USER')
+            res.status(200).json({ msg: sysMsg ? sysMsg.message : 'Invalid User' })
         }
     } catch (e) {
         res.status(501).json({ msg: e.msg })
@@ -380,12 +403,14 @@ const addMyReferral = async function (req, res) {
         query = { email: req.body.email }
         const checkMail = await models.users.findOne(query)
         if (checkMail) {
-            res.json({ status: 400, msg: 'Email or Username already in use' })
+            const sysMsg = await getSystemMessage('GPAY_00026_EMAIL_USERNAME_IN_USE')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Email or Username already in use' })
         } else {
             query = { username: { $regex: new RegExp(req.body.username, 'i') } }
             const checkUserName = await models.users.findOne(query)
             if (checkUserName) {
-                res.json({ status: 400, msg: 'Email or Username already in use' })
+                const sysMsg = await getSystemMessage('GPAY_00026_EMAIL_USERNAME_IN_USE')
+                res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Email or Username already in use' })
             } else {
                 let checkReferee = false
                 if (refereeCode != '') {
@@ -461,7 +486,7 @@ const addMyReferral = async function (req, res) {
                                 recievedFrom: insertNewReferral._id,
                             });
                             
-                            console.log("ADD MY INCOME ",addMyIncome);
+                            console.log('ADD MY INCOME ',addMyIncome);
                             await addMyIncome.save();
                 
                             const mapReferral = await newReferral.save()
@@ -477,32 +502,37 @@ const addMyReferral = async function (req, res) {
                                     origin: process.env.APP_BACKEND_URL,
                                 })
                                 if (newUserInfo) {
+                                    const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                                     res.status(201).json({
-                                        msg: 'Success! Please check your email to verify account',
+                                        msg: sysMsg ? sysMsg.message : 'Success! Please check your email to verify account',
                                         status:201
                                     })
-                                } else {
+                                } else {                                    
+                                    const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                                     res.json({
                                         status: 400,
-                                        msg: 'Something went Wrong',
+                                        msg: sysMsg ? sysMsg.message : 'Something went Wrong',
                                     })
                                 }
                             } else {
+                                const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                                 res.json({
                                     status: 400,
-                                    msg: 'Something went Wrong',
+                                    msg: sysMsg ? sysMsg.message : 'Something went Wrong',
                                 })
                             }
                         } else {
+                            const sysMsg = await getSystemMessage('GPAY_00028_USER_NOT_CREATED_TRY_AGAIN')
                             res.json({
                                 status: 400,
-                                msg: 'User not created. Please try again',
+                                msg: sysMsg ? sysMsg.message : 'User not created. Please try again',
                             })
                         }
                     } else {
+                        const sysMsg = await getSystemMessage('GPAY_00029_INVAILD_REFERRAL_CODE')
                         res.json({
                             status: 400,
-                            msg: 'invalid referral code',
+                            msg: sysMsg ? sysMsg.message : 'Invalid referral code',
                         })
                     }
                 } else {
@@ -568,23 +598,24 @@ const addMyReferral = async function (req, res) {
                             origin: process.env.APP_BACKEND_URL,
                         })
                         if (newUserInfo) {
+                            const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                             res.status(201).json({
-                                msg: 'Success! Please check your email to verify account',
+                                msg: sysMsg ? sysMsg.message : 'Success! Please check your email to verify account',
                                 status:201
                             })
                         } else {
+                            const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                             res.json({
                                 status: 400,
-                                msg: 'Something went Wrong',
+                                msg: sysMsg ? sysMsg.message : 'Something went Wrong',
                             })
                         }
                     } else {
+                        const sysMsg = await getSystemMessage('GPAY_00028_USER_NOT_CREATED_TRY_AGAIN')
                         res.json({
                             status: 400,
-                            msg: 'User not created. Please try again',
+                            msg: sysMsg ? sysMsg.message : 'User not created. Please try again',
                         })
-
-                        
                     }
                 }
             }
@@ -630,24 +661,26 @@ const getAllMyReferrals = async function (req, res) {
         if (getMyReferralsId.length) {
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids } },
-                // { _id: getMyReferralsId[0].userId },
                 { __v: 0 }
             )
             if (getMyReferrals) {
+                const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                 res.json({
                     status: 200,
-                    msg: 'Success',
+                    msg: sysMsg ? sysMsg.message : 'Success',
                     data: getMyReferrals,
                 })
             } else {
+                const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                 res.json({
                     status: 400,
-                    msg: 'Something went wrong',
+                    msg: sysMsg ? sysMsg.message : 'Something went wrong',
                     data: {},
                 })
             }
-        } else {
-            res.json({ status: 400, msg: 'No Referrals Found' })
+        } else {            
+            const sysMsg = await getSystemMessage('GPAY_00031_NO_REFERRALS')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'No Referrals Found' })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
@@ -659,9 +692,11 @@ const getAllSuperAdmin = async function (req, res) {
         const superAdmin = await models.users.find({ isSuperAdmin: true })
 
         if (superAdmin && superAdmin.length) {
-            res.json({ status: 200, msg: 'Success', data: superAdmin })
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+            res.json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: superAdmin })
         } else {
-            res.json({ status: 200, msg: 'No SuperUser Found' })
+            const sysMsg = await getSystemMessage('GPAY_00032_NO_SUPER_USER')
+            res.json({ status: 200, msg: sysMsg ? sysMsg.message : 'No SuperUser Found' })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
@@ -673,9 +708,11 @@ const getAllAdmin = async function (req, res) {
         const admin = await models.users.find({ isAdmin: true })
 
         if (admin && admin.length) {
-            res.json({ status: 200, msg: 'Success', data: admin })
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+            res.json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: admin })
         } else {
-            res.json({ status: 200, msg: 'No SuperUser Found' })
+            const sysMsg = await getSystemMessage('GPAY_00032_NO_SUPER_USER')
+            res.json({ status: 200, msg: sysMsg ? sysMsg.message : 'No SuperUser Found' })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
@@ -690,8 +727,9 @@ const changeUserStatus = async function (req, res) {
         })
         if (userData) {
             userId = userData._id
-        } else {
-            res.json({ status: 400, msg: 'User not found' })
+        } else {            
+            const sysMsg = await getSystemMessage('GPAY_00033_USER_NOT_FOUND')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'User not found' })
             return
         }
     } else if (req.body.walletAddr) {
@@ -701,23 +739,21 @@ const changeUserStatus = async function (req, res) {
         if (userData) {
             userId = userData._id
         } else {
-            res.json({ status: 400, msg: 'User not found' })
+            const sysMsg = await getSystemMessage('GPAY_00033_USER_NOT_FOUND')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'User not found' })
             return
         }
     }
     try {
-        // if (req.body.walletAddress == undefined || req.body.walletAddress == ''){
-        //     res.json({status: 400, msg: "walletAddress is required"})
-        //     return
-        // }
-
         if (req.body.status == undefined || req.body.status == 0) {
-            res.json({ status: 400, msg: 'status is required' })
+            const sysMsg = await getSystemMessage('GPAY_00034_STATUS_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'status is required' })
             return
         }
 
         if (userId == undefined || userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
             return
         }
 
@@ -727,31 +763,8 @@ const changeUserStatus = async function (req, res) {
         // Status -> 22 [Delete Super Admin]
         const userInfo = await models.users.find({ _id: userId })
         console.log(userInfo)
-        // if (userInfo.isAdmin && req.body.status === 11) {
-        //     res.json({ status: 400, msg: 'User is already Admin' })
-        //     return
-        // } else if (!userInfo.isAdmin && req.body.status === 12) {
-        //     res.json({
-        //         status: 400,
-        //         msg: 'No Admin exist with these Credentials!',
-        //     })
-        //     return
-        // } else if (userInfo.isSuperAdmin && req.body.status === 21) {
-        //     res.json({ status: 400, msg: 'User is already Super Admin' })
-        //     return
-        // } else if (!userInfo.isSuperAdmin && req.body.status === 22) {
-        //     res.json({
-        //         status: 400,
-        //         msg: 'No Super Admin exist with these Credentials!',
-        //     })
-        //     return
-        // }
 
         if (userInfo && userInfo.length) {
-            // let changeUserWalletAddress = await models.users.updateOne(
-            //     {metamaskKey: userInfo[0].metamaskKey},
-            //     {'$set': {metamaskKey: req.body.walletAddr}}
-            // )
             if (req.body.status === 11 || req.body.status === 12) {
                 try {
                     const makeAdmin = await models.users.updateOne(
@@ -768,16 +781,18 @@ const changeUserStatus = async function (req, res) {
                             },
                         }
                     )
+                    const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                     res.json({
                         status: 200,
-                        msg: 'Success',
+                        msg: sysMsg ? sysMsg.message : 'Success',
                         data: makeAdmin,
                     })
 
                     return
                 } catch (err) {
                     console.log(err)
-                    res.json({ status: 400, msg: 'Something went wrong' })
+                    const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
+                    res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went wrong' })
                     return
                 }
             } else if (req.body.status === 21 || req.body.status === 22) {
@@ -794,53 +809,24 @@ const changeUserStatus = async function (req, res) {
                             },
                         }
                     )
+                    const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                     res.json({
                         status: 200,
-                        msg: 'Success',
+                        msg: sysMsg ? sysMsg.message : 'Success',
                         data: makeSuperAdmin,
                     })
 
                     return
                 } catch (err) {
                     console.log(err)
-                    res.json({ status: 400, msg: 'Something went wrong' })
+                    const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
+                    res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went wrong' })
                     return
                 }
             }
-            // let changeUserStatus
-            // if (changeUserWalletAddress.modifiedCount == 1) {
-            //     if (req.body.status == 1) {
-            //         changeUserStatus = await models.users.updateOne(
-            //             { isSuperAdmin: userInfo[0].isSuperAdmin },
-            //             {
-            //                 $set: {
-            //                     isSuperAdmin:
-            //                         req.body.status == 1 ? true : false,
-            //                 },
-            //             }
-            //         )
-            //     } else {
-            //         changeUserStatus = await models.users.updateOne(
-            //             { isAdmin: userInfo[0].isAdmin },
-            //             {
-            //                 $set: {
-            //                     isAdmin: req.body.status == 1 ? true : false,
-            //                 },
-            //             }
-            //         )
-            //     }
-            // }
-
-            // if (changeUserStatus.modifiedCount == 1) {
-            //     const updatedUserInfo = await models.users.find({
-            //         _id: req.body.userId,
-            //     })
-            //     res.json({ status: 200, msg: 'Success', data: updatedUserInfo })
-            // } else {
-            //     res.json({ status: 400, msg: 'Something went wrong' })
-            // }
         } else {
-            res.json({ status: 400, msg: 'User not found' })
+            const sysMsg = await getSystemMessage('GPAY_00033_USER_NOT_FOUND')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'User not found' })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
@@ -852,11 +838,13 @@ const addWalletKey = async (req, res) => {
         const userId = req.body.userId
         const walletAddress = req.body.walletAddress
         if (userId == undefined || userId == '') {
-            res.json({ status: 400, msg: 'status is required' })
+            const sysMsg = await getSystemMessage('GPAY_00034_STATUS_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'status is required' })
             return
         }
         if (walletAddress == undefined || walletAddress == '') {
-            res.json({ status: 400, msg: 'walletAddress is required' })
+            const sysMsg = await getSystemMessage('GPAY_00035_WALLET_ADDRESS_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'walletAddress is required' })
             return
         }
 
@@ -864,14 +852,16 @@ const addWalletKey = async (req, res) => {
 
         if (userInfo !== undefined || userInfo !== '') {
             if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.length == 6) {
-                res.json({ status: 400, msg: 'wallet limit exceed' })
+                const sysMsg = await getSystemMessage('GPAY_00036_WALLET_LIMIT_EXCEED')
+                res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'wallet limit exceed' })
                 return
             }
 
             if (userInfo[0] && userInfo[0].metamaskKey && userInfo[0].metamaskKey.includes(req.body.walletAddress)) {
+                const sysMsg = await getSystemMessage('GPAY_00037_USER_EXISTS_FOR_WALLET')
                 res.json({
                     status: 400,
-                    msg: 'User already exists with this wallet',
+                    msg: sysMsg ? sysMsg.message : 'User already exists with this wallet',
                 })
                 return
             }
@@ -881,9 +871,10 @@ const addWalletKey = async (req, res) => {
             })
 
             if (walletInfo && walletInfo.length) {
+                const sysMsg = await getSystemMessage('GPAY_00038_WALLET_ADDRESS_USED')
                 res.json({
                     status: 400,
-                    msg: 'Wallet Address id already used by other email',
+                    msg: sysMsg ? sysMsg.message : 'Wallet Address id already used by other email',
                 })
                 return
             }
@@ -899,16 +890,18 @@ const addWalletKey = async (req, res) => {
                 }
             )
             const userDataUpdated = await models.users.findOne({_id:req.body.userId})
-            console.log("updated user ",userDataUpdated);
+            console.log('updated user ',userDataUpdated);
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res.json({
                 status: 200,
-                msg: 'Success',
+                msg: sysMsg ? sysMsg.message : 'Success',
                 data: userDataUpdated,
             })
 
             return
         } else {
-            res.json({ status: 400, msg: 'Invalid Credentials!' })
+            const sysMsg = await getSystemMessage('GPAY_00014_INVALID_CREDENTIALS')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Invalid Credentials!' })
         }
     } catch (error) {
         console.log(error)
@@ -918,8 +911,9 @@ const addWalletKey = async (req, res) => {
 
 const removeWalletKey = async function (req, res) {
     try {
-        if (req.body.userId == undefined || req.body.userId == '') {
-            res.json({ status: 400, msg: 'userId is required' })
+        if (req.user.userId == undefined || req.user.userId == '') {
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'UserId is required' })
             return
         }
 
@@ -927,32 +921,38 @@ const removeWalletKey = async function (req, res) {
             req.body.walletAddress == undefined ||
             req.body.walletAddress == ''
         ) {
-            res.json({ status: 400, msg: 'walletKey is required' })
+            const sysMsg = await getSystemMessage('GPAY_00040_WALLET_KEY_REQUIRED')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'walletKey is required' })
             return
         }
 
         const userInfo = await models.users.findOne({
-            _id: req.body.userId,
+            _id: req.user.userId,
             metamaskKey: req.body.walletAddress,
         })
 
         if (userInfo) {
             const updateUserInfo = await models.users.updateOne(
-                { _id: req.body.userId },
+                { _id: req.user.userId },
                 { $pull: { metamaskKey: req.body.walletAddress } }
             )
 
             if (updateUserInfo.modifiedCount > 0) {
+                const userDataUpdated = await models.users.findOne({_id:req.user.userId})
+                const sysMsg = await getSystemMessage('GPAY_00041_WALLET_REMOVED')
                 res.json({
                     status: 200,
-                    msg: 'Wallet Removed',
-                    data: updateUserInfo,
+                    msg: sysMsg ? sysMsg.message : 'Wallet Removed',
+                    info: updateUserInfo,
+                    data:userDataUpdated
                 })
             } else {
-                res.json({ status: 400, msg: 'Wallet Not Removed' })
+                const sysMsg = await getSystemMessage('GPAY_00042_WALLET_NOT_REMOVED')
+                res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Wallet Not Removed' })
             }
         } else {
-            res.json({ status: 400, msg: 'user not found' })
+            const sysMsg = await getSystemMessage('GPAY_00043_USER_NOT_FOUND')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'user not found' })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
@@ -962,7 +962,8 @@ const removeWalletKey = async function (req, res) {
 const getAllWallet = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.status(400).json({ status: 400, msg: 'userId is required' })
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
             return
         }
 
@@ -972,9 +973,11 @@ const getAllWallet = async function (req, res) {
         )
 
         if (walletInfo && walletInfo.length) {
-            res.status(200).json({ status: 200, msg: 'Success', data: walletInfo })
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+            res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: walletInfo })
         } else {
-            res.status(400).json({ sttaus: 400, msg: 'No Wallets found' })
+            const sysMsg = await getSystemMessage('GPAY_00044_NO_WALLETS')
+            res.status(400).json({ sttaus: 400, msg: sysMsg ? sysMsg.message : 'No Wallets found' })
         }
     } catch (error) {
         res.status(400).json({ status: 400, msg: eror.toString() })
@@ -985,7 +988,8 @@ const checkRegisterredWallet = async (req, res) => {
     try {
         const walletAddress = req.body.walletAddress
         if (walletAddress == undefined || walletAddress == '') {
-            res.status(400).json({ status: 400, msg: 'Wallet Address is required' })
+            const sysMsg = await getSystemMessage('GPAY_00045_WALLET_ADDRESS_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Wallet Address is required' })
             return
         }
         const userInfo = await models.users.findOne({
@@ -993,34 +997,40 @@ const checkRegisterredWallet = async (req, res) => {
         })
         console.log(userInfo, walletAddress);
         if(!userInfo) {
-            return res.status(404).json({ status: 404, err: 'User not Registered!' })
+            const sysMsg = await getSystemMessage('GPAY_00046_USER_NOT_REGISTERED')
+            return res.status(404).json({ status: 404, err: sysMsg ? sysMsg.message : 'User not Registered!' })
         }
         if(!userInfo?.isVerified) {
+            const sysMsg = await getSystemMessage('GPAY_00047_VERIFY_EMAIL')
             return res.status(400).json({
-                err:"Please verify your email first!"
+                err: sysMsg ? sysMsg.message : 'Please verify your email first!'
             })
         }
         if (userInfo && userInfo !== null) {
-            console.log("A ",userInfo);
+            console.log('A ',userInfo);
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res.status(200).json({
                 status: 200,
-                msg: 'Success',
+                msg: sysMsg ? sysMsg.message : 'Success',
                 data: userInfo,
             })
             return
         } else {
-            res.status(400).json({ status: 400, msg: 'User not Registered!' })
+            const sysMsg = await getSystemMessage('GPAY_00046_USER_NOT_REGISTERED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'User not Registered!' })
         }
     } catch (error) {
         console.log(error)
-        res.status(500).json({ status: 500, err: "500: Internal Server Error" })
+        const sysMsg = await getSystemMessage('GPAY_00048_SERVER_ERROR')
+        res.status(500).json({ status: 500, err: sysMsg ? sysMsg.message : '500: Internal Server Error' })
     }
 }
 
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.status(400).json({ status: 400, msg: 'userId is required' })
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
             return
         }
 
@@ -1028,35 +1038,39 @@ const checkWalletKey = async function (req, res) {
             req.body.walletAddress == undefined ||
             req.body.walletAddress == ''
         ) {
-            res.status(400).json({ status: 400, msg: 'walletKey is required' })
+            const sysMsg = await getSystemMessage('GPAY_00040_WALLET_KEY_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'walletKey is required' })
             return
         }
 
         const walletInfo = await models.users.find({
             _id: req.body.userId,
-            // metamaskKey: (req.body.walletAddress),
         })
         console.log('l',req.body.walletAddress)
         console.log('k',walletInfo)
 
         if (walletInfo && walletInfo.length > 0 && walletInfo.includes(req.body.walletAddress)) {
             console.log(walletInfo);
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res
             .status(200)
             .json(
-                { status: 200, msg: 'Success', exists:true, data: walletInfo[0] })
+                { status: 200, msg: sysMsg ? sysMsg.message : 'Success', exists:true, data: walletInfo[0] })
         } else {
-            res.status(200).json({ status: 200, msg: 'Wallet not found', exists:false })
+            const sysMsg = await getSystemMessage('GPAY_00049_WALLET_NOT_FOUND')
+            res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Wallet not found', exists:false })
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: "Internal Server Error!" })
+        const sysMsg = await getSystemMessage('GPAY_00048_SERVER_ERROR')
+        res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Internal Server Error!' })
     }
 }
 
 const getPercent = async function (req, res) {
     try {
         const setting = await referralModel.appsetting.find({})
-        res.status(200).json({ status: 200, msg: 'Success', data: setting })
+        const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+        res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: setting })
     } catch (error) {
         res.status(400).json({ status: 400, msg: error.toString() })
     }
@@ -1069,25 +1083,28 @@ const setactivity = async function (req, res) {
         { $push: { activity: { activity: activity, timestamp: timestamp } } },
         { new: true, upsert: true }
     )
-    res.status(200).json('done')
+    const sysMsg = await getSystemMessage('GPAY_00050_DONE')
+    res.status(200).json(sysMsg ? sysMsg.message : 'Done')
 }
 
 const getactivity = async function (req, res) {
-    console.log("user id ",req.body.userId);
+    console.log('user id ',req.body.userId);
     const userActivity = await models.users.findOne({ _id: req.body.userId })
     res.json({ userActivity: userActivity?.activity })
 }
 
 const updatePercent = async function (req, res) {
     try {
-        console.log("kfjjkdsngfjkdshfk")
+        console.log('kfjjkdsngfjkdshfk')
         if (req.body.userId == undefined || req.body.userId == '') {
-            res.status(400).json({ status: 400, msg: 'userId is required' })
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
             return
         }
 
         if (req.body.percent == undefined || req.body.percent == '') {
-            res.status(400).json({ status: 400, msg: 'percent is required' })
+            const sysMsg = await getSystemMessage('GPAY_00051_PERCENT_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Percent is required' })
             return
         }
 
@@ -1099,20 +1116,23 @@ const updatePercent = async function (req, res) {
             const setting = await referralModel.appsetting.updateOne({
                 referralPercent: req.body.percent,
             })
-            console.log(setting, "setting")
+            console.log(setting, 'setting')
             if(setting.modifiedCount === 0){
                 await referralModel.appsetting.create({referralPercent: req.body.percent,})
                 setting.modifiedCount = 1
-                console.log("created settings")
+                console.log('created settings')
             }
             if (setting.modifiedCount > 0) {
                 const newSetting = await referralModel.appsetting.find({})
-                res.status(200).json({ status: 200, msg: 'Success', data: newSetting })
+                const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+                res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: newSetting })
             } else {
-                res.status(400).json({ status: 400, msg: 'Something went Wrong' })
+                const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
+                res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went Wrong' })
             }
         } else {
-            res.status(400).json({ status: 400, msg: 'Action Not Permitted' })
+            const sysMsg = await getSystemMessage('GPAY_00052_ACTION_NOT_PERMITTED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Action Not Permitted' })
         }
     } catch (error) {
         res.status(400).json({ status: 400, msg: error.toString() })

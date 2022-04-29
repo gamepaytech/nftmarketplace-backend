@@ -10,14 +10,26 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        nft: { 
-          type: mongoose.Types.ObjectId, 
-          ref: "Nft" },
-          promoApplied : {
-              type:String
-          }
+        nft: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "presalenfts",
+            required:true
+        },
+        amountSpent: {
+            type: Number,
+            required: true,
+        },
+        promoCode: {
+            type: String,
+        },
+        quantity: {
+            type: String,
+            default: 1
+        }
     },
-    { timestamps: true }
+    { timestamps: true,
+        strictPopulate:false }
+
 );
 
 module.exports = mongoose.model("PresaleBoughtNft", PresaleBoughtNftSchema);
