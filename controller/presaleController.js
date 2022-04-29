@@ -406,6 +406,46 @@ return myDate;
         });
   }
 
+  const createPreSaleTier = async(req, res) => {
+    try { 
+
+      const keys = ["tier_type", "quantity", "price", "duration_in_days"];
+      for (i in keys) {
+        if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+          res.json({ status: "error", msg: keys[i] + " are required" });
+          return;
+        }
+      } 
+      const checkType = await models.presaletiers.findOne({tier_type:req.body.tier_type})
+      if (checkType) {
+          res.json({ status: 400, msg: 'Presale Tier already updated' })
+          return
+      }
+      const query = {
+        tier_type: req.body.tier_type,
+        quantity: req.body.quantity,
+        price: req.body.price,
+        duration_in_days: req.body.duration_in_days,
+      };
+      const createPresale = new models.presaletiers(query);
+      const presaleInfo = await createPresale.save();
+      res.status(201).json({
+        status: "success",
+        msg: "Success! campaign created",
+        data: presaleInfo,
+      });
+      return;
+      
+    } catch (error) {
+      res.json({
+        status: 400,
+        msg: error.toString(),
+      });
+      return;
+    }
+    
+  }
+
 
   const updatePresale = async(req, res) => {
     try {
@@ -444,6 +484,6 @@ return myDate;
 }
 
 
-  module.exports = {startPresale,stopPresale,schedulePreSale,getPresale,getPreSaleTierById,updatePresale}
+  module.exports = {startPresale,stopPresale,schedulePreSale,getPresale,createPreSaleTier,getPreSaleTierById,updatePresale}
 
 
