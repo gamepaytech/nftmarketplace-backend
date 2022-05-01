@@ -6,7 +6,7 @@ let NftSchema = new mongoose.Schema(
             type: String,
             required: [true, 'NFT name is required'],
         },
-        jsonHash: { type: String,},
+        jsonHash: { type: String},
         nftType: {
             type: String,
         },

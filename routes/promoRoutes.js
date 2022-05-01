@@ -10,14 +10,14 @@ const {
   updatePromoCode,
   deletePromoCode
 } = require("../controller/PromoController");
-const { authenticateUser } = require('../middleware/authentication');
+const { authenticateUser,authenticateAdmin } = require('../middleware/authentication');
 
-router.post('/create-promo-code', cors(), authenticateUser, createPromoCode);
-router.post('/update-promo-code', cors(), authenticateUser, updatePromoCode);
-router.post('/delete-promo-code', cors(), authenticateUser, deletePromoCode);
+router.post('/create-promo-code', cors(), authenticateAdmin, createPromoCode);
+router.post('/update-promo-code', cors(), authenticateAdmin, updatePromoCode);
+router.post('/delete-promo-code', cors(), authenticateAdmin, deletePromoCode);
 router.post('/verify-promo-code',cors(),authenticateUser,getPromoCode);
-router.get('/get-all-promo',cors(),authenticateUser,getAllCheckCode);
-router.post('/disable-promo-code',cors(),authenticateUser,updateCouponCode);
+router.get('/get-all-promo',cors(),authenticateAdmin ,getAllCheckCode);
+router.post('/disable-promo-code',cors(),authenticateAdmin ,updateCouponCode);
 router.post('/claim-coupon-code',cors(),authenticateUser,claimPromoCode);
 
 

@@ -8,12 +8,14 @@ const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
 const { uuid } = require("uuidv4");
 const axios = require("axios");
 const CirclePayment = require("../models/circlePayments.js");
+const referralModel = require("../models/referralModel");
 const TripleaPayment = require("../models/TripleaPayment.js");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
+const PromoCode = require("../models/PromoCode")
 
 const createActivity = async (userId, price, chikId) => {
     await models.users.updateOne(
@@ -51,7 +53,7 @@ const createPayment = async (req, res) => {
             // encryptedData
         } = req.body;
         const buyNft = await Nft.presalenfts.find({ _id: nftId });
-        console.log("bb ",buyNft[0].price,quantity);
+        console.log("bb ", buyNft[0].price, quantity);
 
         const nftAmount =
             parseFloat(buyNft[0].price / 10 ** 6) * quantity;
@@ -63,7 +65,7 @@ const createPayment = async (req, res) => {
         }
         console.log("NFT AMOUNT", nftAmount.toFixed(2).toString());
 
-        console.log("DATA ",{
+        console.log("DATA ", {
             metadata: {
                 email: email,
                 sessionId: sessionId,
@@ -73,7 +75,7 @@ const createPayment = async (req, res) => {
                 amount: nftAmount.toFixed(2).toString(),
                 currency: "USD",
             },
-            autoCapture: true,
+            autoCapture: true, 
             source: { id: cardId, type: "card" },
             idempotencyKey: uuid(),
             verification: "cvv",
@@ -81,7 +83,7 @@ const createPayment = async (req, res) => {
             keyId: "key1",
             // verificationSuccessUrl: "http://localhost:3000/payment_success",
             // verificationFailureUrl: "http://localhost:3000/payment_failure",
-        },"SDF");
+        }, "SDF");
 
         sdk.auth(process.env.CIRCLE_TOKEN);
         sdk.createPayment({
@@ -111,16 +113,16 @@ const createPayment = async (req, res) => {
                 });
             })
             .catch((err) => {
-                console.log("A",err);
+                console.log("A", err);
                 res.status(400).json({ error: "a.Some error ocurred" });
             });
 
     } catch (err) {
-    console.log(err);
-    res.status(400).json({
-        error: "c.Some error ocurred",
-    });
-}
+        console.log(err);
+        res.status(400).json({
+            error: "c.Some error ocurred",
+        });
+    }
 };
 const saveCirclePaymentData = async (req, res) => {
     try {
@@ -150,14 +152,23 @@ const createPaymentAAA = async (req, res) => {
             cancleUrl,
             quantity,
             currency,
-            
+            promoCode
         } = req.body;
 
         const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
         const user = await models.users.findOne({ _id: userId });
+        var promoDiv = 0
+        if (promoCode !== "") {
+            console.log(promoCode, "promo")
+            const promo = await PromoCode.findOne({ promoCode: promoCode })
+            console.log(promo)
+            promoDiv = promo.percentDiscount
+        }
+
+        console.log(quantity,"quantity")
 
         var nftAmount =
-            parseFloat(buyNft.price / 10 ** 6) * quantity;
+            parseFloat(buyNft.price / 10 ** 6) * quantity * (100 - promoDiv);
         nftAmount = Math.round(nftAmount);
         console.log("Price ", nftAmount);
 
@@ -185,13 +196,13 @@ const createPaymentAAA = async (req, res) => {
                 console.log(response.data);
                 const orderId = uuid();
                 var dataPay = JSON.stringify({
-                    type: "widget",
-                    merchant_key: "mkey-cl1x8nff8005y34th0ktk2o2u",
+                    type: "triplea",
+                    merchant_key: process.env.MERCHANT_KEY_AAA,
                     order_currency: currency,
-                    order_amount: nftAmount ,
+                    order_amount: nftAmount,
                     notify_email: user.email,
                     notify_url:
-                        `${process.env.APP_BACKEND_URL}/payment/triplea-webhook-payment`,
+                        `https://c22a-2401-4900-5b95-12d9-8d1-ecd2-d154-7a09.in.ngrok.io/payment/triplea-webhook-payment`,
                     notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
                     notify_txs: true,
                     payer_id: orderId,
@@ -204,13 +215,13 @@ const createPaymentAAA = async (req, res) => {
                         "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
                     success_url: successUrl,
                     cancel_url: cancleUrl,
-                    account_api_id: "ETH1649834142vuT",
+                    sandbox: true,
                     cart: {
                         items: [
                             {
                                 sku: buyNft.name,
                                 label: "Chiky Chik",
-                                quantity: quantity,
+                                quantity: 1,
                                 amount: nftAmount,
                             },
                         ],
@@ -235,48 +246,24 @@ const createPaymentAAA = async (req, res) => {
                     data: dataPay,
                 };
 
+                console.log(dataPay, "239")
                 axios(config)
                     .then(function (response) {
-                        console.log("A r", response);
+                        console.log("A ", JSON.stringify(response.data));
+                        
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        console.log("error",error);
-                        var config = {
-                            method: "post",
-                            url: reqPayment,
-                            headers: {
-                                Authorization: `Bearer ${response.data.access_token}`,
-                                "Content-Type": "application/json",
-                            },
-                            data: dataPay,
-                        };
-
-                        axios(config)
-                            .then(function (response) {
-                                console.log("A ", response);
-                                res.status(200).json(response.data);
-                            })
-                            .catch(function (error) {
-                                console.log("error", error);
-                                res.status(400).json({
-                                    error: "Some...",
-                                });
-                            });
+                        console.log(error.response, "247")
                     })
-                    .catch(function (error) {
-                        console.log("error");
-                    });
             })
             .catch((ecr) => {
-                console.log(ecr);
                 res.status(400).json({
                     error: "Some error...",
                 });
             });
 
     } catch (err) {
-        console.log(err);
         res.status(400).json({
             error: "Some error ocurred",
         });
@@ -289,10 +276,10 @@ const { Charge } = resources;
 Client.init(process.env.COINBASE_TOKEN);
 
 const coinbasePayment = async (req, res) => {
-    const { chikId, email, userId, quantity } = req.params;
-    if(!email) {
+    const { chikId, email, userId, quantity ,promoCode} = req.params;
+    if (!email) {
         return res.status(404).json({
-            err:"USER NOT FOUND"
+            err: "USER NOT FOUND"
         })
     }
 
@@ -304,8 +291,15 @@ const coinbasePayment = async (req, res) => {
                 err: "NFT not found!",
             });
         }
+        var promoDiv = 0
+        if (promoCode !== "") {
+            console.log(promoCode, "promo")
+            const promo = await PromoCode.findOne({ promoCode: promoCode })
+            console.log(promo)
+            promoDiv = promo.percentDiscount
+        }
         const nftAmount =
-            parseFloat(buyNft?.price / 10 ** 6) * quantity;
+            parseFloat(buyNft?.price / 10 ** 6) * quantity *(100 - promoDiv);
         const chargeData = {
             name: buyNft.name,
             description: buyNft.description.substring(0, 199),
@@ -387,6 +381,27 @@ const handleCoinbasePayment = async (req, res) => {
                 nft: event.data.metadata.nftId,
                 quantity: event.data.metadata.quantity
             });
+
+            const userInfo = await models.users.find({ _id: event.data.metadata.customer_id });
+            const getMyreferral = await models.users.find({
+                referralCode: userInfo[0].refereeCode,
+            });
+            console.log("GET MY REFERRAL ", getMyreferral[0]._id)
+            if (userInfo && userInfo[0].refereeCode != "") {
+                const bought = await PresaleBoughtNft.findOne({ _id: createPresale._id })
+                const setting = await referralModel.appsetting.findOne({});
+                console.log("bought ", bought);
+                let referralIncome =
+                    (bought.amountSpent * bought.quantity / 100) * setting.referralPercent;
+                const addMyIncome = await new referralModel.referralIncome({
+                    userId: getMyreferral[0]._id,
+                    amount: referralIncome,
+                    nftId: event.data.metadata.nftId,
+                    recievedFrom: event.data.metadata.customer_id,
+                });
+                await addMyIncome.save()
+            }
+
             await createActivity(
                 owner,
                 event.data.pricing.local.amount,
@@ -468,28 +483,51 @@ const tripleAWebhook = async (req, res) => {
         // signature validates ... do stuff
         console.log("___________________________ WORKING HOOOK")
 
-        
- 
-        if(status == 'good') {
+
+
+        if (status == 'good') {
             const createPresale = await PresaleBoughtNft.create({
                 nftIdOwned: webhook_data.nftId,
                 owner: webhook_data.userId,
                 nft: ObjectId(webhook_data.nftId),
                 quantity: webhook_data.quantity
             });
-    
-            const tripleaRecord = await TripleaPayment.create({  event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount,
-            orderId:webhook_data.orderId });
+
+            const tripleaRecord = await TripleaPayment.create({
+                event, type, payment_reference, crypto_currency, crypto_address, crypto_amount, order_currency, order_amount, exchange_rate, status, status_date, receive_amount, payment_tier, payment_currency, payment_amount, payment_crypto_amount,
+                orderId: webhook_data.orderId
+            });
+
+            const userInfo = await models.users.find({ _id: webhook_data.userId });
+            const getMyreferral = await models.users.find({
+                referralCode: userInfo[0].refereeCode,
+            });
+            console.log("GET MY REFERRAL ", getMyreferral[0]._id)
+            if (userInfo && userInfo[0].refereeCode != "") {
+                const bought = await PresaleBoughtNft.findOne({ _id: createPresale._id })
+                const setting = await referralModel.appsetting.findOne({});
+                console.log("bought ", bought);
+                let referralIncome =
+                    (bought.amountSpent * bought.quantity / 100) * setting.referralPercent;
+                const addMyIncome = await new referralModel.referralIncome({
+                    userId: getMyreferral[0]._id,
+                    amount: referralIncome,
+                    nftId: webhook_data.nftId,
+                    recievedFrom: webhook_data.userId,
+                });
+
+                await addMyIncome.save()
+            }
+
+            await createActivity(
+                owner,
+                event.data.pricing.local.amount,
+                event.data.metadata.nftId
+            );
+            return res.status(200).end();
+        } else {
+            return res.status(400).end();
         }
-        
-        await createActivity(
-            owner,
-            event.data.pricing.local.amount,
-            event.data.metadata.nftId
-        );
-        return res.status(200).end();
-    } else {
-        return res.status(400).end();
     }
 };
 
@@ -503,4 +541,4 @@ module.exports = {
     saveCirclePaymentData,
     sendPaymentEmail,
     tripleAWebhook
-};
+}

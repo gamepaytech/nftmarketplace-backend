@@ -431,7 +431,7 @@ const addMyIncome = async function (req, res) {
             const setting = await referralModel.appsetting.findOne({});
             console.log("bought ",bought);
             let referralIncome =
-                (bought.amountSpent / 100) * setting.referralPercent;
+                (bought.amountSpent *bought.quantity / 100) * setting.referralPercent;
             const addMyIncome = await new referralModel.referralIncome({
                 userId: getMyreferral[0]._id,
                 amount: referralIncome,
@@ -455,17 +455,10 @@ const addMyIncome = async function (req, res) {
                 totalAmount: totalAmount,
             });
         } else {
-            const totalIncome = await referralModel.referralIncome.find({
-                userId: getMyreferral[0]._id,
-            });
-            let totalAmount = 0;
-            for (let i = 0; i < totalIncome.length; i++) {
-                totalAmount += totalIncome[i].amount;
-            }
+
             res.json({
                 status: 200,
-                msg: "Success",
-                totalAmoutn: totalAmount,
+                msg: "The user is not refered by anyone",
             });
         }
     } catch (error) {
@@ -565,6 +558,8 @@ const getMyrewards = async function (req, res) {
             totalRewards += myRewards[i].amount;
             Ids.push(myRewards[i].recievedFrom);
         }
+
+        console.log(Ids,"idssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss")
 
         const getMyReferees = await models.users.find({
             _id: { $in: Ids },
