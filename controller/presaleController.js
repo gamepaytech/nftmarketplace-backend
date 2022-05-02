@@ -17,7 +17,7 @@ const startPresale = async (req, res) => {
       ],
       { upsert: false }
     );
-    let getPreSaleTier = await models.presaletiers.find({});
+    let getPreSaleTier = await models.presaletiers.find({}).sort({ price:1 });
     let getPresaleNFT = await nftModels.presalenfts.find({});
     getPresaleNFT.forEach(async (nft) => {
       let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
@@ -194,7 +194,7 @@ const schedulePreSale = async(req,res) =>{
   try {
     let isPresaleStart = await nftModels.settingpresalenfts.find({})
     if(isPresaleStart[0].event_start){
-      let getPreSaleTier = await models.presaletiers.find({});
+      let getPreSaleTier = await models.presaletiers.find({}).sort({ price:1 });
       let getPresaleNFT = await nftModels.presalenfts.find({});
       let presale_status = [];
       getPresaleNFT.forEach(async (nft) => {
