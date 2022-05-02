@@ -28,9 +28,12 @@ const getLaunchPad = async (req, res) => {
     const id = req.params.id;
     models.launchpads.findById(id)
         .then(data => {
-            if (!data)
+            if (!data) {
                 res.status(200).json({status:"error", message: "Not found Campaign with id " + id });
-            else res.status(200).json({status:"success", data:data});
+            } else  {
+              data['current_date'] = new Date();
+              res.status(200).json({status:"success", data:data})
+            }
         })
         .catch(err => {
             res
