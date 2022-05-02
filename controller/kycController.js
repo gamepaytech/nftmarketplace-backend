@@ -27,7 +27,7 @@ const getKYC = async (req, res) => {
     models.kycs.findById(id)
         .then(data => {
             if (!data)
-                res.status(200).json({status:"error", message: "Not found Campaign with id " + id });
+                res.status(200).json({status:"error", message: "Not found KYC with id " + id });
             else res.status(200).json({status:"success", data:data});
         })
         .catch(err => {
@@ -49,7 +49,7 @@ const getKYC = async (req, res) => {
       } 
 
       const checkUser = await models.kycs.findOne({userId:req.body.userId})
-      if (checkUser) {
+      if (checkUser == null) {
           res.json({ status: 400, msg: 'User not Found' })
           return
       }

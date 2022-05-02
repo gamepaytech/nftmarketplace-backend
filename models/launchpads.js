@@ -10,6 +10,7 @@ const launchpadSchema = new Schema(
         subscription_start_date: { type: String},
         calculation_start_date: { type: String},
         final_NFT_distribution_date: { type: String},
+        resource: { type: String},
     },
     { timestamps: true }
 )
