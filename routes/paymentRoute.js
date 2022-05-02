@@ -8,7 +8,10 @@ const {
     createPaymentAAA,
     saveCirclePaymentData,
     sendPaymentEmail,
-    tripleAWebhook
+    tripleAWebhook,
+    coinbaseLaunchpadPayment,
+    handleLaunchpadHook,
+    makeLaunchpadPayment
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -25,5 +28,8 @@ router.route("/coin-handle-pay").post(handleCoinbasePayment);
 router.route("/send-confirmation").post(sendPaymentEmail);
 
 router.route("/triplea-webhook-payment").post(bodyParser.raw({type: 'application/json'}),tripleAWebhook);
+router.route("/coinbase-launchpad").post(authenticateUser,coinbaseLaunchpadPayment);
+router.route("/coin-launchpad-hook").post(handleLaunchpadHook);
+router.route("/makeLaunchpadPayment").post(authenticateUser,makeLaunchpadPayment);
 
 module.exports = router;

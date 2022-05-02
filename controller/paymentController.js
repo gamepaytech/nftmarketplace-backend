@@ -1,21 +1,23 @@
 // const Nft = require("../models/Nft");
 const Nft = require("../models/presaleNfts");
 const models = require("../models/User");
-const qs = require("qs");
-const { tokenGen, reqPayment } = require("../apisaaa");
-const CoinbasePayment = require("../models/coinbasePayments");
-const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
-const { uuid } = require("uuidv4");
-const axios = require("axios");
 const CirclePayment = require("../models/circlePayments.js");
 const referralModel = require("../models/referralModel");
 const TripleaPayment = require("../models/TripleaPayment.js");
-const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const PresaleBoughtNft = require("../models/PresaleBoughtNft");
-const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
-const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
 const PromoCode = require("../models/PromoCode")
+const CoinbasePayment = require("../models/coinbasePayments");
+const LaunchpadPayment = require("../models/launchpadPayment");
+const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
+const { tokenGen, reqPayment } = require("../apisaaa");
+
+const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
+const { uuid } = require("uuidv4");
+const axios = require("axios");
+const mongoose = require("mongoose");
+const qs = require("qs");
+const { Client, resources, Webhook } = require("coinbase-commerce-node");
+const ObjectId = mongoose.Types.ObjectId;
 
 const createActivity = async (userId, price, chikId) => {
     await models.users.updateOne(
@@ -158,7 +160,7 @@ const createPaymentAAA = async (req, res) => {
         const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
         const user = await models.users.findOne({ _id: userId });
         var promoDiv = 0
-        if (promoCode !== "") {
+        if (promoCode) {
             console.log(promoCode, "promo")
             const promo = await PromoCode.findOne({ promoCode: promoCode })
             console.log(promo)
@@ -172,7 +174,7 @@ const createPaymentAAA = async (req, res) => {
         nftAmount = Math.round(nftAmount);
         console.log("Price ", nftAmount);
 
-        if (nftAmount < 0.1) {
+        if (nftAmount < 0.001) {
             return res.status(400).json({
                 error: "Price is less than 0.1$",
             });
@@ -202,7 +204,7 @@ const createPaymentAAA = async (req, res) => {
                     order_amount: nftAmount,
                     notify_email: user.email,
                     notify_url:
-                        `https://c22a-2401-4900-5b95-12d9-8d1-ecd2-d154-7a09.in.ngrok.io/payment/triplea-webhook-payment`,
+                        `https://2bec-2401-4900-1c1b-e42a-4044-3c41-e242-43eb.ngrok.io/payment/triplea-webhook-payment`,
                     notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
                     notify_txs: true,
                     payer_id: orderId,
@@ -292,14 +294,17 @@ const coinbasePayment = async (req, res) => {
             });
         }
         var promoDiv = 0
-        if (promoCode !== "") {
+        console.log(promoCode,"promo",!promoCode)
+        if (promoCode) {
             console.log(promoCode, "promo")
             const promo = await PromoCode.findOne({ promoCode: promoCode })
             console.log(promo)
             promoDiv = promo.percentDiscount
         }
         const nftAmount =
-            parseFloat(buyNft?.price / 10 ** 6) * quantity *(100 - promoDiv);
+            parseFloat(buyNft?.price / 10 ** 6) * quantity * ((100 - promoDiv) / 100);
+            console.log("CHARGE DATA ",buyNft?.price / 10 ** 6);
+
         const chargeData = {
             name: buyNft.name,
             description: buyNft.description.substring(0, 199),
@@ -318,6 +323,8 @@ const coinbasePayment = async (req, res) => {
             redirect_url: `${process.env.DOMAIN}/profile`,
             cancel_url: `${process.env.DOMAIN}/chik/${chikId}?status=payment-failed-canceled`,
         };
+
+        
         const charge = await Charge.create(chargeData);
 
         // console.log(charge);
@@ -529,7 +536,137 @@ const tripleAWebhook = async (req, res) => {
             return res.status(400).end();
         }
     }
+
 };
+
+const makeLaunchpadPayment = async (req,res) => {
+    try {
+        let { amount, paymentMethod, paymentId,transactionHash } = req.body;
+
+        const createData = await LaunchpadPayment.create({
+            userId: req.user.userId,
+            amountCommited: amount ,
+            paymentMethod:"Metamask" ,
+            paymentStatus: "" ,
+            paymentId: transactionHash
+        });
+
+        res.status(200).json({
+            msg:"Success! Payment confirmed."
+        })
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).json({
+            err:"500: Internal Server Error."
+        })
+    }
+}
+const coinbaseLaunchpadPayment = async (req, res) => {
+    
+    try {
+        const {amount} = req.body;
+        
+        const nftAmount = amount;
+
+        const chargeData = {
+            name: "Chikey Chik",
+            description: "The world’s first fully customizable end-to-end NFT",
+            local_price: {
+                amount: nftAmount,
+                currency: "USD",
+            },
+            pricing_type: "fixed_price",
+            logo_url: "https://gamepay.sg/static/media/banner-kv.804e1dab7212846653e0.png",
+            metadata: {
+                customer_id: req.user.userId,
+                customer_email: req.body.email,
+                amountCommited: amount
+            },
+            redirect_url: `${process.env.DOMAIN}/launchpad?status=payment-success`,
+            cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
+        };
+
+        console.log("CHARGE DATA ",chargeData)
+        
+        const charge = await Charge.create(chargeData);
+
+        res.send(charge);
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            error: "Data not found",
+        });
+    }
+};
+const handleLaunchpadHook = async (req,res) => {
+    const rawBody = req.rawBody;
+    console.log("req body ", rawBody);
+    const signature = req.headers["x-cc-webhook-signature"];
+    const webhookSecret = process.env.COINBASE_WEBHOOK_SECRET;
+    let event;
+
+    try {
+        event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
+
+        if (event.type === "charge:pending") {
+            // received order
+            // user paid, but transaction not confirm on blockchain yet
+            const createData = await LaunchpadPayment.create({
+                userId: event.data.metadata.userId,
+                amountCommited:event.data.metadata.amount ,
+                paymentMethod:"Coinbase" ,
+                paymentStatus: "pending" ,
+                paymentId: event.data.id
+            })
+            return res.json({
+                status: "Pending",
+            });
+        }
+
+        if (event.type === "charge:confirmed") {
+            // fulfill order
+            // charge confirmed
+            console.log("charge confirmed", event.data);
+            //save in presale bought nft added to user account
+
+            //create payment schema
+            const createData = await LaunchpadPayment.create({
+                userId: event.data.metadata.userId,
+                amountCommited:event.data.metadata.amount ,
+                paymentMethod:"Coinbase" ,
+                paymentStatus: "confirmed" ,
+                paymentId: event.data.id
+            })
+
+            return res.json({
+                status: "confirmed",
+            });
+        }
+
+        if (event.type === "charge:failed") {
+            // cancel order
+            // charge failed or expired
+            console.log("charge failed sdfdsf", event.data);
+            const createData = await LaunchpadPayment.create({
+                userId: event.data.metadata.userId,
+                amountCommited:event.data.metadata.amount ,
+                paymentMethod:"Coinbase" ,
+                paymentStatus: "failed" ,
+                paymentId: event.data.id
+            })
+            return res.json({
+                status: "failed",
+            });
+        }
+
+        res.send(`success ${event.id}`);
+    } catch (error) {
+        console.log("err 00", error);
+        res.status(400).send("failure");
+    }
+}
+
 
 module.exports = {
     createPayment,
@@ -540,5 +677,8 @@ module.exports = {
     createPaymentAAA,
     saveCirclePaymentData,
     sendPaymentEmail,
-    tripleAWebhook
+    tripleAWebhook,
+    coinbaseLaunchpadPayment,
+    handleLaunchpadHook,
+    makeLaunchpadPayment
 }
