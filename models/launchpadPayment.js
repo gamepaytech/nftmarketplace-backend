@@ -19,6 +19,9 @@ const launchpadPaymentSchema = new mongoose.Schema(
         },
         paymentId: {
           type:String,
+        },
+        metadata : {
+          type:String
         }
 
     },
