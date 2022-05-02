@@ -484,6 +484,6 @@ return myDate;
 }
 
 
-  module.exports = {startPresale,stopPresale,schedulePreSale,getPresale,createPreSaleTier,getPreSaleTierById,updatePresale}
+module.exports = {startPresale,stopPresale,schedulePreSale,getPresale,createPreSaleTier,getPreSaleTierById,updatePresale}
 
 
