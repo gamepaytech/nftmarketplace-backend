@@ -21,6 +21,8 @@ const paymentRouter = require("./routes/paymentRoute");
 const promoRouter = require("./routes/promoRoutes");
 const claimRouter = require('./routes/claimRoutes');
 const preSaleTier = require('./routes/presaleTier');
+const launchPad = require('./routes/launchPadRoute');
+const kyc = require('./routes/kycRoute');
 const vestingRouter = require('./routes/vestingRoute');
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
@@ -54,6 +56,8 @@ app.use(express.static("./public"));
 app.use("/auth", authRouter);
 app.use("/nft", nftRouter);
 app.use('/preSaleTier', preSaleTier)
+app.use('/launchPad', launchPad)
+app.use('/kyc', kyc)
 app.use("/users", userRouter);
 app.use("/gamePayToken", gamePayTokenRouter);
 app.use("/payment", paymentRouter);
