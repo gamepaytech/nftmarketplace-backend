@@ -767,8 +767,8 @@ const launchpadPaymentAAA = async (req, res) => {
             });
         }
         var bodyData = qs.stringify({
-            client_id: process.env.CLIENTID_AAA,
-            client_secret: process.env.SECRETID_AAA,
+            client_id: "oacid-cl1d9k0us0cw5cmth3d5608x1", //process.env.CLIENTID_AAA,
+            client_secret: "f2a74e4c7afc09df29f46f771061f7e61cc7c2ab8249354901057e6dbd3399ef", //process.env.SECRETID_AAA,
             grant_type: "client_credentials",
         });
         var config = {
@@ -782,66 +782,104 @@ const launchpadPaymentAAA = async (req, res) => {
 
         await axios(config)
             .then(async function (response) {
-                // console.log(response.data);
+                console.log("response {}", response);
                 const orderId = uuid();
-                var dataPay = JSON.stringify({
-                    type: "triplea",
-                    merchant_key: process.env.MERCHANT_KEY_AAA,
-                    order_currency: "USD",
-                    order_amount: nftAmount,
-                    notify_email: email,
-                    notify_url: `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
-                    notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
-                    notify_txs: true,
-                    payer_id: orderId,
-                    payer_name: email,
-                    payer_email: email,
-                    payer_phone: "+6591234567",
-                    payer_address: "1 Parliament Place, Singapore 178880",
-                    payer_poi:
-                        "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
-                    success_url: successUrl,
-                    cancel_url: cancleUrl,
-                    sandbox: true,
+                var dataPay = JSON.stringify ({
+                    "type": "triplea",
+                    "merchant_key": "mkey-cl1d9k0uc0cw4cmthcuilh31a",
+                    "order_currency": "USD",
+                    "order_amount": nftAmount,
+                    "payer_id": orderId,
+                    "payer_name": email,
+                    "payer_email": email,
+                    "success_url": successUrl,
+                    "cancel_url": cancleUrl,
+                    "notify_url": `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
+                    "notify_secret": "Cf9mx4nAvRuy5vwBY2FCtaKr",
+                    "notify_txs": true,
+                    "webhook_data": {
+                        "order_id": orderId
+                    },
                     cart: {
                         items: [
                             {
-                                sku: "Chiky Chik",
-                                label: "Chiky Chik",
-                                quantity: 1,
                                 amount: nftAmount,
-                            },
+                                quantity: 1,
+                                label: "Chiky Chik",
+                                sku: "Chiky launchpad sale" 
+                            }
                         ],
                         shipping_cost: 0,
                         shipping_discount: 0,
-                        tax_cost: 0,
+                        tax_cost: 0
                     },
-                    webhook_data: {
-                        order_id: orderId,
-                        userId: req.user.userId,
-                    },
+                    "sandbox": `${process.env.AAA_SANDBOX}`
                 });
+                
+                /*JSON.stringify(
+                    {
+                    type: 'triplea',
+                    merchant_key: 'mkey-cl1d9k0uc0cw4cmthcuilh31a', //process.env.MERCHANT_KEY_AAA,
+                    order_currency: 'USD',
+                    order_amount: nftAmount,
+                    //notify_email: email,
+                    payer_id: orderId,
+                    payer_name: email,
+                    payer_email: email,
+                    //payer_phone: "+6591234567",
+                    //payer_address: "1 Parliament Place, Singapore 178880",
+                    //payer_poi:
+                    //    "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
+                    success_url: successUrl,
+                    cancel_url: cancleUrl,
+                    notify_url: `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
+                    notify_secret: 'Cf9mx4nAvRuy5vwBY2FCtaKr',
+                    notify_txs: true,
+                    webhook_data: {
+                        order_id: 1234,//orderId//,
+ //                       userId: req.user.userId
+                    },
+                    cart: {
+                        items: [
+                            {
+                                amount: 150,//nftAmount,
+                                quantity: 1,
+                                label: "Chiky Chik",
+                                sku: "Chiky Chik" 
+                            }
+                        ],
+                        shipping_cost: 0,
+                        shipping_discount: 0,
+                        tax_cost: 0
+                    },
+                    sandbox: true,
+                }
+                );
+                */
                 var config = {
                     method: "post",
                     url: reqPayment,
                     headers: {
                         Authorization: `Bearer ${response.data.access_token}`,
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
-                    data: dataPay,
+                    data: dataPay
                 };
 
-                // console.log(dataPay, "239");
+                console.log("config {}", config , " ",  "239");
                 axios(config)
                     .then(function (response) {
-                        // console.log("A ", JSON.stringify(response.data));
+                        console.log("A ", JSON.stringify(response.data));
 
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        // console.log(error.response, "247");
+                        console.log(error.response, "247");
                         return res.status(400).json({err:"Some error ocurred!"})
                     });
+                    
+                    /*const res = await axios.post(reqPayment, dataPay, { headers });
+                    console.log ("res {}", res);*/   
             })
             .catch((ecr) => {
                 console.log(ecr);
