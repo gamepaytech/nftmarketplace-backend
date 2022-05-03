@@ -786,7 +786,7 @@ const launchpadPaymentAAA = async (req, res) => {
                 const orderId = uuid();
                 var dataPay = JSON.stringify ({
                     "type": "triplea",
-                    "merchant_key": "mkey-cl1d9k0uc0cw4cmthcuilh31a",
+                    "merchant_key": `${process.env.AAA_MERCHANT_KEY}`,
                     "order_currency": "USD",
                     "order_amount": nftAmount,
                     "payer_id": orderId,
@@ -795,7 +795,7 @@ const launchpadPaymentAAA = async (req, res) => {
                     "success_url": successUrl,
                     "cancel_url": cancleUrl,
                     "notify_url": `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
-                    "notify_secret": "Cf9mx4nAvRuy5vwBY2FCtaKr",
+                    "notify_secret": `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
                     "notify_txs": true,
                     "webhook_data": {
                         "order_id": orderId
