@@ -17,7 +17,8 @@ const {
     tripleAWebhookLaunchpad,
     getAllCommitedAmount,
     initiateLaunchpadPayment,
-    errorLaunchpadPayment
+    errorLaunchpadPayment,
+    getLaunchpadActivity
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -43,5 +44,6 @@ router.route("/launchpadPayment").post(authenticateUser,launchpadPaymentAAA);
 router.route("/tripleAWebhookLaunchpad").post(bodyParser.raw({type: 'application/json'}),tripleAWebhookLaunchpad)
 router.route("/initiateLaunchpadPayment").post(authenticateUser,initiateLaunchpadPayment);
 router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayment);
+router.route("/getLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
 
 module.exports = router;

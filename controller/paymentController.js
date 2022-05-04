@@ -1069,6 +1069,49 @@ const getAllCommitedAmount = async (req, res) => {
     }
 };
 
+const getLaunchpadActivity = async (req, res) => {
+    try {
+        if (!req.user.userId) {
+            return res.status(404).json({
+                err: "Error! user not found.",
+            });
+        }
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        const currentDate = new Date();
+        const fromDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 0);
+        let total = await LaunchpadPayment.count({
+            userId: req.user.userId,
+            updatedAt: {
+                $gte: fromDate,
+            }
+        });
+        LaunchpadPayment.find({
+            userId: req.user.userId,
+            updatedAt: {
+                $gte: fromDate,
+            }
+        })
+            // .select("name")
+            .sort({ updatedAt: -1 })
+            .limit(pageSize)
+            .skip(pageSize * page)
+            .then((results) => {
+                return res
+                    .status(200)
+                    .json({ status: "success", total: total, page: page, pageSize: pageSize, data: results });
+            })
+            .catch((err) => {
+                return res.status(500).send(err);
+            });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            err: "500: Internal server error!",
+        });
+    }
+};
+
 module.exports = {
     createPayment,
     coinbasePayment,
@@ -1087,5 +1130,6 @@ module.exports = {
     tripleAWebhookLaunchpad,
     getAllCommitedAmount,
     initiateLaunchpadPayment,
-    errorLaunchpadPayment
+    errorLaunchpadPayment,
+    getLaunchpadActivity
 };

@@ -4,7 +4,7 @@ const models = require("../models/launchpads")
 
 
 
-const getLaunchPad = async (req, res) => {
+ const getLaunchPad = async (req, res) => {
     let page = req.query.page;
     let pageSize = req.query.pageSize;
     let total = await models.launchpads.count({});
@@ -41,8 +41,6 @@ const getLaunchPad = async (req, res) => {
                 .json({status:"error", message: "Error retrieving Campaign with id=" + id });
         });
   }
-
-
 
   module.exports = {getLaunchPad,getLaunchPadById}
 
