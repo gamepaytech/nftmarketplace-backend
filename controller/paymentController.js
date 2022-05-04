@@ -580,15 +580,58 @@ const tripleAWebhook = async (req, res) => {
     }
 };
 
-const makeLaunchpadPayment = async (req, res) => {
+const initiateLaunchpadPayment = async (req, res) => {
     try {
-        let { amount, paymentMethod, paymentId, transactionHash } = req.body;
+        let { amount, paymentMethod } = req.body;
 
         const createData = await LaunchpadPayment.create({
             userId: req.user.userId,
             amountCommited: amount,
-            paymentMethod: "Metamask",
-            paymentStatus: "",
+            paymentMethod: paymentMethod,
+            paymentStatus: "Initiated"
+        });
+
+        res.status(200).json({
+            msg: "Success! Payment initiated.",
+            payment: createData
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            err: "500: Internal Server Error.",
+        });
+    }
+};
+
+const errorLaunchpadPayment = async (req, res) => {
+    try {
+        let { id, error, code } = req.body;
+
+        const createData = await LaunchpadPayment.updateOne({ _id: ObjectId(id) }, {
+            userId: req.user.userId,
+            paymentStatus: "Failed",
+            code: code,
+            error: error
+        });
+
+        res.status(200).json({
+            msg: "Error! Payment failed.",
+            payment: createData
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            err: "500: Internal Server Error.",
+        });
+    }
+};
+
+const makeLaunchpadPayment = async (req, res) => {
+    try {
+        let { amount, transactionHash, id } = req.body;
+
+        const createData = await LaunchpadPayment.updateOne({ _id: ObjectId(id) }, {
+            paymentStatus: "Completed",
             paymentId: transactionHash,
         });
 
@@ -618,6 +661,7 @@ const makeLaunchpadPayment = async (req, res) => {
         });
     }
 };
+
 const coinbaseLaunchpadPayment = async (req, res) => {
     try {
         const { amount } = req.body;
@@ -1001,6 +1045,30 @@ const getCommitedAmount = async (req, res) => {
     }
 };
 
+const getAllCommitedAmount = async (req, res) => {
+    try {
+        if (!req.user.userId) {
+            return res.status(404).json({
+                err: "Error! user not found.",
+            });
+        }
+        const findData = await LaunchpadAmount.find({
+            userId: req.user.userId,
+        });
+        console.log("findData   ", findData);
+
+        res.status(200).json({
+            data: findData,
+            status: 200,
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            err: "500: Internal server error!",
+        });
+    }
+};
+
 module.exports = {
     createPayment,
     coinbasePayment,
@@ -1017,4 +1085,7 @@ module.exports = {
     getCommitedAmount,
     launchpadPaymentAAA,
     tripleAWebhookLaunchpad,
+    getAllCommitedAmount,
+    initiateLaunchpadPayment,
+    errorLaunchpadPayment
 };

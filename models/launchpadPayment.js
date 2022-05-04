@@ -22,6 +22,12 @@ const launchpadPaymentSchema = new mongoose.Schema(
         },
         metadata : {
           type:String
+        },
+        code : {
+          type:String
+        },
+        error : {
+          type:String
         }
 
     },
