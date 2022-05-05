@@ -31,7 +31,7 @@ const models = require("../models/launchpads")
             if (!data) {
                 res.status(200).json({status:"error", message: "Not found Campaign with id " + id });
             } else  {
-              data['current_date'] = new Date();
+              data['current_date'] = new Date().toISOString();
               res.status(200).json({status:"success", data:data})
             }
         })
