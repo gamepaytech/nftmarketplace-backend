@@ -514,32 +514,31 @@ const tripleAWebhook = async (req, res) => {
         // signature validates ... do stuff
         console.log("___________________________ WORKING HOOOK");
 
+        const tripleaRecord = await TripleaPayment.create({
+          event,
+          type,
+          payment_reference,
+          crypto_currency,
+          crypto_address,
+          crypto_amount,
+          order_currency,
+          order_amount,
+          exchange_rate,
+          status,
+          status_date,
+          receive_amount,
+          payment_tier,
+          payment_currency,
+          payment_amount,
+          payment_crypto_amount,
+          orderId: webhook_data.orderId,
+        });
         if (status == "good") {
             const createPresale = await PresaleBoughtNft.create({
                 nftIdOwned: webhook_data.nftId,
                 owner: webhook_data.userId,
                 nft: ObjectId(webhook_data.nftId),
                 quantity: webhook_data.quantity,
-            });
-
-            const tripleaRecord = await TripleaPayment.create({
-                event,
-                type,
-                payment_reference,
-                crypto_currency,
-                crypto_address,
-                crypto_amount,
-                order_currency,
-                order_amount,
-                exchange_rate,
-                status,
-                status_date,
-                receive_amount,
-                payment_tier,
-                payment_currency,
-                payment_amount,
-                payment_crypto_amount,
-                orderId: webhook_data.orderId,
             });
 
             const userInfo = await models.users.find({
@@ -575,6 +574,7 @@ const tripleAWebhook = async (req, res) => {
             );
             return res.status(200).end();
         } else {
+          
             return res.status(400).end();
         }
     }
@@ -699,7 +699,7 @@ const coinbaseLaunchpadPayment = async (req, res) => {
         });
     }
 };
-const handleLaunchpadHook = async (req, res) => {
+const handleCoinbaseLaunchpadHook = async (req, res) => {
     const rawBody = req.rawBody;
     console.log("req body ", rawBody);
     const signature = req.headers["x-cc-webhook-signature"];
@@ -811,8 +811,8 @@ const launchpadPaymentAAA = async (req, res) => {
             });
         }
         var bodyData = qs.stringify({
-            client_id: "oacid-cl1d9k0us0cw5cmth3d5608x1", //process.env.CLIENTID_AAA,
-            client_secret: "f2a74e4c7afc09df29f46f771061f7e61cc7c2ab8249354901057e6dbd3399ef", //process.env.SECRETID_AAA,
+            client_id: process.env.CLIENTID_AAA,
+            client_secret: process.env.SECRETID_AAA,
             grant_type: "client_credentials",
         });
         var config = {
@@ -823,41 +823,53 @@ const launchpadPaymentAAA = async (req, res) => {
             },
             data: bodyData,
         };
+        
+        const orderId = uuid();
+
+        const createData = await LaunchpadPayment.create({
+            userId: req.user.userId,
+            amountCommited: nftAmount,
+            paymentMethod: "Triplea",
+            paymentStatus: "initiated",
+            paymentId: null,
+            orderId: orderId,
+            metadata: JSON.stringify(req.body),
+        });
 
         await axios(config)
             .then(async function (response) {
                 console.log("response {}", response);
-                const orderId = uuid();
-                var dataPay = JSON.stringify ({
-                    "type": "triplea",
-                    "merchant_key": `${process.env.AAA_MERCHANT_KEY}`,
-                    "order_currency": "USD",
-                    "order_amount": nftAmount,
-                    "payer_id": orderId,
-                    "payer_name": email,
-                    "payer_email": email,
-                    "success_url": successUrl,
-                    "cancel_url": cancleUrl,
-                    "notify_url": `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
-                    "notify_secret": `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
-                    "notify_txs": true,
-                    "webhook_data": {
-                        "order_id": orderId
-                    },
-                    cart: {
-                        items: [
-                            {
-                                amount: nftAmount,
-                                quantity: 1,
-                                label: "Chiky Chik",
-                                sku: "Chiky launchpad sale" 
-                            }
-                        ],
-                        shipping_cost: 0,
-                        shipping_discount: 0,
-                        tax_cost: 0
-                    },
-                    "sandbox": `${process.env.AAA_SANDBOX}`
+                var dataPay = JSON.stringify({
+                  type: "triplea",
+                  merchant_key: `${process.env.AAA_MERCHANT_KEY}`,
+                  order_currency: "USD",
+                  order_amount: nftAmount,
+                  payer_id: orderId,
+                  payer_name: email,
+                  payer_email: email,
+                  success_url: successUrl,
+                  cancel_url: cancleUrl,
+                  notify_url: `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
+                  notify_secret: `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
+                  notify_txs: true,
+                  webhook_data: {
+                    order_id: orderId,
+                    userId: req.user.userId,
+                  },
+                  cart: {
+                    items: [
+                      {
+                        amount: nftAmount,
+                        quantity: 1,
+                        label: "Chiky Chik",
+                        sku: "Chiky launchpad sale",
+                      },
+                    ],
+                    shipping_cost: 0,
+                    shipping_discount: 0,
+                    tax_cost: 0,
+                  },
+                  sandbox: `${process.env.AAA_SANDBOX}`,
                 });
                 
                 /*JSON.stringify(
@@ -910,10 +922,10 @@ const launchpadPaymentAAA = async (req, res) => {
                     data: dataPay
                 };
 
-                console.log("config {}", config , " ",  "239");
+                // console.log("config {}", config.response , " ",  "239");
                 axios(config)
                     .then(function (response) {
-                        console.log("A ", JSON.stringify(response.data));
+                        console.log("A-- ", JSON.stringify(response.data));
 
                         res.status(200).json(response.data);
                     })
@@ -939,6 +951,7 @@ const launchpadPaymentAAA = async (req, res) => {
     }
 };
 const tripleAWebhookLaunchpad = async (req, res) => {
+    console.log("TripleA hook started");
     const sig = req.headers["triplea-signature"];
     const {
         webhook_data,
@@ -972,7 +985,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 break;
         }
     }
-    const secret = 'Cf9mx4nAvRuy5vwBY2FCtaKr';
+    const secret = process.env.AAA_CLIENT_NOTIFYSECRET;
     // calculate signature
     let check_signature = crypto
         .createHmac("sha256", secret)
@@ -990,30 +1003,34 @@ const tripleAWebhookLaunchpad = async (req, res) => {
         signature 
     ) {
         // signature validates ... do stuff
-        console.log("___________________________ WORKING HOOOK");
+        console.log(
+          "___________________________ WORKING HOOOK",webhook_data,
+          webhook_data.order_id
+        );
+        const createData = await LaunchpadPayment.findOneAndUpdate({orderId:webhook_data.order_id },{
+            orderId:webhook_data.order_id,
+            paymentStatus: status,
+            paymentId: req.body.txs[0].txid,
+            metadata: JSON.stringify(req.body),
+        }, {upsert:true});
 
+        console.log("entry uopdastee",createData);
+        const amount = req.body.payment_amount
         if (status == "good") {
-            const findExists = await LaunchpadPayment.findOne({
-                paymentId: req.body.txs[0].txid,
+            const findLaunchpad = await LaunchpadAmount.findOne({
+              userId: req.body.webhook_data.userId,
             });
-            console.log("FIND ",findExists);
-            if (!findExists) {
-                const createData = await LaunchpadPayment.create({
-                    userId: req.body.webhook_data.userId,
-                    amountCommited: req.body.txs[0].receive_amount,
-                    paymentMethod: "Triplea",
-                    paymentStatus: "confirmed",
-                    paymentId: req.body.txs[0].txid,
-                    metadata:JSON.stringify(req.body)
-                });
-                console.log("AA ",{
-                    userId: req.body.webhook_data.userId,
-                    amountCommited: req.body.txs[0].receive_amount,
-                    paymentMethod: "Triplea",
-                    paymentStatus: "confirmed",
-                    paymentId: req.body.txs[0].txid,
-                    metadata:JSON.stringify(req.body)
-                });
+            if (!findLaunchpad) {
+              console.log("not found", findLaunchpad);
+              const createAmount = await LaunchpadAmount.create({
+                userId: req.body.webhook_data.userId,
+                amountCommited: amount,
+              });
+            } else {
+              findLaunchpad.amountCommited =
+                Number(findLaunchpad.amountCommited) + Number(amount);
+              console.log("found --0", findLaunchpad);
+              await findLaunchpad.save();
             }
             return res.status(200).end();
         } else {
@@ -1113,23 +1130,23 @@ const getLaunchpadActivity = async (req, res) => {
 };
 
 module.exports = {
-    createPayment,
-    coinbasePayment,
-    handleCoinbasePayment,
-    coinbaseSuccess,
-    coinbaseFail,
-    createPaymentAAA,
-    saveCirclePaymentData,
-    sendPaymentEmail,
-    tripleAWebhook,
-    coinbaseLaunchpadPayment,
-    handleLaunchpadHook,
-    makeLaunchpadPayment,
-    getCommitedAmount,
-    launchpadPaymentAAA,
-    tripleAWebhookLaunchpad,
-    getAllCommitedAmount,
-    initiateLaunchpadPayment,
-    errorLaunchpadPayment,
-    getLaunchpadActivity
+  createPayment,
+  coinbasePayment,
+  handleCoinbasePayment,
+  coinbaseSuccess,
+  coinbaseFail,
+  createPaymentAAA,
+  saveCirclePaymentData,
+  sendPaymentEmail,
+  tripleAWebhook,
+  coinbaseLaunchpadPayment,
+  handleCoinbaseLaunchpadHook,
+  makeLaunchpadPayment,
+  getCommitedAmount,
+  launchpadPaymentAAA,
+  tripleAWebhookLaunchpad,
+  getAllCommitedAmount,
+  initiateLaunchpadPayment,
+  errorLaunchpadPayment,
+  getLaunchpadActivity,
 };
