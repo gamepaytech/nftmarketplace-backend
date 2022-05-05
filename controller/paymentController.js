@@ -842,7 +842,7 @@ const launchpadPaymentAAA = async (req, res) => {
                     "type": "triplea",
                     "merchant_key": `${process.env.AAA_MERCHANT_KEY}`,
                     "order_currency": "USD",
-                    "order_amount": 1 ,
+                    "order_amount": nftAmount ,
                     "payer_id": orderId,
                     "payer_name": email,
                     "payer_email": email,
@@ -861,7 +861,7 @@ const launchpadPaymentAAA = async (req, res) => {
                             {
                                 amount: nftAmount,
                                 quantity: 1,
-                                label: "Chiky Chik",
+                                label: "ChikyChik Launchpad",
                                 sku: "Chiky launchpad sale" 
                             }
                         ],
