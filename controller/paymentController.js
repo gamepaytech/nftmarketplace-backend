@@ -204,7 +204,7 @@ const createPaymentAAA = async (req, res) => {
                     order_currency: currency,
                     order_amount: nftAmount,
                     notify_email: user.email,
-                    notify_url: `https://2bec-2401-4900-1c1b-e42a-4044-3c41-e242-43eb.ngrok.io/payment/triplea-webhook-payment`,
+                    notify_url: `${process.env.APP_BACKEND_URL}/payment/triplea-webhook-payment`,
                     notify_secret: "Cf9mx4nAvRuy5vwBY2FCtaKr",
                     notify_txs: true,
                     payer_id: orderId,
