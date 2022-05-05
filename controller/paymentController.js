@@ -848,7 +848,7 @@ const launchpadPaymentAAA = async (req, res) => {
                     "payer_email": email,
                     "success_url": successUrl,
                     "cancel_url": cancleUrl,
-                    "notify_url": `https://4d87-2405-201-5c03-b096-addf-c712-e21f-2cb1.in.ngrok.io/payment/tripleAWebhookLaunchpad`,
+                    "notify_url": `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
                     "notify_secret": `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
                     "notify_txs": true,
                     "webhook_data": {
