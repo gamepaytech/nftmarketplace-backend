@@ -341,6 +341,7 @@ const getPresale = async (req, res) => {
     models.presaletiers.find({})
       // .select("name")
       .sort({ price:1 })
+      .collation({locale: "en_US", numericOrdering: true})
       .limit(pageSize)
       .skip(pageSize * page)
       .then((results) => {
