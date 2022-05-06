@@ -11,7 +11,7 @@ const LaunchpadPayment = require("../models/launchpadPayment");
 const LaunchpadAmount = require("../models/launchpadAmount");
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
 const { tokenGen, reqPayment } = require("../apisaaa");
-var crypto = require('crypto')
+var crypto = require("crypto");
 const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
 const { uuid } = require("uuidv4");
 const axios = require("axios");
@@ -20,13 +20,15 @@ const qs = require("qs");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const ObjectId = mongoose.Types.ObjectId;
 
-const createActivity = async (userId, price, isGood,gateway) => {
+const createActivity = async (userId, price, isGood, gateway) => {
     await models.users.updateOne(
         { _id: userId },
         {
             $push: {
                 activity: {
-                    activity: `You have ${isGood == true ? "commited" : "initiated"} ${price.toFixed(2)} USDT amount using ${gateway}.`,
+                    activity: `You have ${
+                        isGood == true ? "commited" : "initiated"
+                    } ${price.toFixed(2)} USDT amount using ${gateway}.`,
                     timestamp: new Date(),
                 },
             },
@@ -251,7 +253,7 @@ const createPaymentAAA = async (req, res) => {
                 axios(config)
                     .then(function (response) {
                         console.log("A ", JSON.stringify(response.data));
- 
+
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
@@ -325,7 +327,7 @@ const coinbasePayment = async (req, res) => {
         };
 
         const charge = await Charge.create(chargeData);
-
+        await createActivity(userId, nftAmount, false, "Coinbase");
         // console.log(charge);
         // for email
         // sendPaymentConfirmation(emailId, )
@@ -496,7 +498,7 @@ const tripleAWebhook = async (req, res) => {
                 break;
         }
     }
-    const secret = 'Cf9mx4nAvRuy5vwBY2FCtaKr!@#';
+    const secret = "Cf9mx4nAvRuy5vwBY2FCtaKr!@#";
     // calculate signature
     let check_signature = crypto
         .createHmac("sha256", secret)
@@ -588,12 +590,12 @@ const initiateLaunchpadPayment = async (req, res) => {
             userId: req.user.userId,
             amountCommited: amount,
             paymentMethod: paymentMethod,
-            paymentStatus: "Initiated"
+            paymentStatus: "Initiated",
         });
 
         res.status(200).json({
             msg: "Success! Payment initiated.",
-            payment: createData
+            payment: createData,
         });
     } catch (err) {
         console.log(err);
@@ -607,16 +609,19 @@ const errorLaunchpadPayment = async (req, res) => {
     try {
         let { id, error, code } = req.body;
 
-        const createData = await LaunchpadPayment.updateOne({ _id: ObjectId(id) }, {
-            userId: req.user.userId,
-            paymentStatus: "Failed",
-            code: code,
-            error: error
-        });
+        const createData = await LaunchpadPayment.updateOne(
+            { _id: ObjectId(id) },
+            {
+                userId: req.user.userId,
+                paymentStatus: "Failed",
+                code: code,
+                error: error,
+            }
+        );
 
         res.status(200).json({
             msg: "Error! Payment failed.",
-            payment: createData
+            payment: createData,
         });
     } catch (err) {
         console.log(err);
@@ -628,13 +633,16 @@ const errorLaunchpadPayment = async (req, res) => {
 
 const makeLaunchpadPayment = async (req, res) => {
     try {
-        let { amount, transactionHash, id,email } = req.body;
-        console.log(req.user)
+        let { amount, transactionHash, id, email } = req.body;
+        console.log(req.user);
 
-        const createData = await LaunchpadPayment.updateOne({ _id: ObjectId(id) }, {
-            paymentStatus: "Completed",
-            paymentId: transactionHash,
-        });
+        const createData = await LaunchpadPayment.updateOne(
+            { _id: ObjectId(id) },
+            {
+                paymentStatus: "Completed",
+                paymentId: transactionHash,
+            }
+        );
 
         const findLaunchpad = await LaunchpadAmount.findOne({
             userId: req.user.userId.toString(),
@@ -652,9 +660,9 @@ const makeLaunchpadPayment = async (req, res) => {
             await findLaunchpad.save();
         }
         await sendPaymentConfirmation({
-            email : email,
-            quantity :1,
-            amount
+            email: email,
+            quantity: 1,
+            amount,
         });
 
         res.status(200).json({
@@ -723,7 +731,7 @@ const handleLaunchpadHook = async (req, res) => {
             });
 
             if (!findExists) {
-                console.log("-----CREATING FAILED 726")
+                console.log("-----CREATING FAILED 726");
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -748,7 +756,7 @@ const handleLaunchpadHook = async (req, res) => {
                 paymentId: event.data.id,
             });
             if (!findExists) {
-                console.log("-----CREATING Success 751")
+                console.log("-----CREATING Success 751");
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -756,20 +764,20 @@ const handleLaunchpadHook = async (req, res) => {
                     paymentStatus: "confirmed",
                     paymentId: event.data.id,
                 });
-            }
-            else {
-                console.log("-----updating Success 761")
-                await LaunchpadPayment.updateOne({
-                    paymentId: event.data.id,
-                },
-                {
-                    userId: event.data.metadata.userId,
-                    amountCommited: event.data.metadata.amount,
-                    paymentMethod: "Coinbase",
-                    paymentStatus: "confirmed",
-                    paymentId: event.data.id,
-                }
-                )
+            } else {
+                console.log("-----updating Success 761");
+                await LaunchpadPayment.updateOne(
+                    {
+                        paymentId: event.data.id,
+                    },
+                    {
+                        userId: event.data.metadata.userId,
+                        amountCommited: event.data.metadata.amount,
+                        paymentMethod: "Coinbase",
+                        paymentStatus: "confirmed",
+                        paymentId: event.data.id,
+                    }
+                );
             }
             const findLaunchpad = await LaunchpadAmount.findOne({
                 userId: event.data.metadata.userId,
@@ -781,18 +789,29 @@ const handleLaunchpadHook = async (req, res) => {
                     amountCommited: event.data.metadata.amount,
                 });
             } else {
-                console.log("-----CREATING FAILED 784")
+                console.log("-----CREATING FAILED 784");
                 findLaunchpad.amountCommited =
-                    Number(findLaunchpad.amountCommited) + Number(event.data.metadata.amount);
+                    Number(findLaunchpad.amountCommited) +
+                    Number(event.data.metadata.amount);
                 console.log("found --0", findLaunchpad);
                 await findLaunchpad.save();
             }
             await sendPaymentConfirmation({
-                email :event.data.metadata.customer_email,
-                quantity :1,
-                amount:event.data.metadata.amount
+                email: event.data.metadata.customer_email,
+                quantity: 1,
+                amount: event.data.metadata.amount,
             });
-            await createActivity(event.data.metadata.userId,event.data.metadata.amount,true,"Coinbase")
+            console.log(
+                "looooooook",
+                event.data.metadata.userId,
+                event.data.metadata.amount
+            );
+            await createActivity(
+                event.data.metadata.userId,
+                Number(event.data.metadata.amount),
+                true,
+                "Coinbase"
+            );
 
             return res.json({
                 status: "confirmed",
@@ -802,7 +821,6 @@ const handleLaunchpadHook = async (req, res) => {
         if (event.type === "charge:failed") {
             // cancel order
             // charge failed or expired
-            console.log("charge failed sdfdsf", event.data);
             const findExists = await LaunchpadPayment.find({
                 paymentId: event.data.id,
             });
@@ -815,8 +833,20 @@ const handleLaunchpadHook = async (req, res) => {
                     paymentStatus: "failed",
                     paymentId: event.data.id,
                 });
+            } else {
+                await LaunchpadPayment.updateOne(
+                    {
+                        paymentId: event.data.id,
+                    },
+                    {
+                        userId: event.data.metadata.userId,
+                        amountCommited: event.data.metadata.amount,
+                        paymentMethod: "Coinbase",
+                        paymentStatus: "confirmed",
+                        paymentId: event.data.id,
+                    }
+                );
             }
-
             return res.json({
                 status: "failed",
             });
@@ -857,23 +887,23 @@ const launchpadPaymentAAA = async (req, res) => {
             .then(async function (response) {
                 console.log("response {}", response);
                 const orderId = uuid();
-                var dataPay = JSON.stringify ({
-                    "type": "triplea",
-                    "merchant_key": `${process.env.AAA_MERCHANT_KEY}`,
-                    "order_currency": "USD",
-                    "order_amount": nftAmount ,
-                    "payer_id": orderId,
-                    "payer_name": email,
-                    "payer_email": email,
-                    "success_url": successUrl,
-                    "cancel_url": cancleUrl,
-                    "notify_url": `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
-                    "notify_secret": `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
-                    "notify_txs": true,
-                    "webhook_data": {
-                        "order_id": orderId,
-                        "userId": req.user.userId,
-                        "email": email
+                var dataPay = JSON.stringify({
+                    type: "triplea",
+                    merchant_key: `${process.env.AAA_MERCHANT_KEY}`,
+                    order_currency: "USD",
+                    order_amount: nftAmount,
+                    payer_id: orderId,
+                    payer_name: email,
+                    payer_email: email,
+                    success_url: successUrl,
+                    cancel_url: cancleUrl,
+                    notify_url: `${process.env.APP_BACKEND_URL}/payment/tripleAWebhookLaunchpad`,
+                    notify_secret: `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
+                    notify_txs: true,
+                    webhook_data: {
+                        order_id: orderId,
+                        userId: req.user.userId,
+                        email: email,
                     },
                     cart: {
                         items: [
@@ -881,16 +911,16 @@ const launchpadPaymentAAA = async (req, res) => {
                                 amount: nftAmount,
                                 quantity: 1,
                                 label: "ChikyChik Launchpad",
-                                sku: "Chiky launchpad sale" 
-                            }
+                                sku: "Chiky launchpad sale",
+                            },
                         ],
                         shipping_cost: 0,
                         shipping_discount: 0,
-                        tax_cost: 0
+                        tax_cost: 0,
                     },
-                    "sandbox": `${process.env.AAA_SANDBOX}`
+                    sandbox: `${process.env.AAA_SANDBOX}`,
                 });
-                
+
                 /*JSON.stringify(
                     {
                     type: 'triplea',
@@ -936,26 +966,33 @@ const launchpadPaymentAAA = async (req, res) => {
                     url: reqPayment,
                     headers: {
                         Authorization: `Bearer ${response.data.access_token}`,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
-                    data: dataPay
+                    data: dataPay,
                 };
 
-                console.log("config {}", config , " ",  "239");
+                console.log("config {}", config, " ", "239");
                 axios(config)
                     .then(async function (response) {
                         console.log("A ", JSON.stringify(response.data));
-                        await createActivity(req.user.userId,nftAmount,false,'TripleA')
-                        
+                        await createActivity(
+                            req.user.userId,
+                            nftAmount,
+                            false,
+                            "TripleA"
+                        );
+
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        console.log(error.response,dataPay, "247");
-                        return res.status(400).json({err:"Some error ocurred!"})
+                        console.log(error.response, dataPay, "247");
+                        return res
+                            .status(400)
+                            .json({ err: "Some error ocurred!" });
                     });
-                    
-                    /*const res = await axios.post(reqPayment, dataPay, { headers });
-                    console.log ("res {}", res);*/   
+
+                /*const res = await axios.post(reqPayment, dataPay, { headers });
+                    console.log ("res {}", res);*/
             })
             .catch((ecr) => {
                 console.log(ecr);
@@ -1004,7 +1041,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 break;
         }
     }
-    const secret = 'Cf9mx4nAvRuy5vwBY2FCtaKr';
+    const secret = "Cf9mx4nAvRuy5vwBY2FCtaKr";
     // calculate signature
     let check_signature = crypto
         .createHmac("sha256", secret)
@@ -1014,32 +1051,36 @@ const tripleAWebhookLaunchpad = async (req, res) => {
     // current timestamp
     let curr_timestamp = Math.round(new Date().getTime() / 1000);
 
-    console.log(signature,"___________________________ WORKING HOOOK 904",check_signature);
-    console.log("905 ",signature === check_signature);
-    console.log("Status" , status)
-    console.log("BODY ",req.body);
-    if (
-        signature 
-    ) {
+    console.log(
+        signature,
+        "___________________________ WORKING HOOOK 904",
+        check_signature
+    );
+    console.log("905 ", signature === check_signature);
+    console.log("Status", status);
+    console.log("BODY ", req.body);
+    if (signature) {
         // signature validates ... do stuff
         console.log("___________________________ WORKING HOOOK");
-        const alreadyUpdated = await LaunchpadPayment.findOne({paymentId : req.body.txs[0].txid})
+        const alreadyUpdated = await LaunchpadPayment.findOne({
+            paymentId: req.body.txs[0].txid,
+        });
 
-        console.log(alreadyUpdated,status,"alreadyUpdated")
+        console.log(alreadyUpdated, status, "alreadyUpdated");
 
         if (status == "good" && alreadyUpdated == null) {
             const findExists = await LaunchpadPayment.findOne({
                 paymentId: req.body.txs[0].txid,
             });
-            console.log("FIND ",findExists);
+            console.log("FIND ", findExists);
             if (!findExists) {
-                console.log("AA ",{
+                console.log("AA ", {
                     userId: req.body.webhook_data.userId,
                     amountCommited: req.body.txs[0].receive_amount,
                     paymentMethod: "Triplea",
                     paymentStatus: "confirmed",
                     paymentId: req.body.txs[0].txid,
-                    metadata:JSON.stringify(req.body)
+                    metadata: JSON.stringify(req.body),
                 });
                 const createData = await LaunchpadPayment.create({
                     userId: req.body.webhook_data.userId,
@@ -1047,9 +1088,8 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                     paymentMethod: "Triplea",
                     paymentStatus: "confirmed",
                     paymentId: req.body.txs[0].txid,
-                    metadata:JSON.stringify(req.body)
+                    metadata: JSON.stringify(req.body),
                 });
-                
             }
             const findLaunchpad = await LaunchpadAmount.findOne({
                 userId: req.body.webhook_data.userId,
@@ -1062,16 +1102,22 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 });
             } else {
                 findLaunchpad.amountCommited =
-                    Number(findLaunchpad.amountCommited) + Number(req.body.txs[0].receive_amount);
+                    Number(findLaunchpad.amountCommited) +
+                    Number(req.body.txs[0].receive_amount);
                 console.log("found --0", findLaunchpad);
                 await findLaunchpad.save();
             }
             await sendPaymentConfirmation({
-                email :req.body.webhook_data.email,
-                quantity :1,
-                amount :  req.body.txs[0].receive_amount
+                email: req.body.webhook_data.email,
+                quantity: 1,
+                amount: req.body.txs[0].receive_amount,
             });
-            await createActivity(req.body.webhook_data.userId,req.body.txs[0].receive_amount,true,"TripleA")
+            await createActivity(
+                req.body.webhook_data.userId,
+                req.body.txs[0].receive_amount,
+                true,
+                "TripleA"
+            );
             return res.status(200).end();
         } else {
             return res.status(400).end();
@@ -1136,18 +1182,22 @@ const getLaunchpadActivity = async (req, res) => {
         let page = req.query.page;
         let pageSize = req.query.pageSize;
         const currentDate = new Date();
-        const fromDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 0);
+        const fromDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() - 2,
+            0
+        );
         let total = await LaunchpadPayment.count({
             userId: req.user.userId,
             updatedAt: {
                 $gte: fromDate,
-            }
+            },
         });
         LaunchpadPayment.find({
             userId: req.user.userId,
             updatedAt: {
                 $gte: fromDate,
-            }
+            },
         })
             // .select("name")
             .sort({ updatedAt: -1 })
@@ -1156,7 +1206,13 @@ const getLaunchpadActivity = async (req, res) => {
             .then((results) => {
                 return res
                     .status(200)
-                    .json({ status: "success", total: total, page: page, pageSize: pageSize, data: results });
+                    .json({
+                        status: "success",
+                        total: total,
+                        page: page,
+                        pageSize: pageSize,
+                        data: results,
+                    });
             })
             .catch((err) => {
                 return res.status(500).send(err);
@@ -1188,5 +1244,5 @@ module.exports = {
     getAllCommitedAmount,
     initiateLaunchpadPayment,
     errorLaunchpadPayment,
-    getLaunchpadActivity
+    getLaunchpadActivity,
 };
