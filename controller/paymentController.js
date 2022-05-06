@@ -20,13 +20,13 @@ const qs = require("qs");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const ObjectId = mongoose.Types.ObjectId;
 
-const createActivity = async (userId, price, isGood) => {
+const createActivity = async (userId, price, isGood,gateway) => {
     await models.users.updateOne(
         { _id: userId },
         {
             $push: {
                 activity: {
-                    activity: `You have ${isGood == true ? "commited" : "initiated"} ${price.toFixed(2)} USDT amount.`,
+                    activity: `You have ${isGood == true ? "commited" : "initiated"} ${price.toFixed(2)} USDT amount using ${gateway}.`,
                     timestamp: new Date(),
                 },
             },
@@ -416,7 +416,8 @@ const handleCoinbasePayment = async (req, res) => {
             await createActivity(
                 owner,
                 event.data.pricing.local.amount,
-                event.data.metadata.nftId
+                event.data.metadata.nftId,
+                "Coinbase"
             );
             //create payment schema
 
@@ -569,7 +570,8 @@ const tripleAWebhook = async (req, res) => {
             await createActivity(
                 owner,
                 event.data.pricing.local.amount,
-                event.data.metadata.nftId
+                event.data.metadata.nftId,
+                "TripleA"
             );
             return res.status(200).end();
         } else {
@@ -683,11 +685,11 @@ const coinbaseLaunchpadPayment = async (req, res) => {
             logo_url:
                 "https://gamepay.sg/static/media/banner-kv.804e1dab7212846653e0.png",
             metadata: {
-                customer_id: req.user.userId,
+                userId: req.user.userId,
                 customer_email: req.body.email,
-                amountCommited: amount,
+                amount: amount,
             },
-            redirect_url: `${process.env.DOMAIN}/launchpad?status=payment-success`,
+            redirect_url: `${process.env.DOMAIN}/profile?pay-status=paysuccess`,
             cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
         };
 
@@ -716,11 +718,12 @@ const handleLaunchpadHook = async (req, res) => {
         if (event.type === "charge:pending") {
             // received order
             // user paid, but transaction not confirm on blockchain yet
-            const findExists = await LaunchpadPayment.find({
+            const findExists = await LaunchpadPayment.findOne({
                 paymentId: event.data.id,
             });
 
             if (!findExists) {
+                console.log("-----CREATING FAILED 726")
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -737,14 +740,15 @@ const handleLaunchpadHook = async (req, res) => {
         if (event.type === "charge:confirmed") {
             // fulfill order
             // charge confirmed
-            console.log("charge confirmed", event.data);
+            console.log("-----charge confirmed", event.data);
             //save in presale bought nft added to user account
 
             //create payment schema
-            const findExists = await LaunchpadPayment.find({
+            const findExists = await LaunchpadPayment.findOne({
                 paymentId: event.data.id,
             });
             if (!findExists) {
+                console.log("-----CREATING Success 751")
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -753,27 +757,42 @@ const handleLaunchpadHook = async (req, res) => {
                     paymentId: event.data.id,
                 });
             }
+            else {
+                console.log("-----updating Success 761")
+                await LaunchpadPayment.updateOne({
+                    paymentId: event.data.id,
+                },
+                {
+                    userId: event.data.metadata.userId,
+                    amountCommited: event.data.metadata.amount,
+                    paymentMethod: "Coinbase",
+                    paymentStatus: "confirmed",
+                    paymentId: event.data.id,
+                }
+                )
+            }
             const findLaunchpad = await LaunchpadAmount.findOne({
-                userId: event.data.metadata.userId.toString(),
+                userId: event.data.metadata.userId,
             });
             if (!findLaunchpad) {
-                console.log("not found", findLaunchpad);
+                console.log("----778-not found", findLaunchpad);
                 const createAmount = await LaunchpadAmount.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
                 });
             } else {
+                console.log("-----CREATING FAILED 784")
                 findLaunchpad.amountCommited =
                     Number(findLaunchpad.amountCommited) + Number(event.data.metadata.amount);
                 console.log("found --0", findLaunchpad);
                 await findLaunchpad.save();
             }
             await sendPaymentConfirmation({
-                email :req.user.email,
+                email :event.data.metadata.customer_email,
                 quantity :1,
-                amount
+                amount:event.data.metadata.amount
             });
-            await createActivity(event.data.metadata.userId,event.data.metadata.amount,true)
+            await createActivity(event.data.metadata.userId,event.data.metadata.amount,true,"Coinbase")
 
             return res.json({
                 status: "confirmed",
@@ -926,7 +945,7 @@ const launchpadPaymentAAA = async (req, res) => {
                 axios(config)
                     .then(async function (response) {
                         console.log("A ", JSON.stringify(response.data));
-                        await createActivity(req.user.userId,nftAmount,false)
+                        await createActivity(req.user.userId,nftAmount,false,'TripleA')
                         
                         res.status(200).json(response.data);
                     })
@@ -1052,7 +1071,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 quantity :1,
                 amount :  req.body.txs[0].receive_amount
             });
-            await createActivity(req.body.webhook_data.userId,req.body.txs[0].receive_amount,true)
+            await createActivity(req.body.webhook_data.userId,req.body.txs[0].receive_amount,true,"TripleA")
             return res.status(200).end();
         } else {
             return res.status(400).end();
