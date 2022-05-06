@@ -4,7 +4,7 @@ const models = require("../models/launchpads")
 
 
 
-const getLaunchPad = async (req, res) => {
+ const getLaunchPad = async (req, res) => {
     let page = req.query.page;
     let pageSize = req.query.pageSize;
     let total = await models.launchpads.count({});
@@ -28,9 +28,12 @@ const getLaunchPad = async (req, res) => {
     const id = req.params.id;
     models.launchpads.findById(id)
         .then(data => {
-            if (!data)
+            if (!data) {
                 res.status(200).json({status:"error", message: "Not found Campaign with id " + id });
-            else res.status(200).json({status:"success", data:data});
+            } else  {
+              data['current_date'] = new Date().toISOString();
+              res.status(200).json({status:"success", data:data})
+            }
         })
         .catch(err => {
             res
@@ -38,8 +41,6 @@ const getLaunchPad = async (req, res) => {
                 .json({status:"error", message: "Error retrieving Campaign with id=" + id });
         });
   }
-
-
 
   module.exports = {getLaunchPad,getLaunchPadById}
 

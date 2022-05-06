@@ -6,6 +6,6 @@ const { getLaunchPad, getLaunchPadById } = require('../controller/launchPadContr
 const { authenticateUser } = require('../middleware/authentication')
 
 router.get('/getAll', cors(),authenticateUser, getLaunchPad)
-router.get('/:id', cors(),authenticateUser,getLaunchPadById)
+router.get('/:id', cors(),getLaunchPadById)
 
 module.exports = router

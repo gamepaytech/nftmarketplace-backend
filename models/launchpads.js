@@ -11,6 +11,7 @@ const launchpadSchema = new Schema(
         calculation_start_date: { type: String},
         final_NFT_distribution_date: { type: String},
         resource: { type: String},
+        current_date: { type: String},
     },
     { timestamps: true }
 )
