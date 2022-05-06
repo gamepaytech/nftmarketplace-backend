@@ -340,8 +340,7 @@ const getPresale = async (req, res) => {
     let total = await models.presaletiers.count({});
     models.presaletiers.find({})
       // .select("name")
-      .sort({ price:1 })
-      .collation({locale: "en_US", numericOrdering: true})
+      .sort({ tier_type:1 })
       .limit(pageSize)
       .skip(pageSize * page)
       .then((results) => {
