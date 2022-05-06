@@ -42,7 +42,7 @@ const updateActivity = async (userId,orderId,dataString) => {
         { _id: userId }
     )
 
-    const objIndex = userField.activity.findIndex((a) => a.orderId === "abc");
+    const objIndex = userField.activity.findIndex((a) => orderId === "abc");
     userField.activity[objIndex].activity = dataString;
     await userField.save();
     console.log(objIndex,'aaaaa');
