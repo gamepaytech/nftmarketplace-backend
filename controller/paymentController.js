@@ -20,7 +20,7 @@ const qs = require("qs");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const ObjectId = mongoose.Types.ObjectId;
 
-const createActivity = async (userId, price, isGood, gateway) => {
+const createActivity = async (userId, price, isGood, gateway,orderId) => {
     await models.users.updateOne(
         { _id: userId },
         {
@@ -30,12 +30,23 @@ const createActivity = async (userId, price, isGood, gateway) => {
                         isGood == true ? "commited" : "initiated"
                     } ${price.toFixed(2)} USDT amount using ${gateway}.`,
                     timestamp: new Date(),
+                    orderId:orderId
                 },
             },
         },
         { new: true, upsert: true }
     );
 };
+const updateActivity = async (userId,orderId,dataString) => {
+    const userField = await models.users.findOne(
+        { _id: userId }
+    )
+
+    const objIndex = userField.activity.findIndex((a) => a.orderId === "abc");
+    userField.activity[objIndex].activity = dataString;
+    await userField.save();
+    console.log(objIndex,'aaaaa');
+}
 
 const createPayment = async (req, res) => {
     try {
@@ -681,7 +692,7 @@ const coinbaseLaunchpadPayment = async (req, res) => {
         const { amount } = req.body;
 
         const nftAmount = amount;
-
+        const uniqueId = uuid();
         const chargeData = {
             name: "Chikey Chik",
             description: "The world’s first fully customizable end-to-end NFT",
@@ -696,6 +707,7 @@ const coinbaseLaunchpadPayment = async (req, res) => {
                 userId: req.user.userId,
                 customer_email: req.body.email,
                 amount: amount,
+                uniqueId:uniqueId
             },
             redirect_url: `${process.env.DOMAIN}/profile?pay-status=paysuccess`,
             cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
@@ -704,6 +716,17 @@ const coinbaseLaunchpadPayment = async (req, res) => {
         console.log("CHARGE DATA ", chargeData);
 
         const charge = await Charge.create(chargeData);
+
+        await createActivity(
+            req.user.userId,
+            Number(nftAmount),
+            false,
+            "Coinbase",
+            uniqueId
+        );
+
+        console.log("CHARGE ",charge);
+
 
         res.send(charge);
     } catch (error) {
@@ -806,11 +829,10 @@ const handleLaunchpadHook = async (req, res) => {
                 event.data.metadata.userId,
                 event.data.metadata.amount
             );
-            await createActivity(
+            await updateActivity(
                 event.data.metadata.userId,
-                Number(event.data.metadata.amount),
-                true,
-                "Coinbase"
+                event.data.metadata.uniqueId,
+                `You have commited ${event.data.metadata.amount} USDT amount using Coinbase.`
             );
 
             return res.json({
@@ -847,6 +869,11 @@ const handleLaunchpadHook = async (req, res) => {
                     }
                 );
             }
+            await updateActivity(
+                event.data.metadata.userId,
+                event.data.metadata.uniqueId,
+                `You have commited ${event.data.metadata.amount} USDT amount using Coinbase.`
+            );
             return res.json({
                 status: "failed",
             });
@@ -979,7 +1006,8 @@ const launchpadPaymentAAA = async (req, res) => {
                             req.user.userId,
                             nftAmount,
                             false,
-                            "TripleA"
+                            "TripleA",
+                            orderId
                         );
 
                         res.status(200).json(response.data);
@@ -1112,14 +1140,25 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 quantity: 1,
                 amount: req.body.txs[0].receive_amount,
             });
-            await createActivity(
+            // await createActivity(
+            //     req.body.webhook_data.userId,
+            //     req.body.txs[0].receive_amount,
+            //     true,
+            //     "TripleA"
+            // );
+            await updateActivity(
                 req.body.webhook_data.userId,
-                req.body.txs[0].receive_amount,
-                true,
-                "TripleA"
+                req.body.webhook_data.order_id,
+                `You have commited ${req.body.txs[0].receive_amount} USDT amount using TripleA.`
             );
+            
             return res.status(200).end();
         } else {
+            await updateActivity(
+                req.body.webhook_data.userId,
+                req.body.webhook_data.order_id,
+                `You have failed item of ${req.body.txs[0].receive_amount} USDT amount using TripleA.`
+            );
             return res.status(400).end();
         }
     }
@@ -1245,4 +1284,5 @@ module.exports = {
     initiateLaunchpadPayment,
     errorLaunchpadPayment,
     getLaunchpadActivity,
+    updateActivity
 };
