@@ -38,14 +38,14 @@ const createActivity = async (userId, price, isGood, gateway,orderId) => {
     );
 };
 const updateActivity = async (userId,orderId,dataString) => {
-    const userField = await models.users.findOne(
-        { _id: userId }
-    )
 
-    const objIndex = userField.activity.findIndex((a) => orderId === a.orderId);
-    userField.activity[objIndex].activity = dataString;
-    await userField.save();
-    console.log(objIndex,'aaaaa');
+    await models.users.updateOne(
+        {
+            _id: userId,
+            'activity.orderId':orderId
+        },
+        { $set: { "activity.$.activity" : dataString} }
+    );
 }
 
 const createPayment = async (req, res) => {
@@ -872,7 +872,7 @@ const handleLaunchpadHook = async (req, res) => {
             await updateActivity(
                 event.data.metadata.userId,
                 event.data.metadata.uniqueId,
-                `You have commited ${event.data.metadata.amount} USDT amount using Coinbase.`
+                `You have failed amount of ${event.data.metadata.amount} USDT using Coinbase.`
             );
             return res.json({
                 status: "failed",
@@ -1154,11 +1154,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
             
             return res.status(200).end();
         } else {
-            await updateActivity(
-                req.body.webhook_data.userId,
-                req.body.webhook_data.order_id,
-                `You have failed item of ${req.body.txs[0].receive_amount} USDT amount using TripleA.`
-            );
+            
             return res.status(400).end();
         }
     }
