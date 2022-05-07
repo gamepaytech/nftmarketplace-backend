@@ -12,6 +12,7 @@ const {
     createWalletAddressPayload,
     getSystemMessage
 } = require('../utils')
+const logger = require('../logger')
 
 const register = async (req, res) => {
     try {
@@ -66,7 +67,7 @@ const register = async (req, res) => {
             referralCode: referralCode.code,
         }
 
-        console.log('BEFORE SEDING--- ',verificationToken)
+        logger.info('BEFORE SEDING--- ',verificationToken)
         const user = await models.users.create(createObj)
         const origin = process.env.APP_BACKEND_URL
         await sendVerificationEmail({
@@ -75,7 +76,7 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
-        console.log('AFTER SENDING--- ',user.verificationToken)
+        logger.info('AFTER SENDING--- ',user.verificationToken)
         
         const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
@@ -83,7 +84,7 @@ const register = async (req, res) => {
             status:201
         })
     } catch (err) {
-        console.log(err.msg)
+        logger.info(err.msg)
         res.status(400)
     }
 }
@@ -121,7 +122,7 @@ const login = async (req, res) => {
                     const ip = req.ip
                     const userToken = { token, ip, userAgent, user: user._id }
 
-                    console.log(userToken)
+                    logger.info(userToken)
                     await Token.create(userToken)
 
                     res.status(200).json({
@@ -214,7 +215,7 @@ const login = async (req, res) => {
             })
         }
     } catch (e) {
-        console.log(e.msg)
+        logger.info(e.msg)
         res.status(400)
         // throw new Error('Invalid Credentials')
     }
@@ -226,7 +227,7 @@ const logout = async (req, res) => {
         const sysMsg = await getSystemMessage('GPAY_00013_USER_LOGGED_OUT')
         res.status(201).json({ msg: sysMsg ? sysMsg.message : 'User logged out!' })
     } catch (e) {
-        console.log('Error: ' + e.msg)
+        logger.info('Error: ' + e.msg)
         res.status(500).json({ msg: e.msg })
     }
 }
@@ -236,8 +237,8 @@ const verifyEmail = async (req, res) => {
         const verificationToken = req.body.token
         const email = req.body.email
 
-        console.log('EMAIL ',email)
-        console.log('TOKEN ',verificationToken)
+        logger.info('EMAIL ',email)
+        logger.info('TOKEN ',verificationToken)
         if (verificationToken === '' || !verificationToken) {
             const sysMsg = await getSystemMessage('GPAY_00014_INVALID_CREDENTIALS')
             res.status(401).json({ msg: sysMsg ? sysMsg.message : 'Invalid Credentials!' })
@@ -251,7 +252,7 @@ const verifyEmail = async (req, res) => {
         }
 
         const user = await models.users.findOne({ email })
-        console.log('user ',user);
+        logger.info('user ',user);
         if (user) {
             if (user.verificationToken === '') {
                 const sysMsg = await getSystemMessage('GPAY_00016_USER_ALREADY_VERIFIED')
@@ -271,7 +272,7 @@ const verifyEmail = async (req, res) => {
                 user.verificationToken = ''
                 await user.save()
             } catch (err) {
-                console.log(err.msg)
+                logger.info(err.msg)
                 res.status(501).json({ msg: err.msg })
             }
             const sysMsg = await getSystemMessage('GPAY_00018_EMAIL_VERIFIED')
@@ -308,7 +309,7 @@ const forgotPassword = async (req, res) => {
                 origin,
             })
 
-            console.log(passwordToken)
+            logger.info(passwordToken)
 
             const tenMinutes = 1000 * 60 * 10
             const passwordTokenExpirationDate = new Date(
@@ -352,7 +353,7 @@ const resetPassword = async (req, res) => {
 
         if (user) {
             const currentDate = new Date()
-            console.log(createHash(token))
+            logger.info(createHash(token))
             if (
                 !(
                     user.passwordToken === createHash(token) &&
@@ -487,7 +488,7 @@ const addMyReferral = async function (req, res) {
                                 recievedFrom: insertNewReferral._id,
                             });
                             
-                            console.log('ADD MY INCOME ',addMyIncome);
+                            logger.info('ADD MY INCOME ',addMyIncome);
                             await addMyIncome.save();
                 
                             const mapReferral = await newReferral.save()
@@ -657,7 +658,7 @@ const getAllMyReferrals = async function (req, res) {
         for (let i = 0; i < getMyReferralsId.length; i++) {
             Ids.push(getMyReferralsId[i].userId)
         }
-        console.log(Ids)
+        logger.info(Ids)
 
         if (getMyReferralsId.length) {
             const getMyReferrals = await models.users.find(
@@ -763,7 +764,7 @@ const changeUserStatus = async function (req, res) {
         // Status -> 21 [Add Super Admin]
         // Status -> 22 [Delete Super Admin]
         const userInfo = await models.users.find({ _id: userId })
-        console.log(userInfo)
+        logger.info(userInfo)
 
         if (userInfo && userInfo.length) {
             if (req.body.status === 11 || req.body.status === 12) {
@@ -791,7 +792,7 @@ const changeUserStatus = async function (req, res) {
 
                     return
                 } catch (err) {
-                    console.log(err)
+                    logger.info(err)
                     const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                     res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went wrong' })
                     return
@@ -819,7 +820,7 @@ const changeUserStatus = async function (req, res) {
 
                     return
                 } catch (err) {
-                    console.log(err)
+                    logger.info(err)
                     const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
                     res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went wrong' })
                     return
@@ -891,7 +892,7 @@ const addWalletKey = async (req, res) => {
                 }
             )
             const userDataUpdated = await models.users.findOne({_id:req.body.userId})
-            console.log('updated user ',userDataUpdated);
+            logger.info('updated user ',userDataUpdated);
             const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res.json({
                 status: 200,
@@ -905,7 +906,7 @@ const addWalletKey = async (req, res) => {
             res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Invalid Credentials!' })
         }
     } catch (error) {
-        console.log(error)
+        logger.info(error)
         res.json({ status: 400, msg: error.toString() })
     }
 }
@@ -996,7 +997,7 @@ const checkRegisterredWallet = async (req, res) => {
         const userInfo = await models.users.findOne({
             metamaskKey: walletAddress[0],
         })
-        console.log(userInfo, walletAddress);
+        logger.info(userInfo, walletAddress);
         if(!userInfo) {
             const sysMsg = await getSystemMessage('GPAY_00046_USER_NOT_REGISTERED')
             return res.status(404).json({ status: 404, err: sysMsg ? sysMsg.message : 'User not Registered!' })
@@ -1008,7 +1009,7 @@ const checkRegisterredWallet = async (req, res) => {
             })
         }
         if (userInfo && userInfo !== null) {
-            console.log('A ',userInfo);
+            logger.info('A ',userInfo);
             const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res.status(200).json({
                 status: 200,
@@ -1021,7 +1022,7 @@ const checkRegisterredWallet = async (req, res) => {
             res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'User not Registered!' })
         }
     } catch (error) {
-        console.log(error)
+        logger.info(error)
         const sysMsg = await getSystemMessage('GPAY_00048_SERVER_ERROR')
         res.status(500).json({ status: 500, err: sysMsg ? sysMsg.message : '500: Internal Server Error' })
     }
@@ -1047,11 +1048,11 @@ const checkWalletKey = async function (req, res) {
         const walletInfo = await models.users.find({
             _id: req.body.userId,
         })
-        console.log('l',req.body.walletAddress)
-        console.log('k',walletInfo)
+        logger.info('l',req.body.walletAddress)
+        logger.info('k',walletInfo)
 
         if (walletInfo && walletInfo.length > 0 && walletInfo.includes(req.body.walletAddress)) {
-            console.log(walletInfo);
+            logger.info(walletInfo);
             const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res
             .status(200)
@@ -1089,14 +1090,14 @@ const setactivity = async function (req, res) {
 }
 
 const getactivity = async function (req, res) {
-    console.log('user id ',req.body.userId);
+    logger.info('user id ',req.body.userId);
     const userActivity = await models.users.findOne({ _id: req.body.userId })
     res.json({ userActivity: userActivity?.activity })
 }
 
 const updatePercent = async function (req, res) {
     try {
-        console.log('kfjjkdsngfjkdshfk')
+        logger.info('kfjjkdsngfjkdshfk')
         if (req.body.userId == undefined || req.body.userId == '') {
             const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
             res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
@@ -1117,11 +1118,11 @@ const updatePercent = async function (req, res) {
             const setting = await referralModel.appsetting.updateOne({
                 referralPercent: req.body.percent,
             })
-            console.log(setting, 'setting')
+            logger.info(setting, 'setting')
             if(setting.modifiedCount === 0){
                 await referralModel.appsetting.create({referralPercent: req.body.percent,})
                 setting.modifiedCount = 1
-                console.log('created settings')
+                logger.info('created settings')
             }
             if (setting.modifiedCount > 0) {
                 const newSetting = await referralModel.appsetting.find({})

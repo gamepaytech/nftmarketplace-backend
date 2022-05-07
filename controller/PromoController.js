@@ -1,6 +1,7 @@
 const PromoCode = require("../models/PromoCode");
 var voucher_codes = require('voucher-code-generator');
 const models = require("../models/User");
+const logger = require('../logger')
 
 // function addDays(date, days) {
 //   var result = new Date(date);
@@ -61,7 +62,7 @@ const createPromoCode = async (req, res) => {
     const date = new Date();
     const endDate = date.setDate(date.getDate() + Number(validTill));
     // const endDate = new  Date(endTimeStamp)
-    // console.log(endTimeStamp,endDate,"end")
+    // logger.info(endTimeStamp,endDate,"end")
 
 
     let createObj = {
@@ -85,7 +86,7 @@ const createPromoCode = async (req, res) => {
       });
   }
   catch (err) {
-    console.log('ccreatePromoCode ', err)
+    logger.info('ccreatePromoCode ', err)
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -161,7 +162,7 @@ const updatePromoCode = async (req, res) => {
       });
   }
   catch (err) {
-    console.log('ccreatePromoCode ', err)
+    logger.info('ccreatePromoCode ', err)
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -203,7 +204,7 @@ const deletePromoCode = async (req, res) => {
       });
   }
   catch (err) {
-    console.log('ccreatePromoCode ', err)
+    logger.info('ccreatePromoCode ', err)
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -243,7 +244,7 @@ const getPromoCode = async (req, res) => {
     else {
       isValid = false
     }
-    console.log("isValid ", isValid)
+    logger.info("isValid ", isValid)
     if (!isValid) {
       return res.status(400).json({
         err: "Validation Error: Promo code isn't valid",
@@ -260,7 +261,7 @@ const getPromoCode = async (req, res) => {
 
   }
   catch (err) {
-    console.log('ccreatePromoCode ', err)
+    logger.info('ccreatePromoCode ', err)
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -286,7 +287,7 @@ const getAllCheckCode = async (req, res) => {
 
   }
   catch (err) {
-    console.log(err);
+    logger.info(err);
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -324,7 +325,7 @@ const updateCouponCode = async (req, res) => {
     })
   }
   catch (err) {
-    console.log(err);
+    logger.info(err);
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
@@ -358,7 +359,7 @@ const claimPromoCode = async (req, res) => {
     })
   }
   catch (err) {
-    console.log(err);
+    logger.info(err);
     res.status(500).json({
       err: "401: Internal Server Error",
       status: 401
