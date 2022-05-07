@@ -19,6 +19,7 @@ const mongoose = require("mongoose");
 const qs = require("qs");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const ObjectId = mongoose.Types.ObjectId;
+const logger = require('../logger')
 
 const createActivity = async (userId, price, isGood, gateway,orderId) => {
     await models.users.updateOne(
@@ -67,7 +68,7 @@ const createPayment = async (req, res) => {
             // encryptedData
         } = req.body;
         const buyNft = await Nft.presalenfts.find({ _id: nftId });
-        console.log("bb ", buyNft[0].price, quantity);
+        logger.info("bb ", buyNft[0].price, quantity);
 
         const nftAmount = parseFloat(buyNft[0].price / 10 ** 6) * quantity;
 
@@ -76,9 +77,9 @@ const createPayment = async (req, res) => {
                 error: "Price is less than 0.5$",
             });
         }
-        console.log("NFT AMOUNT", nftAmount.toFixed(2).toString());
+        logger.info("NFT AMOUNT", nftAmount.toFixed(2).toString());
 
-        console.log(
+        logger.info(
             "DATA ",
             {
                 metadata: {
@@ -123,18 +124,18 @@ const createPayment = async (req, res) => {
             // verificationFailureUrl: "http://localhost:3000/payment_failure",
         })
             .then((ares) => {
-                console.log("AAA ", ares);
+                logger.info("AAA ", ares);
                 res.status(200).json({
                     message: "Success",
                     res: ares.data,
                 });
             })
             .catch((err) => {
-                console.log("A", err);
+                logger.info("A", err);
                 res.status(400).json({ error: "a.Some error ocurred" });
             });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(400).json({
             error: "c.Some error ocurred",
         });
@@ -152,7 +153,7 @@ const saveCirclePaymentData = async (req, res) => {
             message: "Data saved successfully!",
         });
     } catch (err) {
-        console.log("save circle pay ", err);
+        logger.info("save circle pay ", err);
         res.status(400).json({
             error: "Error ocurred while saving circle pay.",
         });
@@ -175,18 +176,18 @@ const createPaymentAAA = async (req, res) => {
         const user = await models.users.findOne({ _id: userId });
         var promoDiv = 0;
         if (promoCode) {
-            console.log(promoCode, "promo");
+            logger.info(promoCode, "promo");
             const promo = await PromoCode.findOne({ promoCode: promoCode });
-            console.log(promo);
+            logger.info(promo);
             promoDiv = promo.percentDiscount;
         }
 
-        console.log(quantity, "quantity");
+        logger.info(quantity, "quantity");
 
         var nftAmount =
             parseFloat(buyNft.price / 10 ** 6) * quantity * (100 - promoDiv);
         nftAmount = Math.round(nftAmount);
-        console.log("Price ", nftAmount);
+        logger.info("Price ", nftAmount);
 
         if (nftAmount < 0.001) {
             return res.status(400).json({
@@ -209,7 +210,7 @@ const createPaymentAAA = async (req, res) => {
 
         await axios(config)
             .then(async function (response) {
-                console.log(response.data);
+                logger.info(response.data);
                 const orderId = uuid();
                 var dataPay = JSON.stringify({
                     type: "triplea",
@@ -260,15 +261,15 @@ const createPaymentAAA = async (req, res) => {
                     data: dataPay,
                 };
 
-                console.log(dataPay, "239");
+                logger.info(dataPay, "239");
                 axios(config)
                     .then(function (response) {
-                        console.log("A ", JSON.stringify(response.data));
+                        logger.info("A ", JSON.stringify(response.data));
 
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        console.log(error.response, "247");
+                        logger.info(error.response, "247");
                     });
             })
             .catch((ecr) => {
@@ -298,25 +299,25 @@ const coinbasePayment = async (req, res) => {
 
     try {
         const buyNft = await Nft.presalenfts.findOne({ _id: chikId });
-        console.log(buyNft);
+        logger.info(buyNft);
         if (!buyNft) {
             return res.status(404).json({
                 err: "NFT not found!",
             });
         }
         var promoDiv = 0;
-        console.log(promoCode, "promo", !promoCode);
+        logger.info(promoCode, "promo", !promoCode);
         if (promoCode) {
-            console.log(promoCode, "promo");
+            logger.info(promoCode, "promo");
             const promo = await PromoCode.findOne({ promoCode: promoCode });
-            console.log(promo);
+            logger.info(promo);
             promoDiv = promo.percentDiscount;
         }
         const nftAmount =
             parseFloat(buyNft?.price / 10 ** 6) *
             quantity *
             ((100 - promoDiv) / 100);
-        console.log("CHARGE DATA ", buyNft?.price / 10 ** 6);
+        logger.info("CHARGE DATA ", buyNft?.price / 10 ** 6);
 
         const chargeData = {
             name: buyNft.name,
@@ -339,13 +340,13 @@ const coinbasePayment = async (req, res) => {
 
         const charge = await Charge.create(chargeData);
         await createActivity(userId, nftAmount, false, "Coinbase");
-        // console.log(charge);
+        // logger.info(charge);
         // for email
         // sendPaymentConfirmation(emailId, )
 
         res.send(charge);
     } catch (error) {
-        console.log(error);
+        logger.info(error);
         res.status(404).json({
             error: "Data not found",
         });
@@ -354,20 +355,20 @@ const coinbasePayment = async (req, res) => {
 
 const handleCoinbasePayment = async (req, res) => {
     const rawBody = req.rawBody;
-    console.log("req body ", rawBody);
+    logger.info("req body ", rawBody);
     const signature = req.headers["x-cc-webhook-signature"];
     const webhookSecret = process.env.COINBASE_WEBHOOK_SECRET;
     let event;
 
     try {
         event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
-        console.log("Event ", event);
+        logger.info("Event ", event);
 
         if (event.type === "charge:pending") {
             // received order
             // user paid, but transaction not confirm on blockchain yet
 
-            console.log("pending payment", event);
+            logger.info("pending payment", event);
             return res.json({
                 status: "Pending",
             });
@@ -376,9 +377,9 @@ const handleCoinbasePayment = async (req, res) => {
         if (event.type === "charge:confirmed") {
             // fulfill order
             // charge confirmed
-            console.log("charge confirmed", event.data);
+            logger.info("charge confirmed", event.data);
             //save in presale bought nft added to user account
-            console.log("TEST ", {
+            logger.info("TEST ", {
                 nftIdOwned: event.data.metadata.nftId,
                 owner: event.data.metadata.customer_id,
                 nft: ObjectId(event.data.metadata.nftId),
@@ -407,13 +408,13 @@ const handleCoinbasePayment = async (req, res) => {
             const getMyreferral = await models.users.find({
                 referralCode: userInfo[0].refereeCode,
             });
-            console.log("GET MY REFERRAL ", getMyreferral[0]._id);
+            logger.info("GET MY REFERRAL ", getMyreferral[0]._id);
             if (userInfo && userInfo[0].refereeCode != "") {
                 const bought = await PresaleBoughtNft.findOne({
                     _id: createPresale._id,
                 });
                 const setting = await referralModel.appsetting.findOne({});
-                console.log("bought ", bought);
+                logger.info("bought ", bought);
                 let referralIncome =
                     ((bought.amountSpent * bought.quantity) / 100) *
                     setting.referralPercent;
@@ -442,7 +443,7 @@ const handleCoinbasePayment = async (req, res) => {
         if (event.type === "charge:failed") {
             // cancel order
             // charge failed or expired
-            console.log("charge failed sdfdsf", event.data);
+            logger.info("charge failed sdfdsf", event.data);
             return res.json({
                 status: "failed",
             });
@@ -450,7 +451,7 @@ const handleCoinbasePayment = async (req, res) => {
 
         res.send(`success ${event.id}`);
     } catch (error) {
-        console.log("err 00", error);
+        logger.info("err 00", error);
         res.status(400).send("failure");
     }
 };
@@ -463,13 +464,13 @@ const coinbaseFail = async (req, res) => {
 };
 const sendPaymentEmail = async (req, res) => {
     try {
-        console.log(req.body.email);
+        logger.info(req.body.email);
         await sendPaymentConfirmation(req.body);
         res.status(200).json({
             status: "Email sent",
         });
     } catch (err) {
-        console.log("error", err);
+        logger.info("error", err);
         res.status(400).send("failure to send email");
     }
 };
@@ -518,13 +519,13 @@ const tripleAWebhook = async (req, res) => {
 
     // current timestamp
     let curr_timestamp = Math.round(new Date().getTime() / 1000);
-    console.log("___________________________ WORKING HOOOK 509");
+    logger.info("___________________________ WORKING HOOOK 509");
     if (
         signature === check_signature // verify signature
         // &&  Math.abs(curr_timestamp - timestamp) <= 300 // timestamp within tolerance
     ) {
         // signature validates ... do stuff
-        console.log("___________________________ WORKING HOOOK");
+        logger.info("___________________________ WORKING HOOOK");
 
         if (status == "good") {
             const createPresale = await PresaleBoughtNft.create({
@@ -560,13 +561,13 @@ const tripleAWebhook = async (req, res) => {
             const getMyreferral = await models.users.find({
                 referralCode: userInfo[0].refereeCode,
             });
-            console.log("GET MY REFERRAL ", getMyreferral[0]._id);
+            logger.info("GET MY REFERRAL ", getMyreferral[0]._id);
             if (userInfo && userInfo[0].refereeCode != "") {
                 const bought = await PresaleBoughtNft.findOne({
                     _id: createPresale._id,
                 });
                 const setting = await referralModel.appsetting.findOne({});
-                console.log("bought ", bought);
+                logger.info("bought ", bought);
                 let referralIncome =
                     ((bought.amountSpent * bought.quantity) / 100) *
                     setting.referralPercent;
@@ -609,7 +610,7 @@ const initiateLaunchpadPayment = async (req, res) => {
             payment: createData,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal Server Error.",
         });
@@ -635,7 +636,7 @@ const errorLaunchpadPayment = async (req, res) => {
             payment: createData,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal Server Error.",
         });
@@ -645,7 +646,7 @@ const errorLaunchpadPayment = async (req, res) => {
 const makeLaunchpadPayment = async (req, res) => {
     try {
         let { amount, transactionHash, id, email } = req.body;
-        console.log(req.user);
+        logger.info(req.user);
 
         const createData = await LaunchpadPayment.updateOne(
             { _id: ObjectId(id) },
@@ -659,7 +660,7 @@ const makeLaunchpadPayment = async (req, res) => {
             userId: req.user.userId.toString(),
         });
         if (!findLaunchpad) {
-            console.log("not found", findLaunchpad);
+            logger.info("not found", findLaunchpad);
             const createAmount = await LaunchpadAmount.create({
                 userId: req.user.userId,
                 amountCommited: amount,
@@ -667,7 +668,7 @@ const makeLaunchpadPayment = async (req, res) => {
         } else {
             findLaunchpad.amountCommited =
                 Number(findLaunchpad.amountCommited) + Number(amount);
-            console.log("found --0", findLaunchpad);
+            logger.info("found --0", findLaunchpad);
             await findLaunchpad.save();
         }
         await sendPaymentConfirmation({
@@ -680,7 +681,7 @@ const makeLaunchpadPayment = async (req, res) => {
             msg: "Success! Payment confirmed.",
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal Server Error.",
         });
@@ -713,7 +714,7 @@ const coinbaseLaunchpadPayment = async (req, res) => {
             cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
         };
 
-        console.log("CHARGE DATA ", chargeData);
+        logger.info("CHARGE DATA ", chargeData);
 
         const charge = await Charge.create(chargeData);
 
@@ -725,12 +726,12 @@ const coinbaseLaunchpadPayment = async (req, res) => {
             uniqueId
         );
 
-        console.log("CHARGE ",charge);
+        logger.info("CHARGE ",charge);
 
 
         res.send(charge);
     } catch (error) {
-        console.log(error);
+        logger.info(error);
         res.status(404).json({
             error: "Data not found",
         });
@@ -738,7 +739,7 @@ const coinbaseLaunchpadPayment = async (req, res) => {
 };
 const handleLaunchpadHook = async (req, res) => {
     const rawBody = req.rawBody;
-    console.log("req body ", rawBody);
+    logger.info("req body ", rawBody);
     const signature = req.headers["x-cc-webhook-signature"];
     const webhookSecret = process.env.COINBASE_WEBHOOK_SECRET;
     let event;
@@ -754,7 +755,7 @@ const handleLaunchpadHook = async (req, res) => {
             });
 
             if (!findExists) {
-                console.log("-----CREATING FAILED 726");
+                logger.info("-----CREATING FAILED 726");
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -771,7 +772,7 @@ const handleLaunchpadHook = async (req, res) => {
         if (event.type === "charge:confirmed") {
             // fulfill order
             // charge confirmed
-            console.log("-----charge confirmed", event.data);
+            logger.info("-----charge confirmed", event.data);
             //save in presale bought nft added to user account
 
             //create payment schema
@@ -779,7 +780,7 @@ const handleLaunchpadHook = async (req, res) => {
                 paymentId: event.data.id,
             });
             if (!findExists) {
-                console.log("-----CREATING Success 751");
+                logger.info("-----CREATING Success 751");
                 const createData = await LaunchpadPayment.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
@@ -788,7 +789,7 @@ const handleLaunchpadHook = async (req, res) => {
                     paymentId: event.data.id,
                 });
             } else {
-                console.log("-----updating Success 761");
+                logger.info("-----updating Success 761");
                 await LaunchpadPayment.updateOne(
                     {
                         paymentId: event.data.id,
@@ -806,17 +807,17 @@ const handleLaunchpadHook = async (req, res) => {
                 userId: event.data.metadata.userId,
             });
             if (!findLaunchpad) {
-                console.log("----778-not found", findLaunchpad);
+                logger.info("----778-not found", findLaunchpad);
                 const createAmount = await LaunchpadAmount.create({
                     userId: event.data.metadata.userId,
                     amountCommited: event.data.metadata.amount,
                 });
             } else {
-                console.log("-----CREATING FAILED 784");
+                logger.info("-----CREATING FAILED 784");
                 findLaunchpad.amountCommited =
                     Number(findLaunchpad.amountCommited) +
                     Number(event.data.metadata.amount);
-                console.log("found --0", findLaunchpad);
+                logger.info("found --0", findLaunchpad);
                 await findLaunchpad.save();
             }
             await sendPaymentConfirmation({
@@ -824,7 +825,7 @@ const handleLaunchpadHook = async (req, res) => {
                 quantity: 1,
                 amount: event.data.metadata.amount,
             });
-            console.log(
+            logger.info(
                 "looooooook",
                 event.data.metadata.userId,
                 event.data.metadata.amount
@@ -881,7 +882,7 @@ const handleLaunchpadHook = async (req, res) => {
 
         res.send(`success ${event.id}`);
     } catch (error) {
-        console.log("err 00", error);
+        logger.info("err 00", error);
         res.status(400).send("failure");
     }
 };
@@ -912,7 +913,7 @@ const launchpadPaymentAAA = async (req, res) => {
 
         await axios(config)
             .then(async function (response) {
-                console.log("response {}", response);
+                logger.info("response {}", response);
                 const orderId = uuid();
                 var dataPay = JSON.stringify({
                     type: "triplea",
@@ -998,10 +999,10 @@ const launchpadPaymentAAA = async (req, res) => {
                     data: dataPay,
                 };
 
-                console.log("config {}", config, " ", "239");
+                logger.info("config {}", config, " ", "239");
                 axios(config)
                     .then(async function (response) {
-                        console.log("A ", JSON.stringify(response.data));
+                        logger.info("A ", JSON.stringify(response.data));
                         await createActivity(
                             req.user.userId,
                             nftAmount,
@@ -1013,23 +1014,23 @@ const launchpadPaymentAAA = async (req, res) => {
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        console.log(error.response, dataPay, "247");
+                        logger.info(error.response, dataPay, "247");
                         return res
                             .status(400)
                             .json({ err: "Some error ocurred!" });
                     });
 
                 /*const res = await axios.post(reqPayment, dataPay, { headers });
-                    console.log ("res {}", res);*/
+                    logger.info ("res {}", res);*/
             })
             .catch((ecr) => {
-                console.log(ecr);
+                logger.info(ecr);
                 res.status(400).json({
                     error: "Some error...",
                 });
             });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(400).json({
             error: "Some error ocurred",
         });
@@ -1079,30 +1080,30 @@ const tripleAWebhookLaunchpad = async (req, res) => {
     // current timestamp
     let curr_timestamp = Math.round(new Date().getTime() / 1000);
 
-    console.log(
+    logger.info(
         signature,
         "___________________________ WORKING HOOOK 904",
         check_signature
     );
-    console.log("905 ", signature === check_signature);
-    console.log("Status", status);
-    console.log("BODY ", req.body);
+    logger.info("905 ", signature === check_signature);
+    logger.info("Status", status);
+    logger.info("BODY ", req.body);
     if (signature) {
         // signature validates ... do stuff
-        console.log("___________________________ WORKING HOOOK");
+        logger.info("___________________________ WORKING HOOOK");
         const alreadyUpdated = await LaunchpadPayment.findOne({
             paymentId: req.body.txs[0].txid,
         });
 
-        console.log(alreadyUpdated, status, "alreadyUpdated");
+        logger.info(alreadyUpdated, status, "alreadyUpdated");
 
         if (status == "good" && alreadyUpdated == null) {
             const findExists = await LaunchpadPayment.findOne({
                 paymentId: req.body.txs[0].txid,
             });
-            console.log("FIND ", findExists);
+            logger.info("FIND ", findExists);
             if (!findExists) {
-                console.log("AA ", {
+                logger.info("AA ", {
                     userId: req.body.webhook_data.userId,
                     amountCommited: req.body.txs[0].receive_amount,
                     paymentMethod: "Triplea",
@@ -1123,7 +1124,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 userId: req.body.webhook_data.userId,
             });
             if (!findLaunchpad) {
-                console.log("not found", findLaunchpad);
+                logger.info("not found", findLaunchpad);
                 const createAmount = await LaunchpadAmount.create({
                     userId: req.body.webhook_data.userId,
                     amountCommited: req.body.txs[0].receive_amount,
@@ -1132,7 +1133,7 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 findLaunchpad.amountCommited =
                     Number(findLaunchpad.amountCommited) +
                     Number(req.body.txs[0].receive_amount);
-                console.log("found --0", findLaunchpad);
+                logger.info("found --0", findLaunchpad);
                 await findLaunchpad.save();
             }
             await sendPaymentConfirmation({
@@ -1169,14 +1170,14 @@ const getCommitedAmount = async (req, res) => {
         const findData = await LaunchpadAmount.findOne({
             userId: req.user.userId,
         });
-        console.log("findData   ", findData);
+        logger.info("findData   ", findData);
 
         res.status(200).json({
             data: findData,
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal server error!",
         });
@@ -1193,14 +1194,14 @@ const getAllCommitedAmount = async (req, res) => {
         const findData = await LaunchpadAmount.find({
             userId: req.user.userId,
         });
-        console.log("findData   ", findData);
+        logger.info("findData   ", findData);
 
         res.status(200).json({
             data: findData,
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal server error!",
         });
@@ -1253,7 +1254,7 @@ const getLaunchpadActivity = async (req, res) => {
                 return res.status(500).send(err);
             });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal server error!",
         });

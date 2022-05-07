@@ -2,7 +2,7 @@
 const models = require("../models/presaleTier")
 const nftModels = require("../models/presaleNfts");
 const { mapReduce } = require("../models/Token");
-
+const logger = require('../logger')
 
 const startPresale = async (req, res) => {
   try {
@@ -57,7 +57,7 @@ const startPresale = async (req, res) => {
                   var totalCount = pastPresale.reduce(function(prev, cur) {
                     return prev + parseInt(cur.quantity);
                   }, 0);
-                  console.log(totalCount,"totalcount");
+                  logger.info(totalCount,"totalcount");
               if(nft.itemSold >= totalCount){
                 var activePresale = getPreSaleTier[crossedPresale.length];
                 await nftModels.presalenfts.updateOne(
@@ -78,7 +78,7 @@ const startPresale = async (req, res) => {
                 );
               }else{
                 var crossed = filterQuantityPresale(getPreSaleTier,nft.itemSold);
-                console.log(crossed)
+                logger.info(crossed)
                 var activePresale = getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
                 await nftModels.presalenfts.updateOne(
                   {
@@ -142,7 +142,7 @@ const startPresale = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    logger.info(error);
     res.status(400).json({
       status:"Error",
       msg: error,
@@ -325,7 +325,7 @@ const schedulePreSale = async(req,res) =>{
     }
     
   } catch (error) {
-    console.log(error)
+    logger.info(error)
     res.status(400).json({
       status:"Error",
       msg: error,
@@ -366,7 +366,7 @@ const filterQuantityPresale = (arr, min) => {
   var total = 0
   let arrList = [];
   for (let i = 0; i <= arr.length; i++) {
-    console.log(total+ " < " +min , "total > min")
+    logger.info(total+ " < " +min , "total > min")
     if(total <= min){
       arrList.push(arr[i]);
       total += parseInt(arr[i].quantity)
@@ -477,7 +477,7 @@ return myDate;
 
         return
     } catch (err) {
-        console.log(err)
+        logger.info(err)
         res.json({ status: 400, msg: 'Something went wrong' })
         return
     }
