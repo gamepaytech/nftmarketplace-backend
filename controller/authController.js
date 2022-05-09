@@ -64,7 +64,7 @@ const register = async (req, res) => {
             password: hashedPassword,
             metamaskKey: metamaskKey,
             verificationToken: verificationToken,
-            referralCode: referralCode.code,
+            referralCode: username,
         }
 
         logger.info('BEFORE SEDING--- ',verificationToken)
@@ -403,10 +403,15 @@ const addMyReferral = async function (req, res) {
         }
 
         query = { email: req.body.email }
-        const checkMail = await models.users.findOne(query)
+        const checkMail = await models.users.findOne({ "$or": [ { email: req.body.email }, { username: req.body.username} ] })
         if (checkMail) {
-            const sysMsg = await getSystemMessage('GPAY_00026_EMAIL_USERNAME_IN_USE')
-            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Email or Username already in use' })
+        if (checkMail.username === req.body.username) {
+            const sysMsg = await getSystemMessage('GPAY_00026_USERNAME_IN_USE')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'Username already in use' })
+        } else {
+            const sysMsg = await getSystemMessage('GPAY_00026_EMAIL_IN_USE')
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'EMAIL already in use' })
+        }
         } else {
             query = { username: { $regex: new RegExp(req.body.username, 'i') } }
             const checkUserName = await models.users.findOne(query)
@@ -447,7 +452,7 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: referralCode.code,
+                                referralCode: req.body.username,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -467,7 +472,7 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: referralCode.code,
+                                referralCode: req.body.username,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -563,7 +568,7 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: referralCode.code,
+                            referralCode: req.body.username,
                             refereeCode: refereeCode,
                         }
                     }
@@ -583,7 +588,7 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: referralCode.code,
+                            referralCode: req.body.username,
                             refereeCode: refereeCode,
                         }
                     }
