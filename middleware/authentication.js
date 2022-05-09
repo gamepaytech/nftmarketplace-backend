@@ -1,8 +1,10 @@
 const { isTokenValid } = require('../utils')
 const Token = require('../models/Token')
+const logger = require('../logger')
 
 const authenticateUser = async (req, res, next) => {
     try {
+        logger.info('AUTHENTICATING...');
         // console.log('AUTHENTICATING...')
         const accessToken = req.headers['authorization']
         const bearerToken = accessToken.split(' ')[1]

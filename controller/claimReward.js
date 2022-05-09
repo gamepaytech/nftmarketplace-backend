@@ -5,8 +5,7 @@ const Web3 = require("web3")
 const Provider = require('@truffle/hdwallet-provider');
 const { address, abi } = require('../config')
 const axios = require("axios");
-
-
+const logger = require('../logger')
 
 const updateClaimed = async (req, res) => {
     try {
@@ -42,7 +41,7 @@ const updateClaimed = async (req, res) => {
                     { gas: 3000000, from: account.address },
                     function (error, gasAmount) {
                         if (error) {
-                            console.log(error?.message)
+                            logger.info(error?.message)
                         }
                     }
                 )
@@ -56,7 +55,7 @@ const updateClaimed = async (req, res) => {
                     res.status(200).json({ claimAmount })
                 })
                 .catch((err) => {
-                    console.log(err)
+                    logger.info(err)
                 })
         }
 
@@ -83,17 +82,17 @@ const claimable = async (req, res) => {
         }
         res.status(200).json(totalRewards - totalClaimed)
     } catch (error) {
-        console.log(error)
+        logger.info(error)
         res.status(500).json(error)
     }
 }
 
 const withdrawDetails = async(req, res) =>{
-    console.log("here94")
+    logger.info("here94")
     try {
         const user = req.body.id;
         var claimedAlready = await Claimed.find({ "userId": user })
-        console.log(claimedAlready.reverse(),"here")
+        logger.info(claimedAlready.reverse(),"here")
         res.status(200).json({claimedAlready})
     } catch (error) {
         res.status(500).json(error)

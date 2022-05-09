@@ -2,10 +2,11 @@ const Nft = require("../models/presaleNfts");
 const models = require("../models/User");
 const Vesting = require("../models/vesting");
 const LockedToken = require("../models/lockedTokens");
+const logger = require('../logger')
 
 const createVestingData = async (req, res) => {
     try {
-        console.log("RESA ", req.user, "REQ");
+        logger.info("RESA ", req.user, "REQ");
 
         const {
             wallet_address,
@@ -48,7 +49,7 @@ const createVestingData = async (req, res) => {
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "Internal Server Error!",
         });
@@ -69,7 +70,7 @@ const vestingGetData = async (req, res) => {
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "500: Internal Server Error!",
             status: 500,
@@ -88,7 +89,7 @@ const updateVestingDataById = async (req, res) => {
             nft_unit_price,
             nft_unit_currency,
         } = req.body;
-        console.log("v ",req.body.vestingId);
+        logger.info("v ",req.body.vestingId);
         const findData = await Vesting.findOneAndUpdate(
             {
                 _id: req.body.vestingId,
@@ -109,7 +110,7 @@ const updateVestingDataById = async (req, res) => {
             }
         );
 
-        console.log("fd ",findData);
+        logger.info("fd ",findData);
 
         if (!findData) {
             return res.status(404).json({
@@ -123,7 +124,7 @@ const updateVestingDataById = async (req, res) => {
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "Internal Server Error!",
         });
@@ -136,7 +137,7 @@ const deleteVestingDataById = async (req, res) => {
       "_id":req.body.vestingId
     })
 
-    console.log("DELETE DATA ",deleteData);
+    logger.info("DELETE DATA ",deleteData);
     if(!deleteData) {
       return res.status(404).json({
         err:"Error! data not found."
@@ -147,7 +148,7 @@ const deleteVestingDataById = async (req, res) => {
     })
   }
   catch(err) {
-    console.log(err);
+    logger.info(err);
     res.status(500).json({
       err:"Internal Server Error!"
     })
@@ -175,7 +176,7 @@ const getVestingByWallet = async (req, res) => {
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
         res.status(500).json({
             err: "Internal server error!",
         });
@@ -184,7 +185,7 @@ const getVestingByWallet = async (req, res) => {
 
 const getLockedTokens = async (req, res) => {
     try {
-      console.log("A ",req.body.wallet_address);
+      logger.info("A ",req.body.wallet_address);
         const getData = await LockedToken.find({
             wallet_address: req.body.wallet_address,
         });
@@ -199,7 +200,7 @@ const getLockedTokens = async (req, res) => {
             status: 200,
         });
     } catch (err) {
-        console.log(err);
+        logger.info(err);
     }
 };
 

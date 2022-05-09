@@ -18,7 +18,8 @@ const {
     getAllCommitedAmount,
     initiateLaunchpadPayment,
     errorLaunchpadPayment,
-    getLaunchpadActivity
+    getLaunchpadActivity,
+    updateActivity
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -46,4 +47,6 @@ router.route("/initiateLaunchpadPayment").post(authenticateUser,initiateLaunchpa
 router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayment);
 router.route("/getLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
 
+
+router.route("/update-activity").put(authenticateUser,updateActivity);
 module.exports = router;

@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose')
 const models = require("../models/kyc")
+const logger = require('../logger')
 
 const getKYC = async (req, res) => {
     let page = req.query.page;
@@ -108,7 +109,7 @@ const getKYC = async (req, res) => {
         
 
         const checkKYC = await models.kycs.findById(req.body.id)
-        console.log(checkKYC.length)
+        logger.info(checkKYC.length)
         if (checkKYC == null) {
             res.json({ status: 400, msg: 'KYC not Found' })
             return
@@ -157,7 +158,7 @@ const getKYC = async (req, res) => {
 
         return
     } catch (err) {
-        console.log(err)
+        logger.info(err)
         res.json({ status: 400, msg: "Invalid Value" })
         return
     }

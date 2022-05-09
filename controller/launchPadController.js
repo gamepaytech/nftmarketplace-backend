@@ -1,9 +1,6 @@
 
 const models = require("../models/launchpads")
 
-
-
-
  const getLaunchPad = async (req, res) => {
     let page = req.query.page;
     let pageSize = req.query.pageSize;
