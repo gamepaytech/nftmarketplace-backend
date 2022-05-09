@@ -12,7 +12,8 @@ if(process.env.LOG_S3_ENABLED === 'true') {
     folder: process.env.LOG_S3_FOLDER_NAME,
     tags: { project: 'nft-market-place-backend' },
     access_key_id: process.env.LOG_S3_ACCESS_KEY,
-    secret_access_key: process.env.LOG_S3_SECRET_ACCESS_KEY
+    secret_access_key: process.env.LOG_S3_SECRET_ACCESS_KEY,
+    name_format: '%Y-%m-%d-'+ process.env.NODE_ENV +'-nftmarketplace-backend.log'
   });
   const s3transport = new winston.transports.Stream({
     stream: s3stream
