@@ -1212,7 +1212,7 @@ const getLaunchpadActivity = async (req, res) => {
     try {
         if (!req.user.userId) {
             return res.status(404).json({
-                err: "Error! user not found.",
+                err: "Error! user is not found.",
             });
         }
         let page = (req.query.page - 1);
