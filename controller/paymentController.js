@@ -1215,7 +1215,7 @@ const getLaunchpadActivity = async (req, res) => {
                 err: "Error! user not found.",
             });
         }
-        let page = req.query.page;
+        let page = (req.query.page - 1);
         let pageSize = req.query.pageSize;
         const currentDate = new Date();
         const fromDate = new Date(
