@@ -447,7 +447,7 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: referralCode.code,
+                                referralCode: req.body.username,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -467,7 +467,7 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: referralCode.code,
+                                referralCode: req.body.username,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -563,7 +563,7 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: referralCode.code,
+                            referralCode: req.body.username,
                             refereeCode: refereeCode,
                         }
                     }
@@ -583,7 +583,7 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: referralCode.code,
+                            referralCode: req.body.username,
                             refereeCode: refereeCode,
                         }
                     }
