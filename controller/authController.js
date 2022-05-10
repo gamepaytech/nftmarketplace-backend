@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const Token = require('../models/Token')
 const models = require('../models/User')
 const referralModel = require('../models/referralModel')
@@ -1093,15 +1094,25 @@ const setactivity = async function (req, res) {
     const sysMsg = await getSystemMessage('GPAY_00050_DONE')
     res.status(200).json(sysMsg ? sysMsg.message : 'Done')
 }
-const mongoose = require('mongoose')
 
 const getactivity = async function (req, res) {
-    logger.info('user id ',req.body.userId);
-    const user = await models.users.aggregate(
-        [{ $match: { _id:mongoose.Types.ObjectId(req.body.userId) } }, 
-        {$project:{ count: { $size:"$activity" }}}])
-    const userActivity = await models.users.findOne({ _id: req.body.userId }).slice('activity', [parseInt(req.query.pageSize) * (req.query.page - 1), parseInt(req.query.pageSize)])
-    res.json({ userActivity: userActivity?.activity,total:user[0]?.count})
+    if (Object.keys(req.query).length !== 0) {
+      logger.info("user id ", req.body.userId);
+      const user = await models.users.aggregate([
+        { $match: { _id: mongoose.Types.ObjectId(req.body.userId) } },
+        { $project: { count: { $size: "$activity" } } },
+      ]);
+      const userActivity = await models.users
+        .findOne({ _id: req.body.userId })
+        .slice("activity", [
+          parseInt(req.query.pageSize) * (req.query.page - 1),
+          parseInt(req.query.pageSize),
+        ]);
+      res.json({ userActivity: userActivity?.activity, total: user[0]?.count });
+    } else {
+      const userActivity = await models.users.findOne({ _id: req.body.userId });
+      res.json({ userActivity: userActivity?.activity });
+    }
 }
 
 const updatePercent = async function (req, res) {
