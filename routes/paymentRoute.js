@@ -45,7 +45,7 @@ router.route("/launchpadPayment").post(authenticateUser,launchpadPaymentAAA);
 router.route("/tripleAWebhookLaunchpad").post(bodyParser.raw({type: 'application/json'}),tripleAWebhookLaunchpad)
 router.route("/initiateLaunchpadPayment").post(authenticateUser,initiateLaunchpadPayment);
 router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayment);
-router.route("/getLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
+router.route("/getAllLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
 
 
 router.route("/update-activity").put(authenticateUser,updateActivity);
