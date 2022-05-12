@@ -19,7 +19,8 @@ const {
     initiateLaunchpadPayment,
     errorLaunchpadPayment,
     getLaunchpadActivity,
-    updateActivity
+    updateActivity,
+    createCircleLaunchpadPayment
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -46,6 +47,8 @@ router.route("/tripleAWebhookLaunchpad").post(bodyParser.raw({type: 'application
 router.route("/initiateLaunchpadPayment").post(authenticateUser,initiateLaunchpadPayment);
 router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayment);
 router.route("/getAllLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
+
+router.route("/createCircleLaunchpadPayment").post(authenticateUser,createCircleLaunchpadPayment);
 
 
 router.route("/update-activity").put(authenticateUser,updateActivity);

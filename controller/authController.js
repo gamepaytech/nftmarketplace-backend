@@ -1104,6 +1104,7 @@ const getactivity = async function (req, res) {
       ]);
       const userActivity = await models.users
         .findOne({ _id: req.body.userId })
+        .sort({createdAt:-1})
         .slice("activity", [
           parseInt(req.query.pageSize) * (req.query.page - 1),
           parseInt(req.query.pageSize),
@@ -1113,6 +1114,18 @@ const getactivity = async function (req, res) {
       const userActivity = await models.users.findOne({ _id: req.body.userId });
       res.json({ userActivity: userActivity?.activity });
     }
+}
+
+const updateActivity = async function(req,res) {
+    await models.users.updateOne(
+        {
+            _id: req.user.userId,
+            "activity.orderId": req.body.orderId,
+        },
+        { $set: { "activity.$.activity": req.body.dataString } }
+    );
+    const sysMsg = await getSystemMessage('GPAY_00050_DONE')
+    res.status(200).json(sysMsg ? sysMsg.message : 'Done')
 }
 
 const updatePercent = async function (req, res) {
@@ -1183,4 +1196,5 @@ module.exports = {
     updatePercent,
     setactivity,
     getactivity,
+    updateActivity
 }
