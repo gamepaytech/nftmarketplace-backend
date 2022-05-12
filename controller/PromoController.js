@@ -17,7 +17,6 @@ Date.prototype.addDays = function (days) {
 
 
 const createPromoCode = async (req, res) => {
-  console.log("test")
   try {
     let {
       startDateTime,
@@ -124,8 +123,6 @@ function endAfterStart(start, end) {
 
 const futureDate =(value) =>{
   var now = new Date();
-  console.log(new Date(now.toISOString()), "cDate")
-  console.log(new Date(value), "eDate")
   return (new Date(now.toISOString()) < new Date(value));
 }
 
@@ -137,17 +134,12 @@ const startEndDateCheckCurrentDate =(startDate,endDate) =>{
 const updatePromoCode = async (req, res) => {
   try {
     let {
-      validTill,
       totalNumberCode,
       percentDiscount,
       promoCode,
       isEnabled
     } = req.body;
-    if (!validTill || validTill < 0) {
-      return res.status(401).json({
-        err: "Please provide the validity for the promo code."
-      })
-    }
+
     if (!totalNumberCode || totalNumberCode < 0) {
       return res.status(401).json({
         err: "Please provide the correct total number of code to make it live."
@@ -178,12 +170,8 @@ const updatePromoCode = async (req, res) => {
       })
     }
 
-    const date = new Date();
-    const endDate = date.setDate(date.getDate() + Number(validTill));
-
     await PromoCode.updateOne({ promoCode: promoCode },
       {
-        validTill: endDate,
         totalNumberCode,
         percentDiscount,
         promoCodeStatus: isEnabled
@@ -194,7 +182,6 @@ const updatePromoCode = async (req, res) => {
       .json({
         data: {
           promoCode: promoCode,
-          endDate,
           totalNumberCode,
           percentDiscount,
           isEnabled
@@ -268,13 +255,6 @@ const getPromoCode = async (req, res) => {
     }
 
     let isValid;
-    //3 checks 
-    //1st date --> validity > currDate
-    //2nd Matches with db --> checkCode.promoCode === promoCode
-    //3rd total claimed is less than total coupons available --> checkCode.totalNumberCode < checkCode.totalNumberClaimed
-    const currDate = new Date().getTime();
-    const validity = checkCode.validTill;
-    console.log(startEndDateCheckCurrentDate(checkCode.startDateTime,checkCode.endDateTime),"check")
     if (
       checkCode.totalNumberCode > checkCode.totalNumberClaimed &&
       startEndDateCheckCurrentDate(checkCode.startDateTime,checkCode.endDateTime) &&
