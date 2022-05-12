@@ -17,16 +17,35 @@ Date.prototype.addDays = function (days) {
 
 
 const createPromoCode = async (req, res) => {
+  console.log("test")
   try {
     let {
-      validTill,
+      startDateTime,
+      endDateTime,
       totalNumberCode,
       percentDiscount,
       promoCode
     } = req.body;
-    if (!validTill || validTill < 0) {
+    if (!startDateTime) {
       return res.status(401).json({
-        err: "Please provide the validity for the promo code."
+        err: "Please provide the Start Date Time."
+      })
+    }
+    if (!endDateTime) {
+      return res.status(401).json({
+        err: "Please provide the End Date Time."
+      })
+    }
+
+    if(!endAfterStart(startDateTime,endDateTime)){
+      return res.status(401).json({
+        err: "End date should be greater than Start date."
+      })
+    }
+
+    if(!futureDate(endDateTime)){
+      return res.status(401).json({
+        err: "End date should be greater than Current date time."
       })
     }
     if (!totalNumberCode || totalNumberCode < 0) {
@@ -59,15 +78,16 @@ const createPromoCode = async (req, res) => {
       })
     }
 
-    const date = new Date();
-    const endDate = date.setDate(date.getDate() + Number(validTill));
+    // const date = new Date();
+    // const endDate = date.setDate(date.getDate() + Number(validTill));
     // const endDate = new  Date(endTimeStamp)
     // logger.info(endTimeStamp,endDate,"end")
 
 
     let createObj = {
       promoCode: promoCode,
-      validTill: endDate,
+      startDateTime:startDateTime,
+      endDateTime:endDateTime,
       totalNumberCode,
       percentDiscount
     }
@@ -79,19 +99,39 @@ const createPromoCode = async (req, res) => {
       .json({
         data: {
           promoCode: promoCode,
-          endDate,
+          endDateTime,
           totalNumberCode,
           percentDiscount
         }
       });
   }
   catch (err) {
+    console.log(err)
     logger.info('ccreatePromoCode ', err)
     res.status(401).json({
       err: "401: Internal Server Error",
       status: 401
     })
   }
+}
+
+function endAfterStart(start, end) {
+  var startDate = new Date(start);
+  var endDate   = new Date(end);
+
+  return endDate.getTime() >= startDate.getTime();
+} 
+
+const futureDate =(value) =>{
+  var now = new Date();
+  console.log(new Date(now.toISOString()), "cDate")
+  console.log(new Date(value), "eDate")
+  return (new Date(now.toISOString()) < new Date(value));
+}
+
+const startEndDateCheckCurrentDate =(startDate,endDate) =>{
+  var now = new Date();
+  return (new Date(now.toISOString()) > new Date(startDate) && new Date(now.toISOString()) < new Date(endDate));
 }
 
 const updatePromoCode = async (req, res) => {
@@ -234,9 +274,10 @@ const getPromoCode = async (req, res) => {
     //3rd total claimed is less than total coupons available --> checkCode.totalNumberCode < checkCode.totalNumberClaimed
     const currDate = new Date().getTime();
     const validity = checkCode.validTill;
+    console.log(startEndDateCheckCurrentDate(checkCode.startDateTime,checkCode.endDateTime),"check")
     if (
       checkCode.totalNumberCode > checkCode.totalNumberClaimed &&
-      validity > currDate &&
+      startEndDateCheckCurrentDate(checkCode.startDateTime,checkCode.endDateTime) &&
       checkCode.promoCode === promoCode &&
       checkCode.promoCodeStatus) {
       isValid = true;
