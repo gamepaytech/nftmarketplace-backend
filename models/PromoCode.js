@@ -6,7 +6,10 @@ const PromoCodeSchema = new Schema(
         promoCode: {
           type:String
         },
-        validTill: {
+        startDateTime: {
+          type: String
+        },
+        endDateTime: {
           type: String
         },
         totalNumberClaimed: {
