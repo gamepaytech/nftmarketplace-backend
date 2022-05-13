@@ -47,6 +47,6 @@ router.get('/getPercent', cors(), authenticateUser, getPercent)
 router.post('/updatePercent', cors(), authenticateAdmin, updatePercent)
 router.post('/activity', cors(), setactivity)
 router.post('/getactivity', cors(), getactivity)
-router.post('/updateActivity', cors(), authenticateUser, updateActivity);
+router.patch('/updateActivity', cors(), authenticateUser, updateActivity);
 
 module.exports = router

@@ -20,7 +20,13 @@ const qs = require("qs");
 const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const ObjectId = mongoose.Types.ObjectId;
 const logger = require("../logger");
+const r = require("request");
+const MessageValidator = require("sns-validator");
 
+const circleArn =
+    /^arn:aws:sns:.*:908968368384:(sandbox|prod)_platform-notifications-topic$/;
+
+const validator = new MessageValidator();
 
 const createActivity = async (userId, price, isGood, gateway, orderId) => {
     await models.users.updateOne(
@@ -649,13 +655,13 @@ const makeLaunchpadPayment = async (req, res) => {
         logger.info(req.user);
 
         const findFirst = await LaunchpadPayment.findOne({
-            _id:id
-        })
+            _id: id,
+        });
         console.log(findFirst);
-        if(findFirst?.paymentStatus == "Completed") {
+        if (findFirst?.paymentStatus == "Completed") {
             return res.status(400).json({
-                err:"Payment Already Updated!"
-            })
+                err: "Payment Already Updated!",
+            });
         }
 
         const createData = await LaunchpadPayment.updateOne(
@@ -1322,15 +1328,26 @@ const createCircleLaunchpadPayment = async (req, res) => {
             },
             "SDF"
         );
-
-        await createActivity(req.user.userId,nftAmount,idempotencyKey,"Circle");
+        await createActivity(
+            req.user.userId,
+            nftAmount,
+            false,
+            "Circle",
+            idempotencyKey
+        );
+        console.log(
+            req.user.userId,
+            nftAmount,
+            idempotencyKey,
+            " sdfdsfds dsfsdfCircle"
+        );
         // sdk.auth(process.env.CIRCLE_TOKEN);
         axios({
             url: `${process.env.CIRCLE_API_URL}/v1/payments`,
             method: "POST",
             headers: {
-                "Accept": "application/json",
-                "Authorization": `Bearer ${process.env.CIRCLE_TOKEN}`,
+                Accept: "application/json",
+                Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
                 "Content-Type": "application/json",
             },
             data: {
@@ -1338,6 +1355,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
                     email: email,
                     sessionId: sessionId,
                     ipAddress: "127.38.233.23",
+                    userId: req.user.userId,
                 },
                 amount: {
                     amount: nftAmount.toFixed(2).toString(),
@@ -1349,8 +1367,14 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 encryptedData: cvvEncrpytion.encryptedMessage,
                 keyId: keyIdEncrpytion,
                 verification: "three_d_secure",
-                verificationSuccessUrl: `${process.env.APP_FRONTEND_URL}/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(2)}`,
-                verificationFailureUrl: `${process.env.APP_FRONTEND_URL}/profile?paymentCircle=${"payment-failed"}`,
+                verificationSuccessUrl: `${
+                    process.env.APP_FRONTEND_URL
+                }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
+                    2
+                )}`,
+                verificationFailureUrl: `${
+                    process.env.APP_FRONTEND_URL
+                }/profile?paymentCircle=${"payment-failed"}`,
             },
         })
             .then((ares) => {
@@ -1374,7 +1398,155 @@ const createCircleLaunchpadPayment = async (req, res) => {
     }
 };
 
+const circleSNSLaunchpad = async (request, response) => {
+    if (request.method === "HEAD") {
+        response.writeHead(200, {
+            "Content-Type": "text/html",
+        });
+        response.end(`HEAD request for ${request.url}`);
+        console.log("Received HEAD request");
+        return;
+    }
+    if (request.method === "POST") {
+        let body = "";
+        request.on("data", (data) => {
+            body += data;
+        });
+        request.on("end", () => {
+            console.log(`POST request, \nPath: ${request.url}`);
+            console.log("Headers: ");
+            console.dir(request.headers);
+            console.log(`Body: ${body}`);
 
+            response.writeHead(200, {
+                "Content-Type": "text/html",
+            });
+            response.end(`POST request for ${request.url}`);
+            handleBody(body);
+        });
+    } else {
+        const msg = `${request.method} method not supported`;
+        console.log(msg);
+        response.writeHead(400, {
+            "Content-Type": "text/html",
+        });
+        response.end(msg);
+        return;
+    }
+
+    const handleBody = async (body) => {
+        const envelope = JSON.parse(body);
+        validator.validate(envelope, async (err) => {
+            if (err) {
+                console.error(err);
+            } else {
+                switch (envelope.Type) {
+                    case "SubscriptionConfirmation": {
+                        if (!circleArn.test(envelope.TopicArn)) {
+                            console.error(
+                                `\nUnable to confirm the subscription as the topic arn is not expected ${envelope.TopicArn}. Valid topic arn must match ${circleArn}.`
+                            );
+                            break;
+                        }
+                        r(envelope.SubscribeURL, (err) => {
+                            if (err) {
+                                console.error(
+                                    "Subscription NOT confirmed.",
+                                    err
+                                );
+                            } else {
+                                console.log("Subscription confirmed.");
+                            }
+                        });
+                        break;
+                    }
+                    case "Notification": {
+                        console.log(`Received message ${envelope.Message}`);
+                        // enter code here  to verify payment
+                        let event = envelope.Message;
+                        if (
+                            (event.status == "confirmed" || event.status== "paid") &&
+                            event?.metadata.email
+                        ) {
+                            logger.info("-----charge confirmed", event);
+                            //save in presale bought nft added to user account
+                            const findUser = await models.users.findOne({
+                                email: event.metadata.email,
+                            });
+                            //create payment schema
+                            const findExists = await LaunchpadPayment.findOne({
+                                paymentId: event.payment.id,
+                            });
+                            if (!findExists) {
+                                logger.info("-----CREATING Success 751");
+                                const createData =
+                                    await LaunchpadPayment.create({
+                                        userId: findUser._id,
+                                        amountCommited: event.amount.amount,
+                                        paymentMethod: "Circle",
+                                        paymentStatus: "confirmed",
+                                        paymentId: event.payment.id,
+                                    });
+                            } else {
+                                logger.info("-----updating Success 761");
+                                await LaunchpadPayment.updateOne(
+                                    {
+                                        paymentId: event.payment.id,
+                                    },
+                                    {
+                                        userId: findUser._id,
+                                        amountCommited: amount.amount,
+                                        paymentMethod: "Circle",
+                                        paymentStatus: "confirmed",
+                                        paymentId: event.payment.id,
+                                        metadata: JSON.stringify(event),
+                                    }
+                                );
+                            }
+                            const findLaunchpad = await LaunchpadAmount.findOne(
+                                {
+                                    userId: findUser._id,
+                                }
+                            );
+                            if (!findLaunchpad) {
+                                logger.info("----778-not found", findLaunchpad);
+                                const createAmount =
+                                    await LaunchpadAmount.create({
+                                        userId: findUser._id,
+                                        amountCommited: event.amount.amount,
+                                    });
+                            } else {
+                                logger.info("-----CREATING FAILED 784");
+                                findLaunchpad.amountCommited =
+                                    Number(findLaunchpad.amountCommited) +
+                                    Number(event.amount.amount);
+                                logger.info("found --0", findLaunchpad);
+                                await findLaunchpad.save();
+                            }
+                            await sendPaymentConfirmation({
+                                email: event.metadata.email,
+                                quantity: 1,
+                                amount: event.amount.amount,
+                            });
+
+                            await updateActivity(
+                                findUser._id,
+                                event.payment.id,
+                                `You have commited ${event.amount.amount} USDT amount using Coinbase.`
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        console.error(
+                            `Message of type ${body.Type} not supported`
+                        );
+                    }
+                }
+            }
+        });
+    };
+};
 
 module.exports = {
     createPayment,
@@ -1398,4 +1570,5 @@ module.exports = {
     getLaunchpadActivity,
     updateActivity,
     createCircleLaunchpadPayment,
+    circleSNSLaunchpad,
 };
