@@ -23,6 +23,7 @@ const {
     updatePercent,
     setactivity,
     getactivity,
+    updateActivity
 } = require('../controller/authController')
 const { authenticateUser, authenticateAdmin, authenticateSuperAdmin } = require('../middleware/authentication')
 
@@ -46,5 +47,6 @@ router.get('/getPercent', cors(), authenticateUser, getPercent)
 router.post('/updatePercent', cors(), authenticateAdmin, updatePercent)
 router.post('/activity', cors(), setactivity)
 router.post('/getactivity', cors(), getactivity)
+router.patch('/updateActivity', cors(), authenticateUser, updateActivity);
 
 module.exports = router

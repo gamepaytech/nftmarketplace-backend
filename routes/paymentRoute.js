@@ -19,7 +19,9 @@ const {
     initiateLaunchpadPayment,
     errorLaunchpadPayment,
     getLaunchpadActivity,
-    updateActivity
+    updateActivity,
+    createCircleLaunchpadPayment,
+    circleSNSLaunchpad
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -47,6 +49,8 @@ router.route("/initiateLaunchpadPayment").post(authenticateUser,initiateLaunchpa
 router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayment);
 router.route("/getAllLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
 
+router.route("/createCircleLaunchpadPayment").post(authenticateUser,createCircleLaunchpadPayment);
+router.route("/circleSNSLaunchpad").post(circleSNSLaunchpad);
 
 router.route("/update-activity").put(authenticateUser,updateActivity);
 module.exports = router;

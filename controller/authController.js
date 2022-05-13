@@ -1115,6 +1115,19 @@ const getactivity = async function (req, res) {
     }
 }
 
+const updateActivity = async function(req,res) {
+    const ud = await models.users.updateOne(
+        {
+            _id: req.user.userId,
+            "activity.orderId": req.body.orderId,
+        },
+        { $set: { "activity.$.activity": req.body.dataString } }
+    );
+    const sysMsg = await getSystemMessage('GPAY_00050_DONE')
+    console.log("UD ",ud);
+    res.status(200).json(sysMsg ? sysMsg.message : 'Done')
+}
+
 const updatePercent = async function (req, res) {
     try {
         logger.info('kfjjkdsngfjkdshfk')
@@ -1183,4 +1196,5 @@ module.exports = {
     updatePercent,
     setactivity,
     getactivity,
+    updateActivity
 }
