@@ -47,7 +47,9 @@ let appsetting = new mongoose.Schema({
     referralPercent:{
         type: Number,
         default: 5
-    }
+    },
+    presale:{type: Boolean},
+    launchpad:{type: Boolean}
 })
 
 module.exports = {

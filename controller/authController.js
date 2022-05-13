@@ -1115,6 +1115,51 @@ const getactivity = async function (req, res) {
     }
 }
 
+const updatePresaleLaunchPad = async function (req, res) {
+    try {
+        logger.info('kfjjkdsngfjkdshfk')
+        if (req.body.userId == undefined || req.body.userId == '') {
+            const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
+            return
+        }
+
+        if (req.body.presale == undefined) {
+            const sysMsg = await getSystemMessage('GPAY_00051_PRESALE_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'presale is required' })
+            return
+        }
+
+        if (req.body.launchpad == undefined) {
+            const sysMsg = await getSystemMessage('GPAY_00051_LAUNCHPAD_REQUIRED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'launchpad is required' })
+            return
+        }
+
+        const userInfo = await models.users.find({
+            _id: req.body.userId,
+            isSuperAdmin: true,
+        })
+        if (userInfo) {
+            const setting = await referralModel.appsetting.updateOne({
+                launchpad: req.body.launchpad,
+                presale: req.body.presale,
+            })
+            logger.info(setting, 'setting')
+            
+            const newSetting = await referralModel.appsetting.find({})
+            const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+            res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: newSetting })
+        } else {
+            const sysMsg = await getSystemMessage('GPAY_00052_ACTION_NOT_PERMITTED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Action Not Permitted' })
+        }
+    } catch (error) {
+        res.status(400).json({ status: 400, msg: error.toString() })
+    }
+}
+
+
 const updatePercent = async function (req, res) {
     try {
         logger.info('kfjjkdsngfjkdshfk')
@@ -1181,6 +1226,7 @@ module.exports = {
     checkWalletKey,
     getPercent,
     updatePercent,
+    updatePresaleLaunchPad,
     setactivity,
     getactivity,
 }
