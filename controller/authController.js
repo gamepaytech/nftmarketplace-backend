@@ -1117,7 +1117,6 @@ const getactivity = async function (req, res) {
 
 const updatePresaleLaunchPad = async function (req, res) {
     try {
-        logger.info('kfjjkdsngfjkdshfk')
         if (req.body.userId == undefined || req.body.userId == '') {
             const sysMsg = await getSystemMessage('GPAY_00039_USER_ID_REQUIRED')
             res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'userId is required' })
