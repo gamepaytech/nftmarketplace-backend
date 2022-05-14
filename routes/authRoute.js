@@ -23,6 +23,7 @@ const {
     updatePercent,
     setactivity,
     getactivity,
+    updatePresaleLaunchPad,
     updateActivity
 } = require('../controller/authController')
 const { authenticateUser, authenticateAdmin, authenticateSuperAdmin } = require('../middleware/authentication')
@@ -45,6 +46,7 @@ router.post('/checkWalletKey', cors(), checkRegisterredWallet)
 router.post('/checkUserWalletKey', cors(), authenticateUser, checkWalletKey)
 router.get('/getPercent', cors(), authenticateUser, getPercent)
 router.post('/updatePercent', cors(), authenticateAdmin, updatePercent)
+router.post('/updatePresaleLaunchpad', cors(), authenticateAdmin, updatePresaleLaunchPad)
 router.post('/activity', cors(), setactivity)
 router.post('/getactivity', cors(), getactivity)
 router.patch('/updateActivity', cors(), authenticateUser, updateActivity);
