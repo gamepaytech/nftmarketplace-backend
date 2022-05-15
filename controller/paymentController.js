@@ -34,9 +34,8 @@ const createActivity = async (userId, price, isGood, gateway, orderId) => {
         {
             $push: {
                 activity: {
-                    activity: `You have ${
-                        isGood == true ? "commited" : "initiated"
-                    } ${price.toFixed(2)} USDT amount using ${gateway}.`,
+                    activity: `You have ${isGood == true ? "commited" : "initiated"
+                        } ${price.toFixed(2)} USDT amount using ${gateway}.`,
                     timestamp: new Date(),
                     orderId: orderId,
                 },
@@ -1367,14 +1366,12 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 encryptedData: cvvEncrpytion.encryptedMessage,
                 keyId: keyIdEncrpytion,
                 verification: "three_d_secure",
-                verificationSuccessUrl: `${
-                    process.env.APP_FRONTEND_URL
-                }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
-                    2
-                )}`,
-                verificationFailureUrl: `${
-                    process.env.APP_FRONTEND_URL
-                }/profile?paymentCircle=${"payment-failed"}`,
+                verificationSuccessUrl: `${process.env.APP_FRONTEND_URL
+                    }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
+                        2
+                    )}`,
+                verificationFailureUrl: `${process.env.APP_FRONTEND_URL
+                    }/profile?paymentCircle=${"payment-failed"}`,
             },
         })
             .then((ares) => {
@@ -1397,6 +1394,97 @@ const createCircleLaunchpadPayment = async (req, res) => {
         });
     }
 };
+
+const getKeyForCircleLaunchpadPayment = async (req, res) => {
+    try {
+        axios({
+            url: `${process.env.CIRCLE_API_URL}/v1/encryption/public`,
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
+                "Content-Type": "application/json",
+            }
+        }).then((data) => {
+            logger.info('Received data from circle payment encryption api');
+            console.log(data);
+            res.status(200).json({
+                message: "Success",
+                res: data,
+            });
+        }).catch((err) => {
+                logger.error('Error occured while fetching data from circle api');
+                res.status(500).json({ error: "a.Some error ocurred" });
+            });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            error: "Error occurred while fetching encryption data from circle api",
+        });
+    }
+};
+
+const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
+    try {
+        const { payloadData } = req.body;
+        axios({
+            url: `${process.env.CIRCLE_API_URL}/v1/cards`,
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+            data: payloadData
+        }).then((data) => {
+            logger.info('Received data from circle payment cards api');
+            console.log(data);
+            res.status(200).json({
+                message: "Success",
+                res: data,
+            });
+        }).catch((err) => {
+                logger.error('Error occured while fetching data from circle payment cards api');
+                res.status(500).json({ error: "Internal Server Error" });
+            });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            error: "Error occurred while fetching card details from circle cards api",
+        });
+    }
+};
+
+
+const paymentsCircleLaunchpadPayment = async (req, res) => {
+    try {
+        const { payloadData } = req.body;
+        axios({
+            url: `${process.env.CIRCLE_API_URL}/v1/payments/${paymentId}`,
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
+            }
+        }).then((data) => {
+            logger.info('Received data from circle payment payments api');
+            console.log(data);
+            res.status(200).json({
+                message: "Success",
+                res: data,
+            });
+        }).catch((err) => {
+                logger.error('Error occured while fetching data from circle payment payments api');
+                res.status(500).json({ error: "Internal Server Error" });
+            });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            error: "Error occurred while fetching payment details from circle payments api",
+        });
+    }
+};
+
 
 const circleSNSLaunchpad = async (request, response) => {
     if (request.method === "HEAD") {
@@ -1465,7 +1553,7 @@ const circleSNSLaunchpad = async (request, response) => {
                         // enter code here  to verify payment
                         let event = envelope.Message;
                         if (
-                            (event.status == "confirmed" || event.status== "paid") &&
+                            (event.status == "confirmed" || event.status == "paid") &&
                             event?.metadata.email
                         ) {
                             logger.info("-----charge confirmed", event);
@@ -1571,4 +1659,7 @@ module.exports = {
     updateActivity,
     createCircleLaunchpadPayment,
     circleSNSLaunchpad,
+    getKeyForCircleLaunchpadPayment,
+    getCardDetailsCircleLaunchpadPayment,
+    paymentsCircleLaunchpadPayment
 };
