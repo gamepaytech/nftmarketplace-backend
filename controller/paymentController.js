@@ -1407,7 +1407,7 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
             }
         }).then((data) => {
             logger.info('Received data from circle payment encryption api');
-            logger.log(data);
+            logger.info(data);
             res.status(200).json({
                 message: "Success",
                 res: data,
@@ -1471,7 +1471,6 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
         }).then((data) => {
             logger.info('Received data from circle payment payments api');
             logger.info(data);
-            console.log(data);
             res.status(200).json({
                 message: "Success",
                 res: data,
