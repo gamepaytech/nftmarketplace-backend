@@ -3,8 +3,6 @@ const {
     createPayment,
     coinbasePayment,
     handleCoinbasePayment,
-    coinbaseSuccess,
-    coinbaseFail,
     createPaymentAAA,
     saveCirclePaymentData,
     sendPaymentEmail,
@@ -21,7 +19,10 @@ const {
     getLaunchpadActivity,
     updateActivity,
     createCircleLaunchpadPayment,
-    circleSNSLaunchpad
+    circleSNSLaunchpad,
+    getKeyForCircleLaunchpadPayment,
+    getCardDetailsCircleLaunchpadPayment,
+    paymentsCircleLaunchpadPayment
 } = require("../controller/paymentController");
 
 const router = express.Router();
@@ -33,8 +34,6 @@ router.route("/circle-store-pay").post(authenticateUser,saveCirclePaymentData);
 router.route("/create-pay-aaa").post(authenticateUser,createPaymentAAA);
 router.route("/coin-create-pay/:chikId/:email/:userId/:quantity").get(authenticateUser,coinbasePayment);
 router.route("/coin-handle-pay").post(handleCoinbasePayment);
-// router.route("/coin-success-pay").get(coinbaseSuccess);
-// router.route("/coin-failure").get(coinbaseFail);
 router.route("/send-confirmation").post(sendPaymentEmail);
 
 router.route("/triplea-webhook-payment").post(bodyParser.raw({type: 'application/json'}),tripleAWebhook);
@@ -51,6 +50,11 @@ router.route("/getAllLaunchpadActivity").get(authenticateUser,getLaunchpadActivi
 
 router.route("/createCircleLaunchpadPayment").post(authenticateUser,createCircleLaunchpadPayment);
 router.route("/circleSNSLaunchpad").post(circleSNSLaunchpad);
+router.route("/getKeyForCircleLaunchpadPayment").get(authenticateUser,getKeyForCircleLaunchpadPayment);
+router.route("/getCardDetailsCircleLaunchpadPayment").post(authenticateUser,getCardDetailsCircleLaunchpadPayment);
+router.route("/paymentsCircleLaunchpadPayment").get(authenticateUser,paymentsCircleLaunchpadPayment);
+
+
 
 router.route("/update-activity").put(authenticateUser,updateActivity);
 module.exports = router;
