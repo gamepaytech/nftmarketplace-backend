@@ -1407,17 +1407,18 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
             }
         }).then((data) => {
             logger.info('Received data from circle payment encryption api');
-            console.log(data);
+            logger.log(data);
             res.status(200).json({
                 message: "Success",
                 res: data,
             });
         }).catch((err) => {
-                logger.error('Error occured while fetching data from circle api');
+                logger.error('Error occured while fetching data from circle api - {}' , err);
+                logger.error(err)
                 res.status(500).json({ error: "a.Some error ocurred" });
             });
     } catch (err) {
-        logger.info(err);
+        logger.error(err);
         res.status(500).json({
             error: "Error occurred while fetching encryption data from circle api",
         });
@@ -1438,13 +1439,14 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
             data: payloadData
         }).then((data) => {
             logger.info('Received data from circle payment cards api');
-            console.log(data);
+            logger.info(data);
             res.status(200).json({
                 message: "Success",
                 res: data,
             });
         }).catch((err) => {
-                logger.error('Error occured while fetching data from circle payment cards api');
+            logger.info(err);
+                logger.error('Error occured while fetching data from circle payment cards api - {}', err);
                 res.status(500).json({ error: "Internal Server Error" });
             });
     } catch (err) {
@@ -1468,13 +1470,15 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
             }
         }).then((data) => {
             logger.info('Received data from circle payment payments api');
+            logger.info(data);
             console.log(data);
             res.status(200).json({
                 message: "Success",
                 res: data,
             });
         }).catch((err) => {
-                logger.error('Error occured while fetching data from circle payment payments api');
+            logger.error(err);
+                logger.error('Error occured while fetching data from circle payment payments api - {}' , err);
                 res.status(500).json({ error: "Internal Server Error" });
             });
     } catch (err) {
