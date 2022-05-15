@@ -1,4 +1,6 @@
 
+const models = require('../models/User')
+
 const  getReferralCode = () => {
     return new Promise(async (resolve, reject) => {
         let newCode = ''

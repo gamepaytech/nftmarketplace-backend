@@ -43,6 +43,39 @@ let myReferralIncome = new mongoose.Schema({
     },
 })
 
+let myreferralDetails = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+    },
+    referralCode: {
+        type: String,
+        required: true,
+    },
+    myShare: {
+        type: String,
+        required: true,
+    },
+    friendShare: {
+        type: String,
+        required: true,
+    },
+    note: {
+        type: String,
+    },
+    isDefault:{
+        type:Boolean,
+        default:false
+    },
+    status:{
+        type:String
+    },
+    createdDate: {
+        type: Date,
+        default: Date.now(),
+    },
+})
+
 let appsetting = new mongoose.Schema({
     referralPercent:{
         type: Number,
@@ -54,6 +87,7 @@ let appsetting = new mongoose.Schema({
 
 module.exports = {
     referralIncome: mongoose.model('referralIncome', myReferralIncome),
+    referralDetails: mongoose.model('referralDetails', myreferralDetails),
     myReferral: mongoose.model('myReferral', myReferral),
     appsetting: mongoose.model('appSetting', appsetting)
 }

@@ -8,22 +8,29 @@ const { getReferralCode } = require("../utils/referralUtils");
 
 const createReferral = async (req, res) => {
     try {
-        const { userId, myShare, friendShare, note } = req.body;
-
+        const { userId, myShare, friendShare, note, isDefault } = req.body;
         if(userId && myShare && friendShare){
             logger.info("Begin  of creating of referral for user :: " + userId);
             const referralCode = await getReferralCode(); // to revisit the logic as referral code in Users collection is a single field 
+            if(isDefault){
+                await referralModel.referralDetails.updateOne(
+                  { isDefault: true },
+                  { $set: { isDefault: false } }
+                );
+            }
             const referral = await referralModel.referralDetails.create({
                 userId: userId,
-                referralCode:  referralCode,
+                referralCode:  referralCode.code,
                 myShare: myShare,
                 friendShare: friendShare,
-                description: note
+                description: note,
+                isDefault: isDefault,
+                status:"active"
             });
             if(referral){
                 // send the list of referrals to UI
                 const getReferrals = await referralModel.referralDetails.find(
-                    { userId: user }
+                    { $and: [{ userId: userId }, { status:'active'} ] }
                 );
                 res.status(200).json({
                     msg: "Referral created!",
@@ -53,13 +60,20 @@ const createReferral = async (req, res) => {
 const getReferralsByUserId = async (req, res) => {
     try {
         const userId = req.body.userId;
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        let total = await referralModel.referralDetails.count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
-                { userId: user }
-            );
+                { $and: [{ userId: userId }, { status:'active'} ] }
+            ).limit(pageSize)
+            .skip(pageSize * page);
             if (getData) {
                 res.status(200).json({
-                    data: findData,
+                    data: getData,
+                    total:total,
+                    page:page,
+                    perPage:pageSize,
                     status: 200,
                 });
             } else {
@@ -81,52 +95,59 @@ const getReferralsByUserId = async (req, res) => {
         });
     }
 };
-const updateVestingDataById = async (req, res) => {
+
+const updateReferral = async (req, res) => {
     try {
-        const {
-            token_amount_invested,
-            token_allotted_qty,
-            token_unit_price,
-            token_unit_currency,
-            nft_amount_invested,
-            nft_allotted_qty,
-            nft_unit_price,
-            nft_unit_currency,
-        } = req.body;
-        logger.info("v ", req.body.vestingId);
-        const findData = await Vesting.findOneAndUpdate(
-            {
-                _id: req.body.vestingId,
-            },
-            {
-                nft: {
-                    amount_invested: nft_amount_invested,
-                    allotted_qty: nft_allotted_qty,
-                    unit_price: nft_unit_price,
-                    unit_currency: nft_unit_currency,
-                },
-                token: {
-                    amount_invested: token_amount_invested,
-                    allotted_qty: token_allotted_qty,
-                    unit_price: token_unit_price,
-                    unit_currency: token_unit_currency,
-                },
+        const { id, userId, myShare, friendShare, note, isDefault } = req.body;
+        if(id && userId && myShare && friendShare){
+            logger.info("Begin  of updating of referral for user :: " + id);
+            const checkReferrals = await referralModel.referralDetails.find({ _id: id });
+            if(checkReferrals.length != 0){
+                if(isDefault){
+                    await referralModel.referralDetails.updateOne(
+                      { isDefault: true },
+                      { $set: { isDefault: false } }
+                    );
+                }
+                const referral = await referralModel.referralDetails.updateOne(
+                  { _id: id },
+                  {
+                    $set: {
+                      myShare: myShare,
+                      friendShare: friendShare,
+                      note: note,
+                      isDefault: isDefault,
+                      status: "active",
+                    },
+                  }
+                );
+                if(referral){
+                    // send the list of referrals to UI
+                    const getReferrals = await referralModel.referralDetails.find(
+                        { $and: [{ userId: userId }, { status:'active'} ] }
+                    );
+                    res.status(200).json({
+                        msg: "Referral Updated!",
+                        data: getReferrals
+                    });
+                    logger.info('End  of creating of referral for user :: ' + id);
+                }else{
+                    logger.error('Error occured while updating referral');
+                    return res.status(500).json({
+                        msg: "Error occured while updating referral!"
+                    });
+                }
+            }else{
+                res.status(400).json({
+                    msg: 'Referral Not Found'
+                }); 
             }
-        );
-
-        logger.info("fd ", findData);
-
-        if (!findData) {
-            return res.status(404).json({
-                err: "Error vesting data not found!",
+        }else{
+            logger.info('id , myShare , friendShare details are required for updating a referral');
+            res.status(400).json({
+                msg: 'id and Share details are mandatory for a referral to be updated'
             });
         }
-
-        res.status(200).json({
-            data: findData,
-            msg: "Data updated successfully!",
-            status: 200,
-        });
     } catch (err) {
         logger.info(err);
         res.status(500).json({
@@ -135,21 +156,28 @@ const updateVestingDataById = async (req, res) => {
     }
 };
 
-const deleteVestingDataById = async (req, res) => {
+const deleteReferral = async (req, res) => {
     try {
-        const deleteData = await Vesting.findOneAndDelete({
-            "_id": req.body.vestingId
-        })
-
-        logger.info("DELETE DATA ", deleteData);
-        if (!deleteData) {
+        const { id, userId } = req.body;
+        const deleteData = await referralModel.referralDetails.updateOne({
+            "_id": id
+        },{$set:{
+            status:"draft"
+        }})
+        if(deleteData){
+            const getReferrals = await referralModel.referralDetails.find(
+                { $and: [{ userId: userId }, { status:'active'} ] }
+            );
+            res.status(200).json({
+                msg: "Referral deleted!",
+                data: getReferrals
+            });
+            logger.info('End  of creating of referral for user :: ' + id);
+        }else{
             return res.status(404).json({
                 err: "Error! data not found."
-            })
+            })   
         }
-        res.status(200).json({
-            msg: "Success, Data deleted!"
-        })
     }
     catch (err) {
         logger.info(err);
@@ -159,60 +187,9 @@ const deleteVestingDataById = async (req, res) => {
     }
 }
 
-const getVestingByWallet = async (req, res) => {
-    try {
-        if (!req.body.walletAddress) {
-            return res.status(404).json({
-                err: "Error! Please provide the wallet address."
-            });
-        }
-        const findByWallet = await Vesting.findOne({
-            wallet_address: req.body.walletAddress,
-        });
-
-        if (!findByWallet) {
-            return res.status(404).json({
-                err: "No data found",
-            });
-        }
-        res.status(200).json({
-            data: findByWallet,
-            status: 200,
-        });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "Internal server error!",
-        });
-    }
-};
-
-const getLockedTokens = async (req, res) => {
-    try {
-        logger.info("A ", req.body.wallet_address);
-        const getData = await LockedToken.find({
-            wallet_address: req.body.wallet_address,
-        });
-        if (!getData) {
-            res.status(404).json({
-                err: "Internal Server Error!",
-            });
-        }
-
-        res.status(200).json({
-            data: getData,
-            status: 200,
-        });
-    } catch (err) {
-        logger.info(err);
-    }
-};
-
 module.exports = {
+    createReferral,
     getReferralsByUserId,
-    getVestingByWallet,
-    getLockedTokens,
-    createVestingData,
-    updateVestingDataById,
-    deleteVestingDataById
+    updateReferral,
+    deleteReferral
 };
