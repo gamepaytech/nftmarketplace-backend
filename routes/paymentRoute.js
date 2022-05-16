@@ -52,7 +52,7 @@ router.route("/createCircleLaunchpadPayment").post(authenticateUser,createCircle
 router.route("/circleSNSLaunchpad").post(circleSNSLaunchpad);
 router.route("/getKeyForCircleLaunchpadPayment").get(authenticateUser,getKeyForCircleLaunchpadPayment);
 router.route("/getCardDetailsCircleLaunchpadPayment").post(authenticateUser,getCardDetailsCircleLaunchpadPayment);
-router.route("/paymentsCircleLaunchpadPayment").get(authenticateUser,paymentsCircleLaunchpadPayment);
+router.route("/paymentsCircleLaunchpadPayment").post(authenticateUser,paymentsCircleLaunchpadPayment);
 
 
 
