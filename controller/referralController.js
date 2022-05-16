@@ -14,8 +14,8 @@ const createReferral = async (req, res) => {
             const referralCode = await getReferralCode(); // to revisit the logic as referral code in Users collection is a single field 
             if(isDefault){
                 await referralModel.referralDetails.updateOne(
-                  { isDefault: true },
-                  { $set: { isDefault: false } }
+                    { userId: userId ,status:'active'},
+                    { $set: { isDefault: false } }
                 );
             }
             const referral = await referralModel.referralDetails.create({
@@ -23,7 +23,7 @@ const createReferral = async (req, res) => {
                 referralCode:  referralCode.code,
                 myShare: myShare,
                 friendShare: friendShare,
-                description: note,
+                note: note,
                 isDefault: isDefault,
                 status:"active"
             });
@@ -62,7 +62,7 @@ const getReferralsByUserId = async (req, res) => {
         const userId = req.body.userId;
         let page = req.query.page;
         let pageSize = req.query.pageSize;
-        let total = await referralModel.referralDetails.count({});
+        let total = await referralModel.referralDetails.find({ status:'active'}).count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] }
@@ -105,8 +105,8 @@ const updateReferral = async (req, res) => {
             if(checkReferrals.length != 0){
                 if(isDefault){
                     await referralModel.referralDetails.updateOne(
-                      { isDefault: true },
-                      { $set: { isDefault: false } }
+                        { userId: userId ,status:'active'},
+                        { $set: { isDefault: false } }
                     );
                 }
                 const referral = await referralModel.referralDetails.updateOne(
