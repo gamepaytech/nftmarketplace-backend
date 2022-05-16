@@ -110,7 +110,7 @@ const getReferralsByUserId = async (req, res) => {
         const userId = req.body.userId;
         let page = req.query.page;
         let pageSize = req.query.pageSize;
-        let total = await referralModel.referralDetails.find({ status:'active'}).count({});
+        let total = await referralModel.referralDetails.find({ $and: [{ userId: userId }, { status:'active'} ] }).count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] }
@@ -207,11 +207,14 @@ const updateReferral = async (req, res) => {
 const deleteReferral = async (req, res) => {
     try {
         const { id, userId } = req.body;
-        const deleteData = await referralModel.referralDetails.updateOne({
-            "_id": id
-        },{$set:{
-            status:"draft"
-        }})
+        const deleteData = await referralModel.referralDetails.updateOne(
+          { _id: id },
+          {
+            $set: {
+              status: "draft",
+            },
+          }
+        );
         if(deleteData){
             const getReferrals = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] }
