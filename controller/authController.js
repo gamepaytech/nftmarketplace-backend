@@ -426,7 +426,7 @@ const addMyReferral = async function (req, res) {
                 }
                 if (checkReferee) {
                     query = { referralCode: refereeCode }
-                    const checkReferralCode = await models.users.findOne(query)
+                    const checkReferralCode = await referralModel.referralDetails.findOne(query)
                     if (checkReferralCode) {
                         let referralCode = await getReferralCode()
                         const verificationToken = crypto
@@ -487,6 +487,15 @@ const addMyReferral = async function (req, res) {
                             const newReferral = new referralModel.myReferral(
                                 query
                             )
+                            const addMyReferral = new referralModel.referralDetails({
+                                userId:insertNewReferral._id,
+                                myShare:"20",
+                                friendShare:"10",
+                                referralCode:req.body.username,
+                                isDefault:true,
+                            })
+                            logger.info('ADD MY REFERRAL ',addMyReferral);
+                            await addMyReferral.save();
                             const addMyIncome= new referralModel.referralIncome({
                                 userId: checkReferralCode._id,
                                 amount: 0,
@@ -599,6 +608,15 @@ const addMyReferral = async function (req, res) {
                         const newUserInfo = await models.users.findById(
                             insertNewReferral._id
                         )
+                        const addMyReferral = new referralModel.referralDetails({
+                            userId:insertNewReferral._id,
+                            myShare:"20",
+                            friendShare:"10",
+                            referralCode:req.body.username,
+                            isDefault:true,
+                        })
+                        logger.info('ADD MY REFERRAL ',addMyReferral);
+                        await addMyReferral.save();
                         sendVerificationEmail({
                             name: newUserInfo.username,
                             email: newUserInfo.email,
