@@ -6,13 +6,15 @@ const {
   createReferral,
   getReferralsByUserId,
   updateReferral,
-  deleteReferral
+  deleteReferral,
+  setDefaultReferralByUser
 } = require("../controller/referralController");
 
 const { authenticateUser, authenticateAdmin } = require('../middleware/authentication')
 
 router.post("/create",cors(),authenticateUser,createReferral);
 router.post("/getReferralsByUserId",cors(),authenticateUser,getReferralsByUserId);
+router.post("/setDefaultByUser",cors(),authenticateUser,setDefaultReferralByUser);
 router.post("/update",cors(),authenticateUser,updateReferral);
 router.post("/delete",cors(),authenticateUser,deleteReferral);
 

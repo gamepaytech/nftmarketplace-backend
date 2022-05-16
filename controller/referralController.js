@@ -13,8 +13,8 @@ const createReferral = async (req, res) => {
             logger.info("Begin  of creating of referral for user :: " + userId);
             const referralCode = await getReferralCode(); // to revisit the logic as referral code in Users collection is a single field 
             if(isDefault){
-                await referralModel.referralDetails.updateOne(
-                    { userId: userId ,status:'active'},
+                await referralModel.referralDetails.updateMany(
+                    { userId: userId},
                     { $set: { isDefault: false } }
                 );
             }
@@ -53,9 +53,57 @@ const createReferral = async (req, res) => {
         logger.info(err);
         res.status(500).json({
             err: "Internal Server Error!",
-        });
+        }); 
     }
 };
+
+const setDefaultReferralByUser = async (req, res) => {
+    try {
+        const { id, userId, isDefault } = req.body;
+        if(id && userId && isDefault){
+            if(isDefault){
+                console.log("update set")
+                await referralModel.referralDetails.updateMany(
+                    { userId: userId},
+                    { $set: { isDefault: false } }
+                );
+            }
+            const referral = await referralModel.referralDetails.updateOne(
+                { _id: id },
+                {
+                $set: {
+                    isDefault: isDefault,
+                },
+                }
+            );
+            if(referral){
+                const getReferrals = await referralModel.referralDetails.find(
+                    { $and: [{ userId: userId }, { status:'active'} ] }
+                );
+                res.status(200).json({
+                    msg: "Set Default Referral !",
+                    data: getReferrals
+                });
+                logger.info('End  of set Default of referral for user :: ' + userId);
+            }else{
+                logger.error('Error occured while set Default referral');
+                return res.status(500).json({
+                    msg: "Error occured while set Default referral!"
+                });
+            }
+        }else{
+            logger.info('id, userId ,isDefault are required for creating a referral');
+                res.status(400).json({
+                    msg: 'id, userId ,isDefault are mandatory for a referral to be set default'
+                });
+        }
+        } catch (error) {
+            logger.info(err);
+            res.status(500).json({
+                err: "Internal Server Error!",
+            }); 
+        }
+    }
 
 const getReferralsByUserId = async (req, res) => {
     try {
@@ -104,8 +152,8 @@ const updateReferral = async (req, res) => {
             const checkReferrals = await referralModel.referralDetails.find({ _id: id });
             if(checkReferrals.length != 0){
                 if(isDefault){
-                    await referralModel.referralDetails.updateOne(
-                        { userId: userId ,status:'active'},
+                    await referralModel.referralDetails.updateMany(
+                        { userId: userId},
                         { $set: { isDefault: false } }
                     );
                 }
@@ -189,6 +237,7 @@ const deleteReferral = async (req, res) => {
 
 module.exports = {
     createReferral,
+    setDefaultReferralByUser,
     getReferralsByUserId,
     updateReferral,
     deleteReferral
