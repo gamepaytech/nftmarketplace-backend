@@ -1405,17 +1405,17 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
                 Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
                 "Content-Type": "application/json",
             }
-        }).then((data) => {
+        }).then((resp) => {
             logger.info('Received data from circle payment encryption api');
-            logger.info(data);
             res.status(200).json({
                 message: "Success",
-                res: data,
+                publicKey: resp.data.data.publicKey,
+                keyIdEncrpytion: resp.data.data.keyId
             });
         }).catch((err) => {
-                logger.error('Error occured while fetching data from circle api - {}' , err);
+                logger.error('Error occured while fetching data from circle api');
                 logger.error(err)
-                res.status(500).json({ error: "a.Some error ocurred" });
+                res.status(500).json({ error: "Some error ocurred" });
             });
     } catch (err) {
         logger.error(err);
