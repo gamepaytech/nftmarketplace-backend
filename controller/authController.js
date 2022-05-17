@@ -426,7 +426,7 @@ const addMyReferral = async function (req, res) {
                 }
                 if (checkReferee) {
                     query = { referralCode: refereeCode }
-                    const checkReferralCode = await models.users.findOne(query)
+                    const checkReferralCode = await referralModel.referralDetails.findOne(query)
                     if (checkReferralCode) {
                         let referralCode = await getReferralCode()
                         const verificationToken = crypto
@@ -487,6 +487,15 @@ const addMyReferral = async function (req, res) {
                             const newReferral = new referralModel.myReferral(
                                 query
                             )
+                            const addMyReferral = new referralModel.referralDetails({
+                                userId:insertNewReferral._id,
+                                myShare:"20",
+                                friendShare:"10",
+                                referralCode:req.body.username,
+                                isDefault:true,
+                            })
+                            logger.info('ADD MY REFERRAL ',addMyReferral);
+                            await addMyReferral.save();
                             const addMyIncome= new referralModel.referralIncome({
                                 userId: checkReferralCode._id,
                                 amount: 0,
@@ -599,6 +608,15 @@ const addMyReferral = async function (req, res) {
                         const newUserInfo = await models.users.findById(
                             insertNewReferral._id
                         )
+                        const addMyReferral = new referralModel.referralDetails({
+                            userId:insertNewReferral._id,
+                            myShare:"20",
+                            friendShare:"10",
+                            referralCode:req.body.username,
+                            isDefault:true,
+                        })
+                        logger.info('ADD MY REFERRAL ',addMyReferral);
+                        await addMyReferral.save();
                         sendVerificationEmail({
                             name: newUserInfo.username,
                             email: newUserInfo.email,
@@ -656,8 +674,17 @@ function getReferralCode() {
 
 const getAllMyReferrals = async function (req, res) {
     try {
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        const getMyRefer = await referralModel.referralDetails.find(
+            { userId: req.body.userId },
+        )
+        let referIds = [];
+        for (let i = 0; i < getMyRefer.length; i++) {
+            referIds.push(getMyRefer[i]._id)
+        }
         const getMyReferralsId = await referralModel.myReferral.find(
-            { referredBy: req.body.userId },
+            { referredBy: { $in: referIds } },
             { _id: 0, userId: 1 }
         )
         let Ids = []
@@ -670,13 +697,16 @@ const getAllMyReferrals = async function (req, res) {
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids } },
                 { __v: 0 }
-            )
+            ).limit(pageSize).skip(pageSize * page);
             if (getMyReferrals) {
                 const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                 res.json({
                     status: 200,
                     msg: sysMsg ? sysMsg.message : 'Success',
                     data: getMyReferrals,
+                    page:page,
+                    pageSize:pageSize,
+                    total:getMyReferrals.length
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
@@ -688,7 +718,7 @@ const getAllMyReferrals = async function (req, res) {
             }
         } else {            
             const sysMsg = await getSystemMessage('GPAY_00031_NO_REFERRALS')
-            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'No Referrals Found' })
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'No Referrals Found', data:[] })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
