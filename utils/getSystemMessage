@@ -8,4 +8,15 @@ const getSystemMessage = async (msgCode) => {
     })
 }
 
-module.exports = getSystemMessage
+const getSystemMessageByLang = async (msgCode, lang) => {
+    console.log('Fetching error code for - ', msgCode)
+    return await SystemMessages.findOne({
+        language: lang, // should be externalized
+        msg_code: msgCode
+    })
+}
+
+module.exports = {
+    getSystemMessage,
+    getSystemMessageByLang
+}
