@@ -1386,6 +1386,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
             .then((ares) => {
                 logger.info("Circle response reveived");
                 console.log("Circle response reveived");
+                logger.info(ares.data)
                 console.log(ares.data);
                 res.status(200).json({
                     message: "Success",
@@ -1419,6 +1420,11 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
             }
         }).then((resp) => {
             logger.info('Received data from circle payment encryption api');
+            logger.info({
+                message: "Success",
+                publicKey: resp.data.data.publicKey,
+                keyIdEncrpytion: resp.data.data.keyId
+            });
             res.status(200).json({
                 message: "Success",
                 publicKey: resp.data.data.publicKey,
@@ -1449,8 +1455,18 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
             },
             data: req.body
         }).then((response) => {
-            console.log('Received data from circle payment cards api');
             logger.info('Received data from circle payment cards api');
+            logger.info({
+                message: 'Success',
+                id: response.data.data.id,
+                email: response.data.data.metadata.email,
+                network: response.data.data.network,
+                status: response.data.data.status,
+                expMonth: response.data.data.expMonth,
+                expYear: response.data.data.expYear,
+                fingerprint: response.data.data.fingerprint,
+                fundingType: response.data.data.fundingType
+            });
             res.status(200).json({
                 message: 'Success',
                 id: response.data.data.id,
@@ -1493,7 +1509,9 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
             }
         }).then((data) => {
             console.log('Received data from circle payment payments api');
-            //logger.info('Received data from circle payment payments api');
+            logger.info('Received data from circle payment payments api');
+            logger.info("data ",data.data);
+
             //console.log('Console the response');
             // console.log(data.data);
             res.status(200).json({
