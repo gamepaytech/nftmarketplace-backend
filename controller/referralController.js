@@ -31,7 +31,7 @@ const createReferral = async (req, res) => {
                 // send the list of referrals to UI
                 const getReferrals = await referralModel.referralDetails.find(
                     { $and: [{ userId: userId }, { status:'active'} ] }
-                );
+                ).populate({ path: 'myFreindReferral' });
                 res.status(200).json({
                     msg: "Referral created!",
                     data: getReferrals
@@ -79,7 +79,7 @@ const setDefaultReferralByUser = async (req, res) => {
             if(referral){
                 const getReferrals = await referralModel.referralDetails.find(
                     { $and: [{ userId: userId }, { status:'active'} ] }
-                );
+                ).populate({ path: 'myFreindReferral' });
                 res.status(200).json({
                     msg: "Set Default Referral !",
                     data: getReferrals
@@ -114,7 +114,7 @@ const getReferralsByUserId = async (req, res) => {
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] }
-            ).limit(pageSize)
+            ).populate({ path: 'myFreindReferral' }).limit(pageSize)
             .skip(pageSize * page);
             if (getData) {
                 res.status(200).json({
@@ -173,7 +173,7 @@ const updateReferral = async (req, res) => {
                     // send the list of referrals to UI
                     const getReferrals = await referralModel.referralDetails.find(
                         { $and: [{ userId: userId }, { status:'active'} ] }
-                    );
+                    ).populate({ path: 'myFreindReferral' });
                     res.status(200).json({
                         msg: "Referral Updated!",
                         data: getReferrals
@@ -218,7 +218,7 @@ const deleteReferral = async (req, res) => {
         if(deleteData){
             const getReferrals = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] }
-            );
+            ).populate({ path: 'myFreindReferral' });
             res.status(200).json({
                 msg: "Referral deleted!",
                 data: getReferrals

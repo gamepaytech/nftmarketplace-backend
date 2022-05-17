@@ -68,13 +68,24 @@ let myreferralDetails = new mongoose.Schema({
         default:false
     },
     status:{
-        type:String
+        type:String,
+        default:"active"
     },
     createdDate: {
         type: Date,
         default: Date.now(),
     },
 })
+
+myreferralDetails.virtual('myFreindReferral', {
+    ref: 'myReferral', //The Model to use
+    localField: '_id', //Find in Model, where localField 
+    foreignField: 'referredBy', // is equal to foreignField
+    count: true
+});
+// Set Object and Json property to true. Default is set to false
+myreferralDetails.set('toObject', { virtuals: true });
+myreferralDetails.set('toJSON', { virtuals: true });
 
 let appsetting = new mongoose.Schema({
     referralPercent:{

@@ -674,8 +674,17 @@ function getReferralCode() {
 
 const getAllMyReferrals = async function (req, res) {
     try {
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        const getMyRefer = await referralModel.referralDetails.find(
+            { userId: req.body.userId },
+        )
+        let referIds = [];
+        for (let i = 0; i < getMyRefer.length; i++) {
+            referIds.push(getMyRefer[i]._id)
+        }
         const getMyReferralsId = await referralModel.myReferral.find(
-            { referredBy: req.body.userId },
+            { referredBy: { $in: referIds } },
             { _id: 0, userId: 1 }
         )
         let Ids = []
@@ -688,13 +697,16 @@ const getAllMyReferrals = async function (req, res) {
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids } },
                 { __v: 0 }
-            )
+            ).limit(pageSize).skip(pageSize * page);
             if (getMyReferrals) {
                 const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                 res.json({
                     status: 200,
                     msg: sysMsg ? sysMsg.message : 'Success',
                     data: getMyReferrals,
+                    page:page,
+                    pageSize:pageSize,
+                    total:getMyReferrals.length
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
@@ -706,7 +718,7 @@ const getAllMyReferrals = async function (req, res) {
             }
         } else {            
             const sysMsg = await getSystemMessage('GPAY_00031_NO_REFERRALS')
-            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'No Referrals Found' })
+            res.json({ status: 400, msg: sysMsg ? sysMsg.message : 'No Referrals Found', data:[] })
         }
     } catch (error) {
         res.json({ status: 400, msg: error.toString() })
