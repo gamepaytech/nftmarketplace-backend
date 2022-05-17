@@ -25,6 +25,7 @@ const preSaleTier = require('./routes/presaleTier');
 const launchPad = require('./routes/launchPadRoute');
 const kyc = require('./routes/kycRoute');
 const vestingRouter = require('./routes/vestingRoute');
+const systemRouter = require("./routes/systemRoute");
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
@@ -66,6 +67,7 @@ app.use("/payment", paymentRouter);
 app.use("/promo",promoRouter);
 app.use("/claim", claimRouter);
 app.use("/vesting",vestingRouter);
+app.use("/system",systemRouter);
 // app.use('/nftPresale',nftPresaleRouter)
  
 //  Listening
