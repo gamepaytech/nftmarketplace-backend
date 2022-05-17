@@ -695,7 +695,12 @@ const getAllMyReferrals = async function (req, res) {
 
         if (getMyReferralsId.length) {
             const getMyReferrals = await models.users.find(
-                { _id: { $in: Ids } },
+                { _id: { $in: Ids },  },
+                {
+                    "_id": 1,
+                    "email": 1,
+                    "createdAt":1
+                },
                 { __v: 0 }
             ).limit(pageSize).skip(pageSize * page);
             if (getMyReferrals) {
