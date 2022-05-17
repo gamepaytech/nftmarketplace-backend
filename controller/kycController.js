@@ -28,32 +28,43 @@ const getKYC = async (req, res) => {
     models.kycs.findById(id)
         .then(data => {
             if (!data)
-                res.status(200).json({status:"error", message: "Not found KYC with id " + id });
+                res.status(200).json({status:"error", message: "KYC not Found "});
             else res.status(200).json({status:"success", data:data});
         })
         .catch(err => {
             res
                 .status(500)
-                .json({status:"error", message: "Error retrieving Campaign with id=" + id });
+                .json({status:"error", message: "Error retrieving KYC " });
+        });
+  }
+
+  const getKYCByUserId = async(req, res) => {
+    const userId = req.params.userId;
+    models.kycs.findOne({userId: userId})
+     .then(data => {
+            if (!data)
+                res.status(200).json({status:"error", message: "KYC not Found "});
+            else res.status(200).json({status:"success", kyc:data});
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .json({status:"error", message: "Error retrieving KYC " });
         });
   }
   
-  const createKYC = async(req, res) => {
+  const saveKYC = async(req, res) => {
     try { 
 
-      const keys = ["userId", "first_name", "middle_name", "last_name","dob","country","pin","citizen","current_citizen_by","current_resident_by","address","occupation","source_funds","intent_invest","document_type","selfi_url"];
+      const keys = ["userId", "first_name", "middle_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
       for (i in keys) {
-        if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+        if (req.body[keys[i]] === undefined || req.body[keys[i]] === '') {
           res.json({ status: "error", msg: keys[i] + " are required" });
           return;
         }
       } 
 
-      const checkUser = await models.kycs.findOne({userId:req.body.userId})
-      if (checkUser == null) {
-          res.json({ status: 400, msg: 'User not Found' })
-          return
-      }
+     
       const query = {
         userId: req.body.userId,
         first_name: req.body.first_name,
@@ -61,11 +72,16 @@ const getKYC = async (req, res) => {
         last_name: req.body.last_name,
         dob: req.body.dob,
         country: req.body.country,
-        pin: req.body.pin,
+        personal_id: req.body.personal_id,
         citizen: req.body.citizen,
         current_citizen_by: req.body.current_citizen_by,
         current_resident_by: req.body.current_resident_by,
-        address: req.body.address,
+        // address: req.body.address,
+        address_line_1: req.body.address_line_1,
+        address_line_2: req.body.address_line_2,
+        town:req.body.town,
+        postcode:req.body.postcode,
+        state:req.body.state,
         occupation: req.body.occupation,
         source_funds: req.body.source_funds,
         intent_invest: req.body.intent_invest,
@@ -76,14 +92,77 @@ const getKYC = async (req, res) => {
         utility_bill_url: req.body.utility_bill_url,
         bank_statement_url: req.body.bank_statement_url,
         address_proof_url: req.body.address_proof_url,
+        comments: "Your Selfi not clear your face. so we are reject your KYC ",
+        status: "SUBMITED"
       };
-      const createKYC = new models.kycs(query);
-      const kycInfo = await createKYC.save();
-      res.status(201).json({
-        status: "success",
-        msg: "Success! campaign created",
-        data: kycInfo,
-      });
+
+      const checkUser = await models.kycs.findOne({userId:req.body.userId})
+
+   
+      if(!checkUser) {
+
+        // console.log("carete function");
+        const createKYC = new models.kycs(query);
+        const kycInfo = await createKYC.save();
+        res.status(201).json({
+          status: "success",
+          msg: "Success! KYC created",
+          data: kycInfo,
+        });
+      }else{
+        const data = await models.kycs.updateOne(
+          {
+          userId: req.body.userId,
+          first_name: req.body.first_name,
+          middle_name: req.body.middle_name,
+          last_name: req.body.last_name,
+          dob: req.body.dob,
+          country: req.body.country,
+          personal_id: req.body.personal_id,
+          citizen: req.body.citizen,
+          current_citizen_by: req.body.current_citizen_by,
+          current_resident_by: req.body.current_resident_by,
+          // address: req.body.address,
+          address_line_1: req.body.address_line_1,
+          address_line_2: req.body.address_line_2,
+          town:req.body.town,
+          postcode:req.body.postcode,
+          state:req.body.state,
+          occupation: req.body.occupation,
+          source_funds: req.body.source_funds,
+          intent_invest: req.body.intent_invest,
+          document_type: req.body.document_type,
+          document_front_url: req.body.document_front_url,
+          document_back_url: req.body.document_back_url,
+          selfi_url: req.body.selfi_url,
+          utility_bill_url: req.body.utility_bill_url,
+          bank_statement_url: req.body.bank_statement_url,
+          address_proof_url: req.body.address_proof_url,
+          comments: "Your Selfi not clear your face. so we are reject your KYC ",
+          status: "RESUBMITED"
+          }
+          );
+        res.status(201).json({
+          status: "success",
+          msg: "Success! KYC Update",
+          data: data,
+        });
+        // const kycInfo = await createKYC.save();
+      }
+
+
+      // const createKYC = new models.kycs(query);
+      // const checkUser = await models.kycs.findOne({userId:req.body.userId})
+      // // if (checkUser == null) {
+      //     // const kycInfo = await createKYC.create();
+      //     // res.json({ status: 400, msg: 'User not Found' })
+      //     // return
+      // // }else{
+       
+      //   const kycInfo = await createKYC.save();
+      // // }
+      
+     
       return;
       
     } catch (error) {
@@ -99,7 +178,7 @@ const getKYC = async (req, res) => {
 
   const updateKYC = async(req, res) => {
     try {
-        const keys = ["id","userId", "first_name", "middle_name", "last_name","dob","country","pin","citizen","current_citizen_by","current_resident_by","address","occupation","source_funds","intent_invest","document_type","selfi_url"];
+        const keys = ["id","userId", "first_name", "middle_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
         for (i in keys) {
           if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
             res.json({ status: "error", msg: keys[i] + " are required" });
@@ -132,11 +211,16 @@ const getKYC = async (req, res) => {
               last_name: req.body.last_name,
               dob: req.body.dob,
               country: req.body.country,
-              pin: req.body.pin,
+              personal_id: req.body.personal_id,
               citizen: req.body.citizen,
               current_citizen_by: req.body.current_citizen_by,
               current_resident_by: req.body.current_resident_by,
-              address: req.body.address,
+              // address: req.body.address,
+              address_line_1: req.body.address_line_1,
+              address_line_2: req.body.address_line_2,
+              town:req.body.town,
+              postcode:req.body.postcode,
+              state:req.body.state,
               occupation: req.body.occupation,
               source_funds: req.body.source_funds,
               intent_invest: req.body.intent_invest,
@@ -147,6 +231,7 @@ const getKYC = async (req, res) => {
               utility_bill_url: req.body.utility_bill_url,
               bank_statement_url: req.body.bank_statement_url,
               address_proof_url: req.body.address_proof_url,
+              status: "RESUBMITED",
             },
           }
         );
@@ -165,6 +250,6 @@ const getKYC = async (req, res) => {
 }
 
 
-  module.exports = {getKYC,getKYCById,createKYC,updateKYC}
+  module.exports = {getKYC,getKYCById,saveKYC,updateKYC,getKYCByUserId}
 
 
