@@ -265,6 +265,7 @@ const getPromoCode = async (req, res) => {
     else {
       isValid = false
     }
+    console.log("isValid ", isValid)
     logger.info("isValid ", isValid)
     if (!isValid) {
       return res.status(400).json({
