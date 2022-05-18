@@ -432,18 +432,29 @@ const addMyIncome = async function (req, res) {
         logger.info("GET MY REFERRAL ",getMyreferral[0]._id)
         if (userInfo && userInfo[0].refereeCode != "") {
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
-            const setting = await referralModel.appsetting.findOne({});
             logger.info("bought ",bought);
-            let referralIncome =
-                (bought.amountSpent *bought.quantity / 100) * setting.referralPercent;
-            const addMyIncome = await new referralModel.referralIncome({
-                userId: getMyreferral[0]._id,
-                amount: referralIncome,
-                nftId: req.body.nftId,
-                recievedFrom: req.body.userId,
-            });
-
-            await addMyIncome.save();   
+            if(bought){
+                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo[0].refereeCode}) 
+                logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
+                if(getMyRefferalsDetail){
+                    let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
+                    let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
+                    const addMyIncome = await new referralModel.referralIncome({
+                        userId: getMyreferral[0]._id,
+                        amount: myShareAmount,
+                        nftId: req.body.nftId,
+                        recievedFrom: req.body.userId,
+                    });
+                    await addMyIncome.save(); 
+                    const addFriendIncome = await new referralModel.referralIncome({
+                        userId:req.body.userId,
+                        amount: myFriendShareAmount,
+                        nftId: req.body.nftId,
+                        recievedFrom:  getMyreferral[0]._id,
+                    });
+                    await addFriendIncome.save();   
+                }
+            }
 
             const totalIncome = await referralModel.referralIncome.find({
                 userId: getMyreferral[0]._id,
