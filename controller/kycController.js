@@ -55,7 +55,7 @@ const getKYC = async (req, res) => {
   const saveKYC = async(req, res) => {
     try { 
 
-      const keys = ["userId", "first_name", "middle_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
+      const keys = ["userId", "first_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
       for (i in keys) {
         if (req.body[keys[i]] === undefined || req.body[keys[i]] === '') {
           res.json({ status: "error", msg: keys[i] + " are required" });

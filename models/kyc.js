@@ -6,7 +6,7 @@ const kycSchema = new Schema(
         id: { type: Number },
         userId: { type: String, required: true },
         first_name: { type: String, required: true },
-        middle_name: { type: String, required: true },
+        middle_name: { type: String},
         last_name: { type: String, required: true },
         dob: { type: String, required: true },
         country: { type: String, required: true },
