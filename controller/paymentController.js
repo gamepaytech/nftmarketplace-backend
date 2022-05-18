@@ -1372,14 +1372,11 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 keyId: keyIdEncrpytion,
                 verification: "three_d_secure",
                 verificationSuccessUrl: `${process.env.APP_FRONTEND_URL
-                    }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
-                        2
-                    )}`,
+                    }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(2)}`,
                 // verificationSuccessUrl: `https://cicd.gamepay.sg/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
                 //         2
                 //     )}`, 
-                verificationFailureUrl: `${process.env.APP_FRONTEND_URL
-                    }/profile?paymentCircle=${"payment-failed"}`,
+                verificationFailureUrl: `${process.env.APP_FRONTEND_URL}/profile?paymentCircle=${"payment-failed"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(2)}`,
                 //verificationFailureUrl: `https://cicd.gamepay.sg/profile?paymentCircle=${"payment-failed"}`,
             },
         })
@@ -1600,7 +1597,7 @@ const circleSNSLaunchpad = async (request, response) => {
                         console.log(`Received message ${envelope.Message}`);
                         // enter code here  to verify payment
                         let event = envelope.Message;
-                        logger.info(event);
+                        logger.info("CIRCLE EVENT ",event);
                         if (
                             (event.status == "confirmed" || event.status == "paid") &&
                             event?.metadata.email
