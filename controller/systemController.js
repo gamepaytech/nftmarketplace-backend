@@ -42,7 +42,7 @@ const getSysMessageByLang = async (req, res) => {
 const getSysConfig = async (req, res) => {
     try {
         const configName = req.query.configName;
-        logger.info('Start of getting system message for code :: {} in {}', msgCode, lang);
+        logger.info('Start of getting system message for code :: {} in {}', configName);
         const sysConfig = await getSystemConfig(configName);
         const configValue = sysConfig ? sysConfig.config_value : 'No system config found for this code';
         res.status(200).json({
