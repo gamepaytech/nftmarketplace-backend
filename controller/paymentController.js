@@ -1600,11 +1600,13 @@ const circleSNSLaunchpad = async (request, response) => {
                         console.log(`Received message ${envelope.Message}`);
                         // enter code here  to verify payment
                         let event = envelope.Message;
+                        logger.info(event);
                         if (
                             (event.status == "confirmed" || event.status == "paid") &&
                             event?.metadata.email
                         ) {
                             logger.info("-----charge confirmed", event);
+                            console.log("-----charge confirmed",event);
                             //save in presale bought nft added to user account
                             const findUser = await models.users.findOne({
                                 email: event.metadata.email,
