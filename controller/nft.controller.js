@@ -354,7 +354,7 @@ const getNftByUserId = async (req, res) => {
         const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
             path:"nft"
         });
-        console.log("findNfts ",findNfts);
+        // console.log("findNfts ",findNfts);
     // logger.info("findnfts ",findNfts);
     if (!findNfts) {
         return res.status(404).json({
