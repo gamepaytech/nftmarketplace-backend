@@ -425,12 +425,12 @@ const addMyIncome = async function (req, res) {
         }
         
 
-        const userInfo = await models.users.find({ _id: req.body.userId });
-        const getMyreferral = await models.users.find({
-            referralCode: userInfo[0].refereeCode,
-        });
-        logger.info("GET MY REFERRAL ",getMyreferral[0]._id)
-        if (userInfo && userInfo[0].refereeCode != "") {
+        const userInfo = await models.users.findById(req.body.userId);
+        if (userInfo && userInfo.refereeCode != "") {
+            const getMyreferral = await models.users.find({ 
+                referralCode: userInfo.refereeCode,
+            });
+            logger.info("GET MY REFERRAL ",getMyreferral[0]._id)
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             logger.info("bought ",bought);
             if(bought){
