@@ -72,5 +72,5 @@ app.use("/system",systemRouter);
  
 //  Listening
 app.listen(PORT, () => {
-    console.log(`All running on http://localhost:${PORT}`);
+    console.log(` App successfully started on port : ${PORT}`);
 });
