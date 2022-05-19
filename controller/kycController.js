@@ -7,7 +7,7 @@ const getKYC = async (req, res) => {
     let page = req.query.page;
     let pageSize = req.query.pageSize;
     let total = await models.kycs.count({});
-    models.kycs.find({})
+    models.kycs.find({}).populate({path:"userDetails", select:'email'})
       // .select("name")
       .sort({ price:1 })
       .limit(pageSize)
