@@ -454,7 +454,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 referralCode: req.body.username,
-                                sourceLink:req.body.sourceLink,
+                                sourceName:req.body.sourceName,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -475,7 +475,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 referralCode: req.body.username,
-                                sourceLink:req.body.sourceLink,
+                                sourceName:req.body.sourceName,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -581,7 +581,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             referralCode: req.body.username,
-                            sourceLink:req.body.sourceLink,
+                            sourceName:req.body.sourceName,
                             refereeCode: refereeCode,
                         }
                     }
@@ -602,7 +602,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             referralCode: req.body.username,
-                            sourceLink:req.body.sourceLink,
+                            sourceName:req.body.sourceName,
                             refereeCode: refereeCode,
                         }
                     }
