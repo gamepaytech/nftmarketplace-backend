@@ -237,7 +237,7 @@ const createPaymentAAA = async (req, res) => {
                     order_currency: currency,
                     order_amount: nftAmount,
                     notify_email: "hello@gamepay.sg",
-                    notify_url: `${process.env.DOMAIN}/payment/triplea-webhook-payment`,
+                    notify_url: `${process.env.APP_BACKEND_URL}/payment/triplea-webhook-payment`,
                     notify_secret: `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
                     notify_txs: true,
                     payer_id: orderId,
