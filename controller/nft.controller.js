@@ -434,7 +434,7 @@ const addMyIncome = async function (req, res) {
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             logger.info("bought ",bought);
             if(bought){
-                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo[0].refereeCode}) 
+                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
                 logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
                 if(getMyRefferalsDetail){
                     let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
