@@ -699,6 +699,7 @@ const getAllMyReferrals = async function (req, res) {
                 {
                     "_id": 1,
                     "email": 1,
+                    "refereeCode":1,
                     "createdAt":1
                 },
                 { __v: 0 }
