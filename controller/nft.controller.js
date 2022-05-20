@@ -427,20 +427,17 @@ const addMyIncome = async function (req, res) {
 
         const userInfo = await models.users.findById(req.body.userId);
         if (userInfo && userInfo.refereeCode != "") {
-            const getMyreferral = await models.users.find({ 
-                referralCode: userInfo.refereeCode,
-            });
-            logger.info("GET MY REFERRAL ",getMyreferral[0]._id)
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             logger.info("bought ",bought);
             if(bought){
                 const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
                 logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
                 if(getMyRefferalsDetail){
+                    logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
                     let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
                     let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
                     const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyreferral[0]._id,
+                        userId: getMyRefferalsDetail.userId,
                         amount: myShareAmount,
                         nftId: req.body.nftId,
                         recievedFrom: req.body.userId,
@@ -450,14 +447,14 @@ const addMyIncome = async function (req, res) {
                         userId:req.body.userId,
                         amount: myFriendShareAmount,
                         nftId: req.body.nftId,
-                        recievedFrom:  getMyreferral[0]._id,
+                        recievedFrom: getMyRefferalsDetail.userId,
                     });
                     await addFriendIncome.save();   
                 }
             }
 
             const totalIncome = await referralModel.referralIncome.find({
-                userId: getMyreferral[0]._id,
+                userId: req.body.userId,
             });
             let totalAmount = 0;
             for (let i = 0; i < totalIncome.length; i++) {
@@ -477,6 +474,7 @@ const addMyIncome = async function (req, res) {
             });
         }
     } catch (error) {
+        console.log(error)
         res.json({ status: 400, msg: error.toString() });
     }
 };
