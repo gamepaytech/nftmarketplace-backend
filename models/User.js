@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema(
         passwordToken: {
             type: String,
         },
+        sourceLink: {
+            type: String,
+            default: "",
+        },
         passwordTokenExpirationDate: {
             type: Date,
         },
