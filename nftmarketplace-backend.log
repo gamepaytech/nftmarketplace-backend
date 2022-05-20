@@ -2743,3 +2743,63 @@
 {"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK 509","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:54:21.176Z"}
 {"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:54:21.177Z"}
 {"hostName":"kartikpjpt","level":"info","message":"GET MY REFERRAL ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:54:21.208Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:53.510Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:53.534Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:55.586Z"}
+{"hostName":"kartikpjpt","level":"info","message":"user id ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:55.593Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:59.394Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:57:59.428Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.029Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.042Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.050Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.057Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.064Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.112Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.123Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.134Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.143Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:00.153Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:05.569Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:05.787Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:11.723Z"}
+{"$__":{"_id":"6270128a96663fbca0a55cee","activePaths":{"paths":{"__v":"init","_id":"init","amountCommited":"init","createdAt":"init","updatedAt":"init","userId":"init"},"stateNames":["require","modify","init","default","ignore"],"states":{"default":{},"ignore":{},"init":{"__v":true,"_id":true,"amountCommited":true,"createdAt":true,"updatedAt":true,"userId":true},"modify":{},"require":{}}},"exclude":null,"fields":{},"selected":{},"skipId":true,"strictMode":true},"$isNew":false,"_doc":{"__v":0,"_id":"6270128a96663fbca0a55cee","amountCommited":2849.08,"createdAt":"2022-05-02T17:19:06.896Z","updatedAt":"2022-05-18T08:40:10.715Z","userId":"626a618c4ef9a782da8e54ef"},"hostName":"kartikpjpt","level":"info","message":"findData   ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:12.493Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.286Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.420Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.829Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.842Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.859Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.868Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.880Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.887Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.898Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.908Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.917Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:17.931Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:20.502Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:20.600Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:27.004Z"}
+{"hostName":"kartikpjpt","level":"info","message":"1","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:27.018Z"}
+{"hostName":"kartikpjpt","level":"info","message":"Price ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:27.035Z"}
+{"hostName":"kartikpjpt","level":"info","message":{"access_token":"5682f2ae8f318f26dbed1ae806df58475e3c320b","expires_in":315359999,"token_type":"Bearer"},"service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:27.723Z"}
+{"hostName":"kartikpjpt","level":"info","message":"{\"type\":\"triplea\",\"merchant_key\":\"mkey-cl1d9k0uc0cw4cmthcuilh31a\",\"order_currency\":\"USD\",\"order_amount\":1,\"notify_email\":\"kr.pjpt@gmail.com\",\"notify_url\":\"https://626e-110-173-190-202.ngrok.io/payment/triplea-webhook-payment\",\"notify_secret\":\"Cf9mx4nAvRuy5vwBY2FCtaKr\",\"notify_txs\":true,\"payer_id\":\"66d18d9c-2100-42e7-93d7-746f9765f4c1\",\"payer_name\":\"kartik28\",\"payer_email\":\"kr.pjpt@gmail.com\",\"payer_phone\":\"+6591234567\",\"payer_address\":\"1 Parliament Place, Singapore 178880\",\"payer_poi\":\"https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png\",\"success_url\":\"http://localhost:3000/chik/buy/6282a4904fb837a7ba58cdf7/1\",\"cancel_url\":\"http://localhost:3000/chik/buy/6282a4904fb837a7ba58cdf7/1\",\"sandbox\":true,\"cart\":{\"items\":[{\"sku\":\"TEST NFT A\",\"label\":\"Chiky Chik\",\"quantity\":1,\"amount\":1}],\"shipping_cost\":0,\"shipping_discount\":0,\"tax_cost\":0},\"webhook_data\":{\"order_id\":\"66d18d9c-2100-42e7-93d7-746f9765f4c1\",\"quantity\":\"1\",\"userId\":\"626a618c4ef9a782da8e54ef\",\"nftId\":\"6282a4904fb837a7ba58cdf7\",\"uniqueId\":\"86351213-d055-4d15-b670-6e5de758137e\"}}","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:27.727Z"}
+{"hostName":"kartikpjpt","level":"info","message":"A ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:58:28.875Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK 509","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:08.201Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:08.202Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK 509","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.109Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.110Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK 509","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.141Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.141Z"}
+{"hostName":"kartikpjpt","level":"info","message":"GET MY REFERRAL ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.171Z"}
+{"hostName":"kartikpjpt","level":"info","message":"GET MY REFERRAL ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:28.176Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK 509","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:38.981Z"}
+{"hostName":"kartikpjpt","level":"info","message":"___________________________ WORKING HOOOK","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:38.981Z"}
+{"hostName":"kartikpjpt","level":"info","message":"GET MY REFERRAL ","service":"nftmarketplace-backend","timestamp":"2022-05-19T23:59:39.029Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:04.348Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:04.373Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:26.168Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:26.174Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:26.456Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:59.117Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:00:59.139Z"}
+{"hostName":"kartikpjpt","level":"info","message":"AUTHENTICATING...","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:01:19.239Z"}
+{"hostName":"kartikpjpt","level":"info","message":"user id ","service":"nftmarketplace-backend","timestamp":"2022-05-20T00:01:19.241Z"}

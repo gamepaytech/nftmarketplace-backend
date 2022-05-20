@@ -236,7 +236,7 @@ const createPaymentAAA = async (req, res) => {
                     merchant_key: process.env.AAA_MERCHANT_KEY,
                     order_currency: currency,
                     order_amount: nftAmount,
-                    notify_email: user.email,
+                    notify_email: "hello@gamepay.sg",
                     notify_url: `${process.env.DOMAIN}/payment/triplea-webhook-payment`,
                     notify_secret: `${process.env.AAA_CLIENT_NOTIFYSECRET}`,
                     notify_txs: true,
@@ -603,7 +603,7 @@ const tripleAWebhook = async (req, res) => {
                 await addMyIncome.save();
             }
 
-            await updateActivity(req.body.webhook_data.userId, req.body.webhook_data.uniqueId, `You have bought CHIKY #${req.body.webhook_data.nftId} of ${(crypto_amount).toFixed(2)} USD using TripleA.`);
+            await updateActivity(req.body.webhook_data.userId, req.body.webhook_data.uniqueId, `You have bought CHIKY #${req.body.webhook_data.nftId} of ${req.body.webhook_data.order_amount} USD using TripleA.`);
             await sendPaymentConfirmation({
                 email: userInfo[0].email,
                 quantity: req.body.webhook_data.quantity,
@@ -953,6 +953,7 @@ const launchpadPaymentAAA = async (req, res) => {
                     merchant_key: `${process.env.AAA_MERCHANT_KEY}`,
                     order_currency: "USD",
                     order_amount: nftAmount,
+                    notify_email: "hello@gamepay.sg",
                     payer_id: orderId,
                     payer_name: email,
                     payer_email: email,
