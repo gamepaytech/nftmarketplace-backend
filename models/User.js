@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
         passwordToken: {
             type: String,
         },
-        sourceLink: {
+        sourceName: {
             type: String,
             default: "",
         },
