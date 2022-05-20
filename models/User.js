@@ -37,10 +37,10 @@ const userSchema = new mongoose.Schema(
         passwordTokenExpirationDate: {
             type: Date,
         },
-        referralCode: {
-            type: String,
-            required: true,
-        },
+        // referralCode: {
+        //     type: String,
+        //     required: true,
+        // },
         refereeCode: {
             type: String,
             required: false,
