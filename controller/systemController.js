@@ -1,3 +1,5 @@
+
+const url = require('url')
 const {
     getSystemMessage,
     getSystemMessageByLang,
@@ -7,7 +9,8 @@ const logger = require('../logger')
 
 const getSysMessage = async (req, res) => {
     try {
-        const msgCode = req.query.msgCode;
+        const sysUrl = url.parse(req.url, true);
+        const msgCode = sysUrl.query.msgCode;
         logger.info('Start of getting system message for code :: '+ msgCode);
         const sysMsg = await getSystemMessage(msgCode);
         const message = sysMsg ? sysMsg.message : 'No system message found for this code';
@@ -24,7 +27,8 @@ const getSysMessage = async (req, res) => {
 
 const getSysMessageByLang = async (req, res) => {
     try {
-        const { msgCode, lang } = req.query;
+        const sysUrl = url.parse(req.url, true);
+        const { msgCode, lang } = sysUrl.query;
         logger.info('Start of getting system message for code :: '+ msgCode + ' in '+ lang);
         const sysMsg = await getSystemMessageByLang(msgCode, lang);
         const message = sysMsg ? sysMsg.message : 'No system message found for this code';
@@ -41,7 +45,8 @@ const getSysMessageByLang = async (req, res) => {
 
 const getSysConfig = async (req, res) => {
     try {
-        const configName = req.query.configName;
+        const configUrl = url.parse(req.url, true);
+        const configName = configUrl.query.configName;
         console.log(configName);
         logger.info(configName);
         logger.info('Start of getting system config for code :: '+ configName);
