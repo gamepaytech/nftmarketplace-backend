@@ -45,9 +45,12 @@ const getSysMessageByLang = async (req, res) => {
 
 const getSysConfig = async (req, res) => {
     try {
+        logger.info('Url obtained from request');
+        logger.info(req.url);
+        logger.info('query obtained from request');
+        logger.info(req.query);
         const configUrl = url.parse(req.url, true);
         const configName = configUrl.query.configName;
-        console.log(configName);
         logger.info(configName);
         logger.info('Start of getting system config for code :: '+ configName);
         const sysConfig = await getSystemConfig(configName);
