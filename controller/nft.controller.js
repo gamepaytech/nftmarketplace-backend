@@ -439,6 +439,7 @@ const addMyIncome = async function (req, res) {
                     const addMyIncome = await new referralModel.referralIncome({
                         userId: getMyRefferalsDetail.userId,
                         amount: myShareAmount,
+                        refereeCode:userInfo.refereeCode,
                         nftId: req.body.nftId,
                         recievedFrom: req.body.userId,
                     });
@@ -446,6 +447,7 @@ const addMyIncome = async function (req, res) {
                     const addFriendIncome = await new referralModel.referralIncome({
                         userId:req.body.userId,
                         amount: myFriendShareAmount,
+                        refereeCode:userInfo.refereeCode,
                         nftId: req.body.nftId,
                         recievedFrom: getMyRefferalsDetail.userId,
                     });
@@ -594,7 +596,7 @@ const getMyrewards = async function (req, res) {
                         myreferees.push({
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
-                            refereeCode: getMyReferees[i].refereeCode,
+                            refereeCode: myRewards[j].refereeCode,
                             rewardDate: myRewards[j].createdDate,
                             reward: myRewards[j].amount,
                         });
