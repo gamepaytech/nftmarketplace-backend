@@ -62,7 +62,6 @@ const getSysConfig = async (req, res) => {
 
 const getFeatureAccessController = async (req, res) => {
     try {
-        console.log('Inside getFeatureAccessController');
         const featureName = req.params.featureName;
         const userName = req.params.userName;
         logger.info('Start of getting feature for the feature :: '+ featureName);
