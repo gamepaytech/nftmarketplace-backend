@@ -10,7 +10,7 @@ const kycSchema = new Schema(
         last_name: { type: String, required: true },
         dob: { type: String, required: true },
         country: { type: String},
-        phone_number: { type: String},
+        phone_number: { type: String, required:true},
         citizen: { type: String, required: true },
         current_citizen_by: { type: Boolean },
         current_resident_by: { type: String, required: true },
