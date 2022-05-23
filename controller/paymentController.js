@@ -10,6 +10,7 @@ const CoinbasePayment = require("../models/coinbasePayments");
 const LaunchpadPayment = require("../models/launchpadPayment");
 const LaunchpadAmount = require("../models/launchpadAmount");
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
+const {createActivity,updateActivity} = require("../utils/paymentActivity");
 const { tokenGen, reqPayment } = require("../apisaaa");
 var crypto = require("crypto");
 const sdk = require("api")("@circle-api/v1#j7fxtxl16lsbwx");
@@ -22,38 +23,11 @@ const ObjectId = mongoose.Types.ObjectId;
 const logger = require("../logger");
 const r = require("request");
 const MessageValidator = require("sns-validator");
-
 const circleArn =
     /^arn:aws:sns:.*:908968368384:(sandbox|prod)_platform-notifications-topic$/;
-
 const validator = new MessageValidator();
 
-const createActivity = async (userId, price, isGood, gateway, orderId) => {
-    await models.users.updateOne(
-        { _id: userId },
-        {
-            $push: {
-                activity: {
-                    activity: `You have ${
-                        isGood == true ? "commited" : "initiated"
-                    } ${price.toFixed(2)} USDT amount using ${gateway}.`,
-                    timestamp: new Date(),
-                    orderId: orderId,
-                },
-            },
-        },
-        { new: true, upsert: true }
-    );
-};
-const updateActivity = async (userId, orderId, dataString) => {
-    await models.users.updateOne(
-        {
-            _id: userId,
-            "activity.orderId": orderId,
-        },
-        { $set: { "activity.$.activity": dataString } }
-    );
-};
+
 
 const createPayment = async (req, res) => {
     try {
@@ -71,7 +45,7 @@ const createPayment = async (req, res) => {
             cvvEncrpytion,
             keyIdEncrpytion,
             quantity,
-            // encryptedData
+            
         } = req.body;
         const buyNft = await Nft.presalenfts.find({ _id: nftId });
         logger.info("bb ", buyNft[0].price, quantity);
@@ -102,9 +76,7 @@ const createPayment = async (req, res) => {
                 idempotencyKey: uuid(),
                 verification: "cvv",
                 encryptedData: cvvEncrpytion.encryptedMessage,
-                keyId: "key1",
-                // verificationSuccessUrl: "http://localhost:3000/payment_success",
-                // verificationFailureUrl: "http://localhost:3000/payment_failure",
+                keyId: keyIdEncrpytion,
             },
             "SDF"
         );
@@ -338,8 +310,7 @@ const coinbasePayment = async (req, res) => {
             logger.info(promo);
             promoDiv = promo.percentDiscount;
         }
-        const nftAmount =
-            parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100);
+        const nftAmount = parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100);
         logger.info("CHARGE DATA ", buyNft?.price);
         console.log(
             parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100),
@@ -371,11 +342,60 @@ const coinbasePayment = async (req, res) => {
 
         const charge = await Charge.create(chargeData);
         await createActivity(userId, nftAmount, false, "Coinbase");
-        // logger.info(charge);
-        // for email
-        // sendPaymentConfirmation(emailId, )
+
+
         logger.info("COINBASE CHARGE ", charge);
         console.log("charge ", charge);
+        res.send(charge);
+    } catch (error) {
+        logger.info(error);
+        res.status(404).json({
+            error: "Data not found",
+        });
+    }
+};
+
+const coinbaseLaunchpadPayment = async (req, res) => {
+    try {
+        const { amount } = req.body;
+
+        const nftAmount = amount;
+        const uniqueId = uuid();
+        const chargeData = {
+            name: "Chikey Chik",
+            description: "The world’s first fully customizable end-to-end NFT",
+            local_price: {
+                amount: nftAmount,
+                currency: "USD",
+            },
+            pricing_type: "fixed_price",
+            logo_url:
+                "https://gamepay.sg/static/media/banner-kv.804e1dab7212846653e0.png",
+            metadata: {
+                userId: req.user.userId,
+                customer_email: req.body.email,
+                amount: amount,
+                uniqueId: uniqueId,
+                payment_activity: "LAUNCHPAD",
+            },
+            redirect_url: `${process.env.DOMAIN}/profile?pay-status=paysuccess`,
+            cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
+        };
+
+        logger.info("CHARGE DATA ", chargeData);
+
+        const charge = await Charge.create(chargeData);
+
+        await createActivity(
+            req.user.userId,
+            Number(nftAmount),
+            false,
+            "Coinbase",
+            uniqueId
+        );
+
+        logger.info("CHARGE ", charge);
+
         res.send(charge);
     } catch (error) {
         logger.info(error);
@@ -485,25 +505,6 @@ const handleCoinbasePayment = async (req, res) => {
     } catch (error) {
         logger.info("err 00", error);
         res.status(400).send("failure");
-    }
-};
-
-const coinbaseSuccess = async (req, res) => {
-    res.send("success payment");
-};
-const coinbaseFail = async (req, res) => {
-    res.send("cancel payment");
-};
-const sendPaymentEmail = async (req, res) => {
-    try {
-        logger.info(req.body.email);
-        await sendPaymentConfirmation(req.body);
-        res.status(200).json({
-            status: "Email sent",
-        });
-    } catch (err) {
-        logger.info("error", err);
-        res.status(400).send("failure to send email");
     }
 };
 
@@ -638,55 +639,6 @@ const tripleAWebhook = async (req, res) => {
     }
 };
 
-const initiateLaunchpadPayment = async (req, res) => {
-    try {
-        let { amount, paymentMethod } = req.body;
-
-        const createData = await LaunchpadPayment.create({
-            userId: req.user.userId,
-            amountCommited: amount,
-            paymentMethod: paymentMethod,
-            paymentStatus: "Initiated",
-        });
-
-        res.status(200).json({
-            msg: "Success! Payment initiated.",
-            payment: createData,
-        });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "500: Internal Server Error.",
-        });
-    }
-};
-
-const errorLaunchpadPayment = async (req, res) => {
-    try {
-        let { id, error, code } = req.body;
-
-        const createData = await LaunchpadPayment.updateOne(
-            { _id: ObjectId(id) },
-            {
-                userId: req.user.userId,
-                paymentStatus: "Failed",
-                code: code,
-                error: error,
-            }
-        );
-
-        res.status(200).json({
-            msg: "Error! Payment failed.",
-            payment: createData,
-        });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "500: Internal Server Error.",
-        });
-    }
-};
-
 const makeLaunchpadPayment = async (req, res) => {
     try {
         let { amount, transactionHash, id, email } = req.body;
@@ -743,55 +695,7 @@ const makeLaunchpadPayment = async (req, res) => {
     }
 };
 
-const coinbaseLaunchpadPayment = async (req, res) => {
-    try {
-        const { amount } = req.body;
 
-        const nftAmount = amount;
-        const uniqueId = uuid();
-        const chargeData = {
-            name: "Chikey Chik",
-            description: "The world’s first fully customizable end-to-end NFT",
-            local_price: {
-                amount: nftAmount,
-                currency: "USD",
-            },
-            pricing_type: "fixed_price",
-            logo_url:
-                "https://gamepay.sg/static/media/banner-kv.804e1dab7212846653e0.png",
-            metadata: {
-                userId: req.user.userId,
-                customer_email: req.body.email,
-                amount: amount,
-                uniqueId: uniqueId,
-                payment_activity: "LAUNCHPAD",
-            },
-            redirect_url: `${process.env.DOMAIN}/profile?pay-status=paysuccess`,
-            cancel_url: `${process.env.DOMAIN}/launchpad?status=payment-failed-canceled`,
-        };
-
-        logger.info("CHARGE DATA ", chargeData);
-
-        const charge = await Charge.create(chargeData);
-
-        await createActivity(
-            req.user.userId,
-            Number(nftAmount),
-            false,
-            "Coinbase",
-            uniqueId
-        );
-
-        logger.info("CHARGE ", charge);
-
-        res.send(charge);
-    } catch (error) {
-        logger.info(error);
-        res.status(404).json({
-            error: "Data not found",
-        });
-    }
-};
 const handleLaunchpadHook = async (req, res) => {
     const rawBody = req.rawBody;
     logger.info("req body ", rawBody);
@@ -1183,7 +1087,6 @@ const tripleAWebhookLaunchpad = async (req, res) => {
         .digest("hex");
 
     // current timestamp
-    let curr_timestamp = Math.round(new Date().getTime() / 1000);
 
     logger.info(
         signature,
@@ -1246,12 +1149,6 @@ const tripleAWebhookLaunchpad = async (req, res) => {
                 quantity: 1,
                 amount: req.body.txs[0].receive_amount,
             });
-            // await createActivity(
-            //     req.body.webhook_data.userId,
-            //     req.body.txs[0].receive_amount,
-            //     true,
-            //     "TripleA"
-            // );
             await updateActivity(
                 req.body.webhook_data.userId,
                 req.body.webhook_data.order_id,
@@ -1262,104 +1159,6 @@ const tripleAWebhookLaunchpad = async (req, res) => {
         } else {
             return res.status(400).end();
         }
-    }
-};
-const getCommitedAmount = async (req, res) => {
-    try {
-        if (!req.user.userId) {
-            return res.status(404).json({
-                err: "Error! user not found.",
-            });
-        }
-        const findData = await LaunchpadAmount.findOne({
-            userId: req.user.userId,
-        });
-        logger.info("findData   ", findData);
-
-        res.status(200).json({
-            data: findData,
-            status: 200,
-        });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "500: Internal server error!",
-        });
-    }
-};
-
-const getAllCommitedAmount = async (req, res) => {
-    try {
-        if (!req.user.userId) {
-            return res.status(404).json({
-                err: "Error! user not found.",
-            });
-        }
-        const findData = await LaunchpadAmount.find({
-            userId: req.user.userId,
-        });
-        logger.info("findData   ", findData);
-
-        res.status(200).json({
-            data: findData,
-            status: 200,
-        });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "500: Internal server error!",
-        });
-    }
-};
-
-const getLaunchpadActivity = async (req, res) => {
-    try {
-        if (!req.user.userId) {
-            return res.status(404).json({
-                err: "Error! user is not found.",
-            });
-        }
-        let page = req.query.page - 1;
-        let pageSize = req.query.pageSize;
-        const currentDate = new Date();
-        const fromDate = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth() - 2,
-            0
-        );
-        let total = await LaunchpadPayment.count({
-            userId: req.user.userId,
-            updatedAt: {
-                $gte: fromDate,
-            },
-        });
-        LaunchpadPayment.find({
-            userId: req.user.userId,
-            updatedAt: {
-                $gte: fromDate,
-            },
-        })
-            // .select("name")
-            .sort({ updatedAt: -1 })
-            .limit(pageSize)
-            .skip(pageSize * page)
-            .then((results) => {
-                return res.status(200).json({
-                    status: "success",
-                    total: total,
-                    page: page,
-                    pageSize: pageSize,
-                    data: results,
-                });
-            })
-            .catch((err) => {
-                return res.status(500).send(err);
-            });
-    } catch (err) {
-        logger.info(err);
-        res.status(500).json({
-            err: "500: Internal server error!",
-        });
     }
 };
 
@@ -1636,7 +1435,7 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
     }
 };
 
-const circleSNSLaunchpad = async (request, response) => {
+const circleSNSResponse= async (request, response) => {
     if (request.method === "HEAD") {
         response.writeHead(200, {
             "Content-Type": "text/html",
@@ -1701,13 +1500,10 @@ const circleSNSLaunchpad = async (request, response) => {
                     case "Notification": {
                         console.log(`Received message ${envelope.Message}`);
                         // enter code here  to verify payment
+                        // we receive message as envelope.Message
                         let event = envelope.Message;
                         logger.info("CIRCLE EVENT ", event);
-                        if (
-                            (event.status == "confirmed" ||
-                                event.status == "paid") &&
-                            event?.metadata.email
-                        ) {
+                        if ((event.status == "paid")) {
                             logger.info("-----charge confirmed", event);
                             console.log("-----charge confirmed", event);
                             //save in presale bought nft added to user account
@@ -1725,7 +1521,7 @@ const circleSNSLaunchpad = async (request, response) => {
                                         userId: findUser._id,
                                         amountCommited: event.amount.amount,
                                         paymentMethod: "Circle",
-                                        paymentStatus: "confirmed",
+                                        paymentStatus: event.status,
                                         paymentId: event.payment.id,
                                     });
                             } else {
@@ -1738,7 +1534,7 @@ const circleSNSLaunchpad = async (request, response) => {
                                         userId: findUser._id,
                                         amountCommited: amount.amount,
                                         paymentMethod: "Circle",
-                                        paymentStatus: "confirmed",
+                                        paymentStatus: event.status,
                                         paymentId: event.payment.id,
                                         metadata: JSON.stringify(event),
                                     }
@@ -1776,6 +1572,16 @@ const circleSNSLaunchpad = async (request, response) => {
                                 `You have commited ${event.amount.amount} USDT amount using Coinbase.`
                             );
                         }
+                        else if (event.status == "confirmed") {
+                            const findUser = await models.users.findOne({
+                                email: event.metadata.email,
+                            });
+                            await updateActivity(
+                                findUser._id,
+                                event.payment.id,
+                                `You have status as ${event.status} for ${event.amount.amount} USDT amount using Coinbase.`
+                            );
+                        }
                         break;
                     }
                     default: {
@@ -1789,12 +1595,169 @@ const circleSNSLaunchpad = async (request, response) => {
     };
 };
 
+
+// utils api
+const getCommitedAmount = async (req, res) => {
+    try {
+        if (!req.user.userId) {
+            return res.status(404).json({
+                err: "Error! user not found.",
+            });
+        }
+        const findData = await LaunchpadAmount.findOne({
+            userId: req.user.userId,
+        });
+        logger.info("findData   ", findData);
+
+        res.status(200).json({
+            data: findData,
+            status: 200,
+        });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "500: Internal server error!",
+        });
+    }
+};
+const getAllCommitedAmount = async (req, res) => {
+    try {
+        if (!req.user.userId) {
+            return res.status(404).json({
+                err: "Error! user not found.",
+            });
+        }
+        const findData = await LaunchpadAmount.find({
+            userId: req.user.userId,
+        });
+        logger.info("findData   ", findData);
+
+        res.status(200).json({
+            data: findData,
+            status: 200,
+        });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "500: Internal server error!",
+        });
+    }
+};
+const getLaunchpadActivity = async (req, res) => {
+    try {
+        if (!req.user.userId) {
+            return res.status(404).json({
+                err: "Error! user is not found.",
+            });
+        }
+        let page = req.query.page - 1;
+        let pageSize = req.query.pageSize;
+        const currentDate = new Date();
+        const fromDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() - 2,
+            0
+        );
+        let total = await LaunchpadPayment.count({
+            userId: req.user.userId,
+            updatedAt: {
+                $gte: fromDate,
+            },
+        });
+        LaunchpadPayment.find({
+            userId: req.user.userId,
+            updatedAt: {
+                $gte: fromDate,
+            },
+        })
+            // .select("name")
+            .sort({ updatedAt: -1 })
+            .limit(pageSize)
+            .skip(pageSize * page)
+            .then((results) => {
+                return res.status(200).json({
+                    status: "success",
+                    total: total,
+                    page: page,
+                    pageSize: pageSize,
+                    data: results,
+                });
+            })
+            .catch((err) => {
+                return res.status(500).send(err);
+            });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "500: Internal server error!",
+        });
+    }
+};
+const sendPaymentEmail = async (req, res) => {
+    try {
+        logger.info(req.body.email);
+        await sendPaymentConfirmation(req.body);
+        res.status(200).json({
+            status: "Email sent",
+        });
+    } catch (err) {
+        logger.info("error", err);
+        res.status(400).send("failure to send email");
+    }
+};
+const initiateLaunchpadPayment = async (req, res) => {
+    try {
+        let { amount, paymentMethod } = req.body;
+
+        const createData = await LaunchpadPayment.create({
+            userId: req.user.userId,
+            amountCommited: amount,
+            paymentMethod: paymentMethod,
+            paymentStatus: "Initiated",
+        });
+
+        res.status(200).json({
+            msg: "Success! Payment initiated.",
+            payment: createData,
+        });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "500: Internal Server Error.",
+        });
+    }
+};
+const errorLaunchpadPayment = async (req, res) => {
+    try {
+        let { id, error, code } = req.body;
+
+        const createData = await LaunchpadPayment.updateOne(
+            { _id: ObjectId(id) },
+            {
+                userId: req.user.userId,
+                paymentStatus: "Failed",
+                code: code,
+                error: error,
+            }
+        );
+
+        res.status(200).json({
+            msg: "Error! Payment failed.",
+            payment: createData,
+        });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "500: Internal Server Error.",
+        });
+    }
+};
+
 module.exports = {
     createPayment,
     coinbasePayment,
     handleCoinbasePayment,
-    coinbaseSuccess,
-    coinbaseFail,
+
     createPaymentAAA,
     saveCirclePaymentData,
     sendPaymentEmail,
@@ -1811,7 +1774,7 @@ module.exports = {
     getLaunchpadActivity,
     updateActivity,
     createCircleLaunchpadPayment,
-    circleSNSLaunchpad,
+    circleSNSResponse,
     getKeyForCircleLaunchpadPayment,
     getCardDetailsCircleLaunchpadPayment,
     paymentsCircleLaunchpadPayment,
