@@ -9,16 +9,7 @@ const  getReferralCode = () => {
         for (let i = 8; i > 0; i--) {
             newCode += arr[Math.floor(Math.random() * arr.length)]
         }
-
-        // need to update the referral code logic in User collection
-        const getNewReferralCode = await models.users.findOne({
-            referralCode: newCode,
-        });
-        if (getNewReferralCode) {
-            getReferralCode()
-        } else {
-            resolve({ code: newCode })
-        }
+        resolve({ code: newCode })
     })
 };
 
