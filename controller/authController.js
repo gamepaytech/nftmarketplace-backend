@@ -496,6 +496,7 @@ const addMyReferral = async function (req, res) {
                             const addMyIncome= new referralModel.referralIncome({
                                 userId: checkReferralCode._id,
                                 amount: 0,
+                                refereeCode:referralCode.code,
                                 nftId: -1,
                                 recievedFrom: insertNewReferral._id,
                             });
