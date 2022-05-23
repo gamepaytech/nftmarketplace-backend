@@ -92,7 +92,7 @@ const getKYC = async (req, res) => {
         utility_bill_url: req.body.utility_bill_url,
         bank_statement_url: req.body.bank_statement_url,
         address_proof_url: req.body.address_proof_url,
-        comments: "Your face not clear yourself image. so your KYC rejected.",
+        comments: "Your face not clear yourselfe image. so your KYC rejected.",
         status: "SUBMITED"
       };
 
@@ -138,7 +138,7 @@ const getKYC = async (req, res) => {
           utility_bill_url: req.body.utility_bill_url,
           bank_statement_url: req.body.bank_statement_url,
           address_proof_url: req.body.address_proof_url,
-          comments: "Your face not clear yourself image. so your KYC rejected.",
+          comments: "Your face not clear yourselfe image. so your KYC rejected.",
           status: "RESUBMITED"
           }
           );
