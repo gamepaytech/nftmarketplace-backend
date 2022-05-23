@@ -9,9 +9,6 @@ const logger = require('../logger')
 
 const getSysMessage = async (req, res) => {
     try {
-        res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.header("Pragma", "no-cache");
-        res.header("Expires", 0);
         const sysUrl = url.parse(req.url, true);
         const msgCode = sysUrl.query.msgCode;
         logger.info('Start of getting system message for code :: '+ msgCode);
@@ -30,9 +27,6 @@ const getSysMessage = async (req, res) => {
 
 const getSysMessageByLang = async (req, res) => {
     try {
-        res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.header("Pragma", "no-cache");
-        res.header("Expires", 0);
         const sysUrl = url.parse(req.url, true);
         const { msgCode, lang } = sysUrl.query;
         logger.info('Start of getting system message for code :: '+ msgCode + ' in '+ lang);
@@ -51,9 +45,6 @@ const getSysMessageByLang = async (req, res) => {
 
 const getSysConfig = async (req, res) => {
     try {
-        res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.header("Pragma", "no-cache");
-        res.header("Expires", 0);
         logger.info('Url obtained from request');
         logger.info(req.url);
         logger.info('query obtained from request');
