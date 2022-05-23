@@ -1,15 +1,18 @@
-const express = require("express");
+const express = require('express');
 const {
     getSysMessage,
     getSysMessageByLang,
-    getSysConfig
-} = require("../controller/systemController");
+    getSysConfig,
+    getFeatureAccessController
+} = require('../controller/systemController');
+const cors = require('cors')
 
 const router = express.Router();
-const { authenticateUser } = require("../middleware/authentication");
+const { authenticateUser } = require('../middleware/authentication');
 
-router.route("/getSystemMessage").get(authenticateUser,getSysMessage);
-router.route("/getSystemMessageByLang").get(authenticateUser,getSysMessageByLang);
-router.route("/getSystemConfig").get(authenticateUser,getSysConfig);
+router.get('/getSystemMessage/:msgCode',cors(),authenticateUser,getSysMessage);
+router.get('/getSystemMessageByLang/:msgCode/:language',cors(),authenticateUser,getSysMessageByLang);
+router.get('/getSystemConfig/:config',cors(),authenticateUser,getSysConfig);
+router.get('/getFeatureControl/:featureName/:userName', cors(),authenticateUser, getFeatureAccessController)
 
 module.exports = router;
