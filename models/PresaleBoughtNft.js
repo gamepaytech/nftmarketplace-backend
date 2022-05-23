@@ -28,6 +28,12 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
         currency:{
             type:String,
             default:"USD"
+        },
+        paymentId: {
+            type:String
+        },
+        paymentMode: {
+            type:String
         }
     },
     { timestamps: true,
