@@ -19,7 +19,7 @@ const {
     getLaunchpadActivity,
     updateActivity,
     createCircleLaunchpadPayment,
-    circleSNSLaunchpad,
+    circleSNSResponse,
     getKeyForCircleLaunchpadPayment,
     getCardDetailsCircleLaunchpadPayment,
     paymentsCircleLaunchpadPayment
@@ -49,7 +49,9 @@ router.route("/errorLaunchpadPayment").post(authenticateUser,errorLaunchpadPayme
 router.route("/getAllLaunchpadActivity").get(authenticateUser,getLaunchpadActivity);
 
 router.route("/createCircleLaunchpadPayment").post(authenticateUser,createCircleLaunchpadPayment);
-router.route("/circleSNSLaunchpad").post(circleSNSLaunchpad);
+
+//todo - replace launchpad with response and update the circle notifications
+router.route("/circleSNSLaunchpad").post(circleSNSResponse);
 router.route("/getKeyForCircleLaunchpadPayment").get(authenticateUser,getKeyForCircleLaunchpadPayment);
 router.route("/getCardDetailsCircleLaunchpadPayment").post(authenticateUser,getCardDetailsCircleLaunchpadPayment);
 router.route("/paymentsCircleLaunchpadPayment").post(authenticateUser,paymentsCircleLaunchpadPayment);
