@@ -56,7 +56,7 @@ const getKYC = async (req, res) => {
   const saveKYC = async(req, res) => {
     try { 
 
-      const keys = ["userId", "first_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
+      const keys = ["userId", "first_name", "last_name","dob","citizen","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
       for (i in keys) {
         if (req.body[keys[i]] === undefined || req.body[keys[i]] === '') {
           res.json({ status: "error", msg: keys[i] + " are required" });
@@ -72,7 +72,7 @@ const getKYC = async (req, res) => {
         last_name: req.body.last_name,
         dob: req.body.dob,
         country: req.body.country,
-        personal_id: req.body.personal_id,
+        phone_number: req.body.phone_number,
         citizen: req.body.citizen,
         current_citizen_by: req.body.current_citizen_by,
         current_resident_by: req.body.current_resident_by,
@@ -92,7 +92,7 @@ const getKYC = async (req, res) => {
         utility_bill_url: req.body.utility_bill_url,
         bank_statement_url: req.body.bank_statement_url,
         address_proof_url: req.body.address_proof_url,
-        comments: "Your Selfi not clear your face. so we are reject your KYC ",
+        comments: "Your face not clear yourself image. so your KYC rejected.",
         status: "SUBMITED"
       };
 
@@ -118,7 +118,7 @@ const getKYC = async (req, res) => {
           last_name: req.body.last_name,
           dob: req.body.dob,
           country: req.body.country,
-          personal_id: req.body.personal_id,
+          phone_number: req.body.phone_number,
           citizen: req.body.citizen,
           current_citizen_by: req.body.current_citizen_by,
           current_resident_by: req.body.current_resident_by,
@@ -138,7 +138,7 @@ const getKYC = async (req, res) => {
           utility_bill_url: req.body.utility_bill_url,
           bank_statement_url: req.body.bank_statement_url,
           address_proof_url: req.body.address_proof_url,
-          comments: "Your Selfi not clear your face. so we are reject your KYC ",
+          comments: "Your face not clear yourself image. so your KYC rejected.",
           status: "RESUBMITED"
           }
           );
@@ -147,22 +147,7 @@ const getKYC = async (req, res) => {
           msg: "Success! KYC Update",
           data: data,
         });
-        // const kycInfo = await createKYC.save();
       }
-
-
-      // const createKYC = new models.kycs(query);
-      // const checkUser = await models.kycs.findOne({userId:req.body.userId})
-      // // if (checkUser == null) {
-      //     // const kycInfo = await createKYC.create();
-      //     // res.json({ status: 400, msg: 'User not Found' })
-      //     // return
-      // // }else{
-       
-      //   const kycInfo = await createKYC.save();
-      // // }
-      
-     
       return;
       
     } catch (error) {
@@ -178,15 +163,13 @@ const getKYC = async (req, res) => {
 
   const updateKYC = async(req, res) => {
     try {
-        const keys = ["id","userId", "first_name", "middle_name", "last_name","dob","country","personal_id","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
+        const keys = ["id","userId", "first_name", "middle_name", "last_name","dob","country","citizen","current_citizen_by","current_resident_by","address_line_1","address_line_2","town","postcode","state","occupation","source_funds","intent_invest","document_type","selfi_url"];
         for (i in keys) {
           if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
             res.json({ status: "error", msg: keys[i] + " are required" });
             return;
           }
-        }
-        
-
+        } 
         const checkKYC = await models.kycs.findById(req.body.id)
         logger.info(checkKYC.length)
         if (checkKYC == null) {
