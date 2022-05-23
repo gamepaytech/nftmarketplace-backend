@@ -394,7 +394,6 @@ const addMyReferral = async function (req, res) {
         if(req.body.code) {
             refereeCode = req.body.code;
         }
-
         let keys = ['email', 'username', 'password']
         for (i in keys) {
             if (req.body[keys[i]] == undefined || req.body[keys[i]] == '') {
@@ -402,7 +401,8 @@ const addMyReferral = async function (req, res) {
                 return
             }
         }
-
+        let referralCode = await getReferralCode()
+        console.log("test");
         query = { email: req.body.email }
         const checkMail = await models.users.findOne({ "$or": [ { email: req.body.email }, { username: req.body.username} ] })
         if (checkMail) {
@@ -428,7 +428,6 @@ const addMyReferral = async function (req, res) {
                     query = { referralCode: refereeCode }
                     const checkReferralCode = await referralModel.referralDetails.findOne(query)
                     if (checkReferralCode) {
-                        let referralCode = await getReferralCode()
                         const verificationToken = crypto
                             .randomBytes(40)
                             .toString('hex')
@@ -453,8 +452,6 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: req.body.username,
-                                sourceName:req.body.sourceName,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -474,8 +471,6 @@ const addMyReferral = async function (req, res) {
                                     req.body.isSuperAdmin == 'True'
                                         ? true
                                         : false,
-                                referralCode: req.body.username,
-                                sourceName:req.body.sourceName,
                                 refereeCode: refereeCode,
                             }
                         }
@@ -493,7 +488,7 @@ const addMyReferral = async function (req, res) {
                                 userId:insertNewReferral._id,
                                 myShare:"20",
                                 friendShare:"10",
-                                referralCode:req.body.username,
+                                referralCode:referralCode.code,
                                 isDefault:true,
                             })
                             logger.info('ADD MY REFERRAL ',addMyReferral);
@@ -555,7 +550,6 @@ const addMyReferral = async function (req, res) {
                         })
                     }
                 } else {
-                    let referralCode = await getReferralCode()
                     const verificationToken = crypto
                         .randomBytes(40)
                         .toString('hex')
@@ -580,8 +574,6 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: req.body.username,
-                            sourceName:req.body.sourceName,
                             refereeCode: refereeCode,
                         }
                     }
@@ -601,11 +593,10 @@ const addMyReferral = async function (req, res) {
                                 req.body.isSuperAdmin == 'True'
                                     ? true
                                     : false,
-                            referralCode: req.body.username,
-                            sourceName:req.body.sourceName,
                             refereeCode: refereeCode,
                         }
                     }
+                    console.log("test4")
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
                     if (insertNewReferral) {
@@ -616,7 +607,7 @@ const addMyReferral = async function (req, res) {
                             userId:insertNewReferral._id,
                             myShare:"20",
                             friendShare:"10",
-                            referralCode:req.body.username,
+                            referralCode:referralCode.code,
                             isDefault:true,
                         })
                         logger.info('ADD MY REFERRAL ',addMyReferral);
@@ -665,14 +656,14 @@ function getReferralCode() {
             newCode += arr[Math.floor(Math.random() * arr.length)]
         }
 
-        const getNewReferralCode = await models.users.findOne({
-            referralCode: newCode,
-        })
-        if (getNewReferralCode) {
-            getReferralCode()
-        } else {
+        // const getNewReferralCode = await models.users.findOne({
+        //     referralCode: newCode,
+        // })
+        // if (getNewReferralCode) {
+        //     getReferralCode()
+        // } else {
             resolve({ code: newCode })
-        }
+        // }
     })
 }
 

@@ -556,10 +556,17 @@ const addMyIncome = async function (req, res) {
 
 const getMyrewards = async function (req, res) {
     try {
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
         if (req.body.userId == undefined || req.body.userId == "") {
             res.json({ status: 400, msg: "nftId is required" });
             return;
         }
+
+        
+        const total = await referralModel.referralIncome.find({
+            userId: req.body.userId,
+        }).count();
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
@@ -576,8 +583,7 @@ const getMyrewards = async function (req, res) {
 
         const getMyReferees = await models.users.find({
             _id: { $in: Ids },
-        });
-
+        }).limit(pageSize).skip(pageSize * page);;
         logger.info(myRewards,"getMyReferees")
 
         let myreferees = [];
@@ -588,7 +594,7 @@ const getMyrewards = async function (req, res) {
                         myreferees.push({
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
-                            username: getMyReferees[i].username,
+                            refereeCode: getMyReferees[i].refereeCode,
                             rewardDate: myRewards[j].createdDate,
                             reward: myRewards[j].amount,
                         });
@@ -604,6 +610,7 @@ const getMyrewards = async function (req, res) {
                 totalReward: totalRewards,
                 myReferees: myreferees,
             },
+            total:total
         });
     } catch (error) {
         res.json({ sttaus: 400, msg: error.toString() });
