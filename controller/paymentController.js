@@ -1578,18 +1578,16 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
                 });
             })
             .catch((err) => {
-                console.log(err.response.data);
-                console.log("Error occurred during cards api payment");
-                //logger.info(err);
-                logger.error(
-                    "Error occured while fetching data from circle payment cards api"
-                );
-                res.status(500).json({ error: err.response.data?.message });
-            });
+            console.log(err.response.data);
+            console.log('Error occurred during cards api payment');
+            logger.error('Error occured while fetching data from circle payment cards api');
+            logger.info(err);
+            res.status(500).json({ error: err.response.data?.message });
+        });
     } catch (err) {
-        //console.log(err);
-        //logger.info(err);
-        console.log("Internal Server Error");
+        console.log(err);
+        logger.info(err);
+        console.log('Internal Server Error');
         res.status(500).json({
             error: "Error occurred while fetching card details from circle cards api",
         });
