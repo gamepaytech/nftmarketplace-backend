@@ -31,6 +31,8 @@ const systemRouter = require("./routes/systemRoute");
 // Database connection
 DBConnect();
 
+app.disable('etag');
+
 app.set("trust proxy", 1);
 app.use(
     rateLimiter({
