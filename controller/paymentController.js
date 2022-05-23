@@ -44,7 +44,8 @@ const createPayment = async (req, res) => {
             sessionId,
             cvvEncrpytion,
             keyIdEncrpytion,
-            quantity
+            quantity,
+            
         } = req.body;
         const buyNft = await Nft.presalenfts.find({ _id: nftId });
         logger.info("bb ", buyNft[0].price, quantity);
@@ -75,7 +76,7 @@ const createPayment = async (req, res) => {
                 idempotencyKey: uuid(),
                 verification: "cvv",
                 encryptedData: cvvEncrpytion.encryptedMessage,
-                keyId: "key1",
+                keyId: keyIdEncrpytion,
             },
             "SDF"
         );
@@ -1572,6 +1573,9 @@ const circleSNSResponse= async (request, response) => {
                             );
                         }
                         else if (event.status == "confirmed") {
+                            const findUser = await models.users.findOne({
+                                email: event.metadata.email,
+                            });
                             await updateActivity(
                                 findUser._id,
                                 event.payment.id,

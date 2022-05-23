@@ -1,3 +1,5 @@
+const models = require("../models/User");
+
 const createActivity = async (userId, price, isGood, gateway, orderId) => {
   await models.users.updateOne(
       { _id: userId },
