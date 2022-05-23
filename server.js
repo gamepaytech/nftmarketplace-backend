@@ -46,6 +46,7 @@ app.use(
     })
   );
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.json());
 app.use(cors());
 app.use(cookieParser(process.env.JWT_SECRET));
