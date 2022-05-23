@@ -1,16 +1,14 @@
-
-const url = require('url')
 const {
     getSystemMessage,
     getSystemMessageByLang,
-    getSystemConfig
+    getSystemConfig,
+    getFeatureControl
 } = require('../utils')
 const logger = require('../logger')
 
 const getSysMessage = async (req, res) => {
     try {
-        const sysUrl = url.parse(req.url, true);
-        const msgCode = sysUrl.query.msgCode;
+        const msgCode = req.params.msgCode;
         logger.info('Start of getting system message for code :: '+ msgCode);
         const sysMsg = await getSystemMessage(msgCode);
         const message = sysMsg ? sysMsg.message : 'No system message found for this code';
@@ -27,8 +25,8 @@ const getSysMessage = async (req, res) => {
 
 const getSysMessageByLang = async (req, res) => {
     try {
-        const sysUrl = url.parse(req.url, true);
-        const { msgCode, lang } = sysUrl.query;
+        const msgCode = req.params.msgCode;
+        const lang  = req.params.language;
         logger.info('Start of getting system message for code :: '+ msgCode + ' in '+ lang);
         const sysMsg = await getSystemMessageByLang(msgCode, lang);
         const message = sysMsg ? sysMsg.message : 'No system message found for this code';
@@ -45,13 +43,7 @@ const getSysMessageByLang = async (req, res) => {
 
 const getSysConfig = async (req, res) => {
     try {
-        logger.info('Url obtained from request');
-        logger.info(req.url);
-        logger.info('query obtained from request');
-        logger.info(req.query);
-        const configUrl = url.parse(req.url, true);
-        const configName = configUrl.query.configName;
-        logger.info(configName);
+        const configName = req.params.config;
         logger.info('Start of getting system config for code :: '+ configName);
         const sysConfig = await getSystemConfig(configName);
         console.log(sysConfig);
@@ -68,10 +60,27 @@ const getSysConfig = async (req, res) => {
     }
 };
 
+const getFeatureAccessController = async (req, res) => {
+    try {
+        const featureName = req.params.featureName;
+        const userName = req.params.userName;
+        logger.info('Start of getting feature for the feature :: '+ featureName);
+        const isAccessible = await getFeatureControl(featureName, userName);
+        res.status(200).json({
+            data: isAccessible
+        });
+    } catch (err) {
+        logger.info(err);
+        res.status(500).json({
+            err: "Internal server error!",
+        });
+    }
+};
 
 
 module.exports = {
     getSysMessage,
     getSysMessageByLang,
-    getSysConfig
+    getSysConfig,
+    getFeatureAccessController
 };
