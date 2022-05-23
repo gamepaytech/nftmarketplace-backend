@@ -20,10 +20,8 @@ const getFeatureControl = async (feature, userName) => {
             }
             const usersAccessible = featureObj.users_accessible.split(',');
             if (usersAccessible.length > 0) {
-                console.log(usersAccessible);
                 for (let i in usersAccessible) {
-                    console.log(usersAccessible[i]);
-                    if (usersAccessible[i] === userNamePassed) {
+                    if (usersAccessible[i].trim() === userNamePassed) {
                         return 'ACCESSIBLE';
                     }
                 }
