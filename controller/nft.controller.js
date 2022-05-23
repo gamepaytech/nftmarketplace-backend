@@ -354,7 +354,7 @@ const getNftByUserId = async (req, res) => {
         const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
             path:"nft"
         });
-        console.log("findNfts ",findNfts);
+        // console.log("findNfts ",findNfts);
     // logger.info("findnfts ",findNfts);
     if (!findNfts) {
         return res.status(404).json({
@@ -427,21 +427,19 @@ const addMyIncome = async function (req, res) {
 
         const userInfo = await models.users.findById(req.body.userId);
         if (userInfo && userInfo.refereeCode != "") {
-            const getMyreferral = await models.users.find({ 
-                referralCode: userInfo.refereeCode,
-            });
-            logger.info("GET MY REFERRAL ",getMyreferral[0]._id)
             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
             logger.info("bought ",bought);
             if(bought){
-                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo[0].refereeCode}) 
+                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
                 logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
                 if(getMyRefferalsDetail){
+                    logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
                     let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
                     let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
                     const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyreferral[0]._id,
+                        userId: getMyRefferalsDetail.userId,
                         amount: myShareAmount,
+                        refereeCode:userInfo.refereeCode,
                         nftId: req.body.nftId,
                         recievedFrom: req.body.userId,
                     });
@@ -449,15 +447,16 @@ const addMyIncome = async function (req, res) {
                     const addFriendIncome = await new referralModel.referralIncome({
                         userId:req.body.userId,
                         amount: myFriendShareAmount,
+                        refereeCode:userInfo.refereeCode,
                         nftId: req.body.nftId,
-                        recievedFrom:  getMyreferral[0]._id,
+                        recievedFrom: getMyRefferalsDetail.userId,
                     });
                     await addFriendIncome.save();   
                 }
             }
 
             const totalIncome = await referralModel.referralIncome.find({
-                userId: getMyreferral[0]._id,
+                userId: req.body.userId,
             });
             let totalAmount = 0;
             for (let i = 0; i < totalIncome.length; i++) {
@@ -477,6 +476,7 @@ const addMyIncome = async function (req, res) {
             });
         }
     } catch (error) {
+        console.log(error)
         res.json({ status: 400, msg: error.toString() });
     }
 };
@@ -558,10 +558,17 @@ const addMyIncome = async function (req, res) {
 
 const getMyrewards = async function (req, res) {
     try {
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
         if (req.body.userId == undefined || req.body.userId == "") {
             res.json({ status: 400, msg: "nftId is required" });
             return;
         }
+
+        
+        const total = await referralModel.referralIncome.find({
+            userId: req.body.userId,
+        }).count();
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
@@ -578,8 +585,7 @@ const getMyrewards = async function (req, res) {
 
         const getMyReferees = await models.users.find({
             _id: { $in: Ids },
-        });
-
+        }).limit(pageSize).skip(pageSize * page);;
         logger.info(myRewards,"getMyReferees")
 
         let myreferees = [];
@@ -590,7 +596,7 @@ const getMyrewards = async function (req, res) {
                         myreferees.push({
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
-                            username: getMyReferees[i].username,
+                            refereeCode: myRewards[j].refereeCode,
                             rewardDate: myRewards[j].createdDate,
                             reward: myRewards[j].amount,
                         });
@@ -606,6 +612,7 @@ const getMyrewards = async function (req, res) {
                 totalReward: totalRewards,
                 myReferees: myreferees,
             },
+            total:total
         });
     } catch (error) {
         res.json({ sttaus: 400, msg: error.toString() });

@@ -28,6 +28,10 @@ let myReferralIncome = new mongoose.Schema({
         type: String,
         required: true,
     },
+    refereeCode: {
+        type: String,
+        required: true,
+    },
     amount: {
         type: Number,
         default: 0,
