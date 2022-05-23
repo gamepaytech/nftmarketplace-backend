@@ -26,6 +26,12 @@ const CoinbasePaymentSchema = new mongoose.Schema(
     quantity: {
       type:String,
       default:1
+    },
+    uniqueId:{
+      type:String
+    },
+    status: {
+      type:String
     }
   },
   { timestamps: true }
