@@ -10,6 +10,7 @@ const { getSystemMessage,
     getSystemMessageByLang
 } = require('./getSystemMessage')
 const getSystemConfig = require('./getSystemConfiguration');
+const getFeatureControl = require('./getFeatureControl');
 
 module.exports = {
     createJWT,
@@ -22,5 +23,6 @@ module.exports = {
     createHash,
     getSystemMessage,
     getSystemMessageByLang,
-    getSystemConfig
+    getSystemConfig,
+    getFeatureControl
 }

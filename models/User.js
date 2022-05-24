@@ -34,12 +34,12 @@ const userSchema = new mongoose.Schema(
         passwordToken: {
             type: String,
         },
+        sourceName: {
+            type: String,
+            default: "",
+        },
         passwordTokenExpirationDate: {
             type: Date,
-        },
-        referralCode: {
-            type: String,
-            required: true,
         },
         refereeCode: {
             type: String,

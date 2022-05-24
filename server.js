@@ -31,6 +31,8 @@ const systemRouter = require("./routes/systemRoute");
 // Database connection
 DBConnect();
 
+app.disable('etag');
+
 app.set("trust proxy", 1);
 app.use(
     rateLimiter({
@@ -46,6 +48,7 @@ app.use(
     })
   );
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.json());
 app.use(cors());
 app.use(cookieParser(process.env.JWT_SECRET));
@@ -72,5 +75,5 @@ app.use("/system",systemRouter);
  
 //  Listening
 app.listen(PORT, () => {
-    console.log(`All running on http://localhost:${PORT}`);
+    console.log(` App successfully started on port : ${PORT}`);
 });
