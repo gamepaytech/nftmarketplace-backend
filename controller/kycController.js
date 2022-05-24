@@ -7,7 +7,7 @@ const getKYC = async (req, res) => {
     let page = req.query.page;
     let pageSize = req.query.pageSize;
     let total = await models.kycs.count({});
-    models.kycs.find({})
+    models.kycs.find({}).populate({path:"userDetails", select:'email'})
       // .select("name")
       .sort({ price:1 })
       .limit(pageSize)
@@ -64,7 +64,54 @@ const getKYC = async (req, res) => {
         }
       } 
 
-     
+      const checkUser = await models.kycs.findOne({userId:req.body.userId})
+
+      if(checkUser) {
+
+        const data = await models.kycs.updateOne(
+          {
+            userId: req.body.userId
+          },
+          {
+            $set: {
+              first_name: req.body.first_name,
+              middle_name: req.body.middle_name,
+              last_name: req.body.last_name,
+              dob: req.body.dob,
+              country: req.body.country,
+              phone_number: req.body.phone_number,
+              citizen: req.body.citizen,
+              current_citizen_by: req.body.current_citizen_by,
+              current_resident_by: req.body.current_resident_by,
+              // address: req.body.address,
+              address_line_1: req.body.address_line_1,
+              address_line_2: req.body.address_line_2,
+              town:req.body.town,
+              postcode:req.body.postcode,
+              state:req.body.state,
+              occupation: req.body.occupation,
+              source_funds: req.body.source_funds,
+              intent_invest: req.body.intent_invest,
+              document_type: req.body.document_type,
+              document_front_url: req.body.document_front_url,
+              document_back_url: req.body.document_back_url,
+              selfi_url: req.body.selfi_url,
+              utility_bill_url: req.body.utility_bill_url,
+              bank_statement_url: req.body.bank_statement_url,
+              address_proof_url: req.body.address_proof_url,
+              comments: "Your face not clear yourselfe image. so your KYC rejected.",
+              status: "RESUBMITED"
+            }
+          }
+          );
+        return res.status(201).json({
+          status: "success",
+          msg: "Success! KYC Update",
+          data: data
+        });
+      } 
+
+
       const query = {
         userId: req.body.userId,
         first_name: req.body.first_name,
@@ -96,59 +143,19 @@ const getKYC = async (req, res) => {
         status: "SUBMITED"
       };
 
-      const checkUser = await models.kycs.findOne({userId:req.body.userId})
-
    
-      if(!checkUser) {
+      // if(!checkUser) {
 
         // console.log("carete function");
         const createKYC = new models.kycs(query);
         const kycInfo = await createKYC.save();
-        res.status(201).json({
+        return res.status(201).json({
           status: "success",
           msg: "Success! KYC created",
           data: kycInfo,
         });
-      }else{
-        const data = await models.kycs.updateOne(
-          {
-          userId: req.body.userId,
-          first_name: req.body.first_name,
-          middle_name: req.body.middle_name,
-          last_name: req.body.last_name,
-          dob: req.body.dob,
-          country: req.body.country,
-          phone_number: req.body.phone_number,
-          citizen: req.body.citizen,
-          current_citizen_by: req.body.current_citizen_by,
-          current_resident_by: req.body.current_resident_by,
-          // address: req.body.address,
-          address_line_1: req.body.address_line_1,
-          address_line_2: req.body.address_line_2,
-          town:req.body.town,
-          postcode:req.body.postcode,
-          state:req.body.state,
-          occupation: req.body.occupation,
-          source_funds: req.body.source_funds,
-          intent_invest: req.body.intent_invest,
-          document_type: req.body.document_type,
-          document_front_url: req.body.document_front_url,
-          document_back_url: req.body.document_back_url,
-          selfi_url: req.body.selfi_url,
-          utility_bill_url: req.body.utility_bill_url,
-          bank_statement_url: req.body.bank_statement_url,
-          address_proof_url: req.body.address_proof_url,
-          comments: "Your face not clear yourselfe image. so your KYC rejected.",
-          status: "RESUBMITED"
-          }
-          );
-        res.status(201).json({
-          status: "success",
-          msg: "Success! KYC Update",
-          data: data,
-        });
-      }
-      return;
+      // }
+      // return;
       
     } catch (error) {
       res.json({

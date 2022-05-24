@@ -3,7 +3,6 @@ const Schema = mongoose.Schema
 
 const kycSchema = new Schema(
     {
-        id: { type: Number },
         userId: { type: String, required: true },
         first_name: { type: String, required: true },
         middle_name: { type: String},
@@ -36,6 +35,15 @@ const kycSchema = new Schema(
     { timestamps: true }
 )
 
+kycSchema.virtual('userDetails', {
+    ref: 'users', //The Model to use
+    localField: 'userId', //Find in Model, where localField 
+    foreignField: '_id', // is equal to foreignField
+});
+
+// Set Object and Json property to true. Default is set to false
+kycSchema.set('toObject', { virtuals: true });
+kycSchema.set('toJSON', { virtuals: true });
 
 module.exports = {
     kycs: mongoose.model('kycs', kycSchema),
