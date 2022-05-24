@@ -8,6 +8,7 @@ const PromoCode = require("../models/PromoCode")
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
 const logger = require('../logger')
+var Web3 = require('web3');
 
 const getPresaleSetting = async (req, res) => {
     const data = await Nft.settingpresalenfts.findOne({});
@@ -320,7 +321,21 @@ const ownedNft = async (req, res) => {
 };
 
 const userBoughtNft = async (req, res) => {
-    const { nftId, userId, promoApplied, quantity } = req.body;
+    const { nftId, address, promoApplied, quantity , txHash} = req.body;
+    console.log(process.env.RPC,"rpc")
+    
+    var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
+
+    const tx = await web3.eth.getTransactionReceipt(txHash);
+    const latest = await web3.eth.getBlockNumber()
+    console.log(latest, address,tx, req.body,"transaction")
+    const userInfo = await models.users.find({metamaskKey: address});
+    
+    console.log(userInfo)
+    const userId = userInfo._id;
+    if(tx.blockNumber +30  > latest){
+        console.log("if ran")
+
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // logger.info("NFT ",findNftById)
     var promoDiv = 0
@@ -341,11 +356,16 @@ const userBoughtNft = async (req, res) => {
         promoCode : promoApplied,
         quantity : quantity
     });
+
+    addMyIncomeMetaMask(nftId, userId, updatePresale._id)
+
     logger.info(updatePresale);
     res.status(200).json({
         message: "SUCCESS",
         updatePresale,
     });
+    }
+    
 };
 const getNftByUserId = async (req, res) => {
     try {
@@ -409,6 +429,65 @@ const approveNFT = async (req, res) => {
             to: "contract",
         });
         res.status(201).send({ msg: "NFT updated" });
+    }
+};
+
+const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
+    try {
+        if (
+            nftId == undefined ||
+            nftId == "" ||
+            userId == undefined ||
+            userId == ""
+        ) {
+            res.json({ status: 400, msg: "nftId is required" });
+            return;
+        }
+        
+
+        const userInfo = await models.users.findById(userId);
+        if (userInfo && userInfo.refereeCode != "") {
+            const bought = await PresaleBoughtNft.findOne({_id: purchaseId})
+            logger.info("bought ",bought);
+            if(bought){
+                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
+                logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
+                if(getMyRefferalsDetail){
+                    logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
+                    let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
+                    let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
+                    const addMyIncome = await new referralModel.referralIncome({
+                        userId: getMyRefferalsDetail.userId,
+                        amount: myShareAmount,
+                        refereeCode:userInfo.refereeCode,
+                        nftId: nftId,
+                        recievedFrom: userId,
+                    });
+                    await addMyIncome.save(); 
+                    const addFriendIncome = await new referralModel.referralIncome({
+                        userId: userId,
+                        amount: myFriendShareAmount,
+                        refereeCode:userInfo.refereeCode,
+                        nftId: nftId,
+                        recievedFrom: getMyRefferalsDetail.userId,
+                    });
+                    await addFriendIncome.save();   
+                }
+            }
+
+            const totalIncome = await referralModel.referralIncome.find({
+                userId: userId,
+            });
+        } else {
+
+            res.json({
+                status: 200,
+                msg: "The user is not refered by anyone",
+            });
+        }
+    } catch (error) {
+        console.log(error)
+        res.json({ status: 400, msg: error.toString() });
     }
 };
 

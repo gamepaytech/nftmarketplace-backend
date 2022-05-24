@@ -7,7 +7,7 @@ var bodyParser = require('body-parser')
 // Database
 const DBConnect = require("./database");
 // Other
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 const rateLimiter = require("express-rate-limit");
