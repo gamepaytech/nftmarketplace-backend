@@ -1175,6 +1175,8 @@ const updatePresaleLaunchPad = async function (req, res) {
             const setting = await referralModel.appsetting.updateOne({
                 launchpad: req.body.launchpad,
                 presale: req.body.presale,
+                popup: req.body.popup,
+                popupAlertText: req.body.popupAlertText,
             })
             logger.info(setting, 'setting')
             
