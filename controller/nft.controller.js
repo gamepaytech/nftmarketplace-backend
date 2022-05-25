@@ -320,7 +320,7 @@ const ownedNft = async (req, res) => {
     res.status(201).json(nfts);
 };
 
-const userBoughtNft = async (req, res) => {
+const userBoughtNftMetamask = async (req, res) => {
     const { nftId, address, promoApplied, quantity , txHash} = req.body;
     console.log(process.env.RPC,"rpc")
     
@@ -328,14 +328,16 @@ const userBoughtNft = async (req, res) => {
 
     const tx = await web3.eth.getTransactionReceipt(txHash);
     const latest = await web3.eth.getBlockNumber()
-    console.log(latest, address,tx, req.body,"transaction")
     const userInfo = await models.users.find({metamaskKey: address});
-    
-    console.log(userInfo)
-    const userId = userInfo._id;
-    if(tx.blockNumber +30  > latest){
-        console.log("if ran")
+    var userId;
+    for(let i =0; i< userInfo.length; i++){
+       if(userInfo[i].metamaskKey.includes){
+           userId = userInfo[i]._id;
+       }
+    }
 
+
+    if(tx.blockNumber +30  > latest){
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // logger.info("NFT ",findNftById)
     var promoDiv = 0
@@ -357,6 +359,8 @@ const userBoughtNft = async (req, res) => {
         quantity : quantity
     });
 
+    console.log(userId)
+
     addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
     logger.info(updatePresale);
@@ -367,6 +371,42 @@ const userBoughtNft = async (req, res) => {
     }
     
 };
+
+const userBoughtNft = async (req, res) => {
+    const { nftId, userId, promoApplied, quantity  } = req.body;
+    console.log("userBought running")
+    const findNftById = await Nft.presalenfts.find({ _id: nftId });
+    // logger.info("NFT ",findNftById)
+    var promoDiv = 0
+    if(promoApplied !== "false"){
+        logger.info(promoApplied,"promo")
+        const promo = await PromoCode.findOne({promoCode:promoApplied})
+        logger.info(promo)
+        promoDiv= promo.percentDiscount
+    }
+    logger.info(promoDiv,findNftById)
+    const amountTotal = (findNftById[0].price *(100 - promoDiv))/100
+    logger.info(amountTotal,"amountTotal")
+    const updatePresale = await PresaleBoughtNft.create({
+        nftIdOwned : nftId,
+        owner : userId,
+        nft : ObjectId(nftId),
+        amountSpent : amountTotal,
+        promoCode : promoApplied,
+        quantity : quantity
+    });
+    console.log(nftId, userId, updatePresale._id,"add my income")
+    addMyIncomeMetaMask(nftId, userId, updatePresale._id)
+
+    logger.info(updatePresale);
+    res.status(200).json({
+        message: "SUCCESS",
+        updatePresale,
+    });
+    
+    
+};
+
 const getNftByUserId = async (req, res) => {
     try {
         const { userId } = req.body;
@@ -435,130 +475,122 @@ const approveNFT = async (req, res) => {
 const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
     try {
         if (
-            nftId == undefined ||
-            nftId == "" ||
-            userId == undefined ||
-            userId == ""
+            nftId && userId
         ) {
-            res.json({ status: 400, msg: "nftId is required" });
-            return;
-        }
-        
+            const userInfo = await models.users.findById(userId);
+            console.log(userInfo,"userinfo")
+            if (userInfo && userInfo.refereeCode != "") {
+                const bought = await PresaleBoughtNft.findOne({_id: purchaseId})
+                console.log(bought,"bought")
+                logger.info("bought ",bought);
+                if(bought){
+                    const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
+                    logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
+                    console.log("getMyRefferalsDetail ",getMyRefferalsDetail);
+                    if(getMyRefferalsDetail){
+                        logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
+                        let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
+                        let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
+                        const addMyIncome = await new referralModel.referralIncome({
+                            userId: getMyRefferalsDetail.userId,
+                            amount: myShareAmount,
+                            refereeCode:userInfo.refereeCode,
+                            nftId: nftId,
+                            recievedFrom: userId,
+                        });
+                        await addMyIncome.save(); 
+                        console.log(addMyIncome,"addMyIncome")
+                        const addFriendIncome = await new referralModel.referralIncome({
+                            userId: userId,
+                            amount: myFriendShareAmount,
+                            refereeCode:userInfo.refereeCode,
+                            nftId: nftId,
+                            recievedFrom: getMyRefferalsDetail.userId,
+                        });
+                        await addFriendIncome.save();   
+                        console.log(addFriendIncome,"addMyfriewndIncome")
 
-        const userInfo = await models.users.findById(userId);
-        if (userInfo && userInfo.refereeCode != "") {
-            const bought = await PresaleBoughtNft.findOne({_id: purchaseId})
-            logger.info("bought ",bought);
-            if(bought){
-                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
-                logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
-                if(getMyRefferalsDetail){
-                    logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
-                    let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
-                    let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
-                    const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyRefferalsDetail.userId,
-                        amount: myShareAmount,
-                        refereeCode:userInfo.refereeCode,
-                        nftId: nftId,
-                        recievedFrom: userId,
-                    });
-                    await addMyIncome.save(); 
-                    const addFriendIncome = await new referralModel.referralIncome({
-                        userId: userId,
-                        amount: myFriendShareAmount,
-                        refereeCode:userInfo.refereeCode,
-                        nftId: nftId,
-                        recievedFrom: getMyRefferalsDetail.userId,
-                    });
-                    await addFriendIncome.save();   
+                    }
                 }
+            } else {
+              console.log("do not have refree!")
             }
-
-            const totalIncome = await referralModel.referralIncome.find({
-                userId: userId,
-            });
-        } else {
-
-            res.json({
-                status: 200,
-                msg: "The user is not refered by anyone",
-            });
         }
+           
     } catch (error) {
         console.log(error)
         res.json({ status: 400, msg: error.toString() });
     }
 };
 
-const addMyIncome = async function (req, res) {
-    try {
-        if (
-            req.body.nftId == undefined ||
-            req.body.nftId == "" ||
-            req.body.userId == undefined ||
-            req.body.userId == ""
-        ) {
-            res.json({ status: 400, msg: "nftId is required" });
-            return;
-        }
+// const addMyIncome = async function (req, res) {
+//     try {
+//         if (
+//             req.body.nftId == undefined ||
+//             req.body.nftId == "" ||
+//             req.body.userId == undefined ||
+//             req.body.userId == ""
+//         ) {
+//             res.json({ status: 400, msg: "nftId is required" });
+//             return;
+//         }
         
 
-        const userInfo = await models.users.findById(req.body.userId);
-        if (userInfo && userInfo.refereeCode != "") {
-            const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
-            logger.info("bought ",bought);
-            if(bought){
-                const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
-                logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
-                if(getMyRefferalsDetail){
-                    logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
-                    let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
-                    let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
-                    const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyRefferalsDetail.userId,
-                        amount: myShareAmount,
-                        refereeCode:userInfo.refereeCode,
-                        nftId: req.body.nftId,
-                        recievedFrom: req.body.userId,
-                    });
-                    await addMyIncome.save(); 
-                    const addFriendIncome = await new referralModel.referralIncome({
-                        userId:req.body.userId,
-                        amount: myFriendShareAmount,
-                        refereeCode:userInfo.refereeCode,
-                        nftId: req.body.nftId,
-                        recievedFrom: getMyRefferalsDetail.userId,
-                    });
-                    await addFriendIncome.save();   
-                }
-            }
+//         const userInfo = await models.users.findById(req.body.userId);
+//         if (userInfo && userInfo.refereeCode != "") {
+//             const bought = await PresaleBoughtNft.findOne({_id:req.body.purchaseId})
+//             logger.info("bought ",bought);
+//             if(bought){
+//                 const getMyRefferalsDetail = await referralModel.referralDetails.findOne({referralCode:userInfo.refereeCode}) 
+//                 logger.info("getMyRefferalsDetail ",getMyRefferalsDetail);
+//                 if(getMyRefferalsDetail){
+//                     logger.info("GET MY REFERRAL ",getMyRefferalsDetail.userId)
+//                     let myShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
+//                     let myFriendShareAmount = (bought.amountSpent *bought.quantity / 100) * parseInt(getMyRefferalsDetail.friendShare);
+//                     const addMyIncome = await new referralModel.referralIncome({
+//                         userId: getMyRefferalsDetail.userId,
+//                         amount: myShareAmount,
+//                         refereeCode:userInfo.refereeCode,
+//                         nftId: req.body.nftId,
+//                         recievedFrom: req.body.userId,
+//                     });
+//                     await addMyIncome.save(); 
+//                     const addFriendIncome = await new referralModel.referralIncome({
+//                         userId:req.body.userId,
+//                         amount: myFriendShareAmount,
+//                         refereeCode:userInfo.refereeCode,
+//                         nftId: req.body.nftId,
+//                         recievedFrom: getMyRefferalsDetail.userId,
+//                     });
+//                     await addFriendIncome.save();   
+//                 }
+//             }
 
-            const totalIncome = await referralModel.referralIncome.find({
-                userId: req.body.userId,
-            });
-            let totalAmount = 0;
-            for (let i = 0; i < totalIncome.length; i++) {
-                totalAmount += totalIncome[i].amount;
-            }
+//             const totalIncome = await referralModel.referralIncome.find({
+//                 userId: req.body.userId,
+//             });
+//             let totalAmount = 0;
+//             for (let i = 0; i < totalIncome.length; i++) {
+//                 totalAmount += totalIncome[i].amount;
+//             }
 
-            res.json({
-                stauts: 200,
-                msg: "Success",
-                totalAmount: totalAmount,
-            });
-        } else {
+//             res.json({
+//                 stauts: 200,
+//                 msg: "Success",
+//                 totalAmount: totalAmount,
+//             });
+//         } else {
 
-            res.json({
-                status: 200,
-                msg: "The user is not refered by anyone",
-            });
-        }
-    } catch (error) {
-        console.log(error)
-        res.json({ status: 400, msg: error.toString() });
-    }
-};
+//             res.json({
+//                 status: 200,
+//                 msg: "The user is not refered by anyone",
+//             });
+//         }
+//     } catch (error) {
+//         console.log(error)
+//         res.json({ status: 400, msg: error.toString() });
+//     }
+// };
 
 //  Will come in work after presale
 // const addMyIncome = async function (req, res) {
@@ -712,9 +744,11 @@ module.exports = {
     ownedNft,
     getNftById,
     searchNftsFilter,
-    addMyIncome,
+    addMyIncomeMetaMask,
     getMyrewards,
     updateTotalSupply,
     userBoughtNft,
     getNftByUserId,
+    userBoughtNftMetamask,
+    
 };

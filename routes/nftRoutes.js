@@ -11,13 +11,14 @@ const {
     getNftById,
     searchNftsFilter,
     getAllData,
-    addMyIncome,
+    // addMyIncome,
     getMyrewards,
     sellNft,
     updateTotalSupply,
     userBoughtNft,
     getNftByUserId,
-    getPresaleSetting
+    getPresaleSetting,
+    userBoughtNftMetamask
 } = require('../controller/nft.controller.js')
 const router = express.Router()
 const { authenticateUser } = require('../middleware/authentication')
@@ -36,10 +37,11 @@ router.route('/sell-nft').post(authenticateUser, sellNft)
 router.route('/userNfts').post(authenticateUser, ownedNft)
 router.route('/mint').post(authenticateUser, mintNFT)
 router.route('/approve').post(authenticateUser, approveNFT)
-router.route('/addMyAmount').post(authenticateUser, addMyIncome)
+// router.route('/addMyAmount').post(authenticateUser, addMyIncome)
 router.route('/getMyRewards').post(authenticateUser, getMyrewards)
 router.route('/update-item-sold').put(updateTotalSupply)
 router.route('/add-user-presaleNft').post(userBoughtNft)
+router.route('/add-user-presaleNft-metamask').post(userBoughtNftMetamask)
 router.route('/get-by-userId').post(getNftByUserId)
 
 router.route("/upload-pinata").post(imageUpload.single("image"), uploadToPinata);

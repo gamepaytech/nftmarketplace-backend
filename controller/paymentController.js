@@ -23,6 +23,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const logger = require("../logger");
 const r = require("request");
 const MessageValidator = require("sns-validator");
+const {addMyIncomeMetaMask} = require('./nft.controller')
 const circleArn =
     /^arn:aws:sns:.*:908968368384:(sandbox|prod)_platform-notifications-topic$/;
 const validator = new MessageValidator();
@@ -206,7 +207,7 @@ const createPaymentAAA = async (req, res) => {
 
                 const orderId = uuid();
                 var dataPay = JSON.stringify({
-                    type: "triplea",
+                    type: "widget",
                     merchant_key: process.env.AAA_MERCHANT_KEY,
                     order_currency: currency,
                     order_amount: nftAmount,
@@ -266,6 +267,7 @@ const createPaymentAAA = async (req, res) => {
                     })
                     .catch(function (error) {
                         logger.info(error.response, "247");
+                        console.log(error.response.data.errors)
                     });
             })
             .catch((ecr) => {
@@ -441,6 +443,7 @@ const handleCoinbasePayment = async (req, res) => {
                 owner: event.data.metadata.customer_id,
                 nft: ObjectId(event.data.metadata.nftId),
                 quantity: event.data.metadata.quantity,
+                paymentId: event.data.id
             });
 
             const coinbaseRecord = await CoinbasePayment.create({
@@ -454,37 +457,25 @@ const handleCoinbasePayment = async (req, res) => {
                 quantity: event.data.metadata.quantity,
             });
 
-            const userInfo = await models.users.find({
-                _id: event.data.metadata.customer_id,
-            });
-            const getMyreferral = await models.users.find({
-                referralCode: userInfo[0].refereeCode,
-            });
-            logger.info("GET MY REFERRAL ", getMyreferral[0]._id);
-            if (userInfo && userInfo[0].refereeCode != "") {
-                const bought = await PresaleBoughtNft.findOne({
-                    _id: createPresale._id,
-                });
-                const setting = await referralModel.appsetting.findOne({});
-                logger.info("bought ", bought);
-                let referralIncome =
-                    ((bought.amountSpent * bought.quantity) / 100) *
-                    setting.referralPercent;
-                const addMyIncome = await new referralModel.referralIncome({
-                    userId: getMyreferral[0]._id,
-                    amount: referralIncome,
-                    nftId: event.data.metadata.nftId,
-                    recievedFrom: event.data.metadata.customer_id,
-                });
-                await addMyIncome.save();
+            // const userInfo = await models.users.find({
+            //     _id: event.data.metadata.customer_id,
+            // });
+
+            console.log(event.data.id,"event id")
+            const alreadySaved = await PresaleBoughtNft.findOne({paymentId:event.data.id})
+            
+            console.log(alreadySaved,"alreadySaved")
+            if(alreadySaved == null){
+                addMyIncomeMetaMask(event.data.metadata.nftId, event.data.metadata.customer_id,createPresale._id)
+
+                await createActivity(
+                    owner,
+                    event.data.pricing.local.amount,
+                    event.data.metadata.nftId,
+                    "Coinbase"
+                );
             }
 
-            await createActivity(
-                owner,
-                event.data.pricing.local.amount,
-                event.data.metadata.nftId,
-                "Coinbase"
-            );
             //create payment schema
 
             return res.json({
@@ -561,18 +552,6 @@ const tripleAWebhook = async (req, res) => {
         if (status == "good") {
             console.log(" TRIPLE A RESPONSE status good", req.body);
 
-
-            const createPresale = await PresaleBoughtNft.create({
-                nftIdOwned: req.body.webhook_data.nftId,
-                owner: req.body.webhook_data.userId,
-                nft: ObjectId(req.body.webhook_data.nftId),
-                quantity: req.body.webhook_data.quantity,
-                amountSpent: req.body.payment_amount,
-                currency: req.body.payment_currency,
-                // paymentId:event.checkout.id,
-                paymentMode: "TripleA",
-            });
-
             const tripleaRecord = await TripleaPayment.create({
                 event,
                 type,
@@ -590,47 +569,44 @@ const tripleAWebhook = async (req, res) => {
                 payment_currency,
                 payment_amount,
                 payment_crypto_amount,
-                orderId: webhook_data.orderId,
+                orderId: webhook_data.order_id,
             });
 
-            const userInfo = await models.users.find({
-                _id: webhook_data.userId,
-            });
-            const getMyreferral = await models.users.find({
-                referralCode: userInfo[0].refereeCode,
-            });
+            const alreadySaved = await PresaleBoughtNft.findOne({paymentId:webhook_data.order_id})
 
-            console.log("GET MY REFERRAL ", getMyreferral[0]);
-            logger.info("GET MY REFERRAL ", getMyreferral[0]);
-            if (userInfo && userInfo[0].refereeCode != "") {
-                const bought = await PresaleBoughtNft.findOne({
-                    _id: createPresale._id,
-                });
-                const setting = await referralModel.appsetting.findOne({});
-                logger.info("bought ", bought);
-                let referralIncome =
-                    ((bought.amountSpent * bought.quantity) / 100) *
-                    setting.referralPercent;
-                const addMyIncome = await new referralModel.referralIncome({
-                    userId: getMyreferral[0]._id,
-                    amount: referralIncome,
-                    nftId: req.body.webhook_data.nftId,
-                    recievedFrom: req.body.webhook_data.userId,
+            console.log(alreadySaved,"alreadySaved")
+
+            if(alreadySaved == null){
+                const createPresale = await PresaleBoughtNft.create({
+                    nftIdOwned: req.body.webhook_data.nftId,
+                    owner: req.body.webhook_data.userId,
+                    nft: ObjectId(req.body.webhook_data.nftId),
+                    quantity: req.body.webhook_data.quantity,
+                    amountSpent: req.body.payment_amount,
+                    currency: req.body.payment_currency,
+                    paymentId:webhook_data.order_id,
+                    paymentMode: "TripleA",
                 });
 
-                await addMyIncome.save();
+                console.log(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
+
+                addMyIncomeMetaMask(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id)
+    
+                await updateActivity(
+                    req.body.webhook_data.userId,
+                    req.body.webhook_data.uniqueId,
+                    `You have bought CHIKY #${req.body.payment_amount} USD using TripleA.`
+                );
+
+                const userInfo = await models.users.findOne({
+                    _id: req.body.webhook_data.userId,
+                });
+                await sendPaymentConfirmation({
+                    email: userInfo.email,
+                    quantity: req.body.webhook_data.quantity,
+                    amount: req.body.payment_amount,
+                });
             }
-
-            await updateActivity(
-                req.body.webhook_data.userId,
-                req.body.webhook_data.uniqueId,
-                `You have bought CHIKY #${req.body.payment_amount} USD using TripleA.`
-            );
-            await sendPaymentConfirmation({
-                email: userInfo[0].email,
-                quantity: req.body.webhook_data.quantity,
-                amount: req.body.payment_amount,
-            });
 
             return res.status(200).end();
         } else {
@@ -841,12 +817,11 @@ const handleLaunchpadHook = async (req, res) => {
                 const userInfo = await models.users.find({
                     _id: event.data.metadata.userId,
                 });
-                const getMyreferral = await models.users.find({
-                    referralCode: userInfo[0].refereeCode,
-                });
 
-                console.log("GET MY REFERRAL ", getMyreferral[0]);
-                logger.info("GET MY REFERRAL ", getMyreferral[0]);
+               const getMyreferral = await referralModel.referralDetails.findOne({referralCode: userInfo[0].refereeCode,}) 
+
+                console.log("GET MY REFERRAL ", getMyreferral);
+                logger.info("GET MY REFERRAL ", getMyreferral);
                 if (userInfo && userInfo[0].refereeCode != "") {
                     const bought = await PresaleBoughtNft.findOne({
                         _id: createPresale._id,
@@ -857,7 +832,7 @@ const handleLaunchpadHook = async (req, res) => {
                         ((bought.amountSpent * bought.quantity) / 100) *
                         setting.referralPercent;
                     const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyreferral[0]._id,
+                        userId: getMyreferral.userId,
                         amount: referralIncome,
                         nftId: event.data.metadata.nftId,
                         recievedFrom: event.data.metadata.userId,
