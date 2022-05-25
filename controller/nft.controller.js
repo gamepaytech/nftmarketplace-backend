@@ -609,7 +609,7 @@ const getMyrewards = async function (req, res) {
             status: 200,
             msg: "Success",
             data: {
-                totalReward: totalRewards,
+                totalReward: parseFloat(totalRewards).toFixed(2),
                 myReferees: myreferees,
             },
             total:total

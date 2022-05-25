@@ -80,7 +80,7 @@ const claimable = async (req, res) => {
         for (let i = 0; i < rewards.length; i++) {
             totalRewards += rewards[i].amount
         }
-        res.status(200).json(totalRewards - totalClaimed)
+        res.status(200).json(parseFloat(totalRewards - totalClaimed).toFixed(2))
     } catch (error) {
         logger.info(error)
         res.status(500).json(error)
