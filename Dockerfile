@@ -1,8 +1,7 @@
-FROM node:6.10.0
-
-RUN mkdir -p /usr/local/app
-WORKDIR /usr/local/app
-
+FROM node:8-alpine
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 COPY . .
-
-CMD ["npm", "start"]
+RUN npm install
+EXPOSE 5000
+CMD [ "node", "server.js" ]
