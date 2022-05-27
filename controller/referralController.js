@@ -114,8 +114,7 @@ const getReferralsByUserId = async (req, res) => {
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] },
-            ).populate({ path: 'myFreindReferral' }).limit(pageSize)
-            .skip(pageSize * page);
+            ).populate({ path: 'myFreindReferral' }).skip(pageSize * page).limit(pageSize);
             if (getData) {
                 res.status(200).json({
                     data: getData,
