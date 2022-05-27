@@ -324,7 +324,7 @@ const coinbasePayment = async (req, res) => {
             name: buyNft.name,
             description: buyNft.description.substring(0, 199),
             local_price: {
-                amount: nftAmount,
+                amount: parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100),
                 currency: "USD",
             },
             pricing_type: "fixed_price",
@@ -336,6 +336,7 @@ const coinbasePayment = async (req, res) => {
                 quantity: quantity,
                 payment_activity: "NFT_PURCHASE",
                 uniqueId: uniqueId,
+                amount: parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100)
             },
 
             redirect_url: `${process.env.APP_FRONTEND_URL}/profile`,
@@ -714,7 +715,7 @@ const handleLaunchpadHook = async (req, res) => {
             // charge confirmed
             logger.info("-----charge confirmed", event.data);
             //save in presale bought nft added to user account
-            console.log("CONFIRMED ", event.data.metadata);
+            console.log("CONFIRMED ", event.data.metadata,event.data.metadata.payment_activity == "NFT_PURCHASE");
             //create payment schema
             if (event.data.metadata.payment_activity == "LAUNCHPAD") {
                 const findExists = await LaunchpadPayment.findOne({
@@ -783,9 +784,11 @@ const handleLaunchpadHook = async (req, res) => {
             } else if (event.data.metadata.payment_activity == "NFT_PURCHASE") {
                 //create nft
 
+                console.log("in else if", event ,'786')
                 const findCoinbasePay = await CoinbasePayment.findOne({
                     uniqueId: event.data.metadata.uniqueId,
                 });
+                console.log(findCoinbasePay)
                 if (!findCoinbasePay) {
                     const CoinbasePay = await CoinbasePayment.create({
                         payId: event.id,
@@ -797,60 +800,60 @@ const handleLaunchpadHook = async (req, res) => {
                         quantity: event.data.metadata.quantity,
                         uniquId: event.data.metadata.uniqueId,
                     });
+                    console.log(CoinbasePay,802)
                 } else {
                     const updateCoinbasePay = await CoinbasePayment.updateOne(
                         { uniqueId: event.data.metadata.uniqueId },
                         { $set: { status: "Confirmed" } }
                     );
                 }
-                const createPresale = await PresaleBoughtNft.create({
-                    nftIdOwned: event.data.metadata.nftId,
-                    owner: event.data.metadata.userId,
-                    nft: ObjectId(event.data.metadata.nftId),
-                    quantity: event.data.metadata.quantity,
-                    amountSpent: event.data.metadata.amount,
-                    currency: event.data.metadata.payment_currency || "USD",
-                    paymentId: event.checkout.id,
-                    paymentMode: "Coinbase",
-                });
+                
+                console.log(event.data.metadata.uniqueId,"payment id")
+                const alreadySaved = await PresaleBoughtNft.findOne({paymentId:event.data.metadata.uniqueId})
 
-                const userInfo = await models.users.find({
-                    _id: event.data.metadata.userId,
-                });
-
-               const getMyreferral = await referralModel.referralDetails.findOne({referralCode: userInfo[0].refereeCode,}) 
-
-                console.log("GET MY REFERRAL ", getMyreferral);
-                logger.info("GET MY REFERRAL ", getMyreferral);
-                if (userInfo && userInfo[0].refereeCode != "") {
-                    const bought = await PresaleBoughtNft.findOne({
-                        _id: createPresale._id,
-                    });
-                    const setting = await referralModel.appsetting.findOne({});
-                    logger.info("bought ", bought);
-                    let referralIncome =
-                        ((bought.amountSpent * bought.quantity) / 100) *
-                        setting.referralPercent;
-                    const addMyIncome = await new referralModel.referralIncome({
-                        userId: getMyreferral.userId,
-                        amount: referralIncome,
-                        nftId: event.data.metadata.nftId,
-                        recievedFrom: event.data.metadata.userId,
+                console.log(alreadySaved,"is null")
+                if(alreadySaved == null){
+                    console.log( event.data.metadata.nftId,
+                        event.data.metadata.userId,
+                        ObjectId(event.data.metadata.nftId),
+                        event.data.metadata.quantity,
+                        event.data.metadata.amount,
+                        "Coinbase")
+                    const createPresale = await PresaleBoughtNft.create({
+                        nftIdOwned: event.data.metadata.nftId,
+                        owner: event.data.metadata.userId,
+                        nft: ObjectId(event.data.metadata.nftId),
+                        quantity: event.data.metadata.quantity,
+                        amountSpent: event.data.metadata.amount,
+                        currency: "USD",
+                        paymentId: event.data.metadata.uniqueId,
+                        paymentMode: "Coinbase",
                     });
 
-                    await addMyIncome.save();
+                    console.log(createPresale,'create presale')
+    
+                    const userInfo = await models.users.find({
+                        _id: event.data.metadata.userId,
+                    });
+
+                    console.log(userInfo)
+
+                    console.log(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id,"add to my reward")
+    
+                    addMyIncomeMetaMask(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id)
+    
+                    await updateActivity(
+                        event.data.metadata.userId,
+                        event.data.metadata.uniqueId,
+                        `You have bought CHIKY #${event.data.metadata.nftId} for ${event.data.metadata.amount} USD using Coinbase.`
+                    );
+                    await sendPaymentConfirmation({
+                        email: userInfo[0].email,
+                        quantity: event.data.metadata.quantity,
+                        amount: event.data.metadata.amount,
+                    });
                 }
-
-                await updateActivity(
-                    event.data.metadata.userId,
-                    event.data.metadata.uniqueId,
-                    `You have bought CHIKY #${event.data.metadata.nftId} for ${event.data.metadata.amount} USD using Coinbase.`
-                );
-                await sendPaymentConfirmation({
-                    email: userInfo[0].email,
-                    quantity: event.data.metadata.quantity,
-                    amount: event.data.metadata.amount,
-                });
+                
             }
         }
 

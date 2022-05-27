@@ -108,8 +108,8 @@ const setDefaultReferralByUser = async (req, res) => {
 const getReferralsByUserId = async (req, res) => {
     try {
         const userId = req.body.userId;
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
         let total = await referralModel.referralDetails.find({ $and: [{ userId: userId }, { status:'active'} ] }).count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
