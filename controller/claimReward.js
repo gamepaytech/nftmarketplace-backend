@@ -27,8 +27,9 @@ const updateClaimed = async (req, res) => {
             totalRewards += rewards[i].amount
         }
 
+        console.log(totalClaimed, totalRewards,"check point")
 
-        const claimAmount = (totalRewards - totalClaimed) / Math.pow(10, 6)
+        const claimAmount = (totalRewards - totalClaimed)
         const provider = new Provider(process.env.PRIVATE_KEY, process.env.RPC);
         const web3 = new Web3(provider)
         const contract = new web3.eth.Contract(abi, address);
