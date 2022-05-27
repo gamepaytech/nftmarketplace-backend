@@ -108,13 +108,14 @@ const setDefaultReferralByUser = async (req, res) => {
 const getReferralsByUserId = async (req, res) => {
     try {
         const userId = req.body.userId;
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
         let total = await referralModel.referralDetails.find({ $and: [{ userId: userId }, { status:'active'} ] }).count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] },
-            ).populate({ path: 'myFreindReferral' }).skip(pageSize * page).limit(pageSize);
+            ).populate({ path: 'myFreindReferral' }).limit(pageSize)
+            .skip(pageSize * page);
             if (getData) {
                 res.status(200).json({
                     data: getData,
