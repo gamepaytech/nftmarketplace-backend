@@ -232,7 +232,7 @@ const getAll = async (req, res) => {
 
 const getNFTByUserId = async (req, res) => {
     // const userId = req.params.userId;
-    const nfts = await Nft.presalenfts.find();
+    const nfts = await Nft.presalenfts.find({active:true});
     res.status(201).json(nfts);
 };
 // fetch NFT using nft id
@@ -247,7 +247,7 @@ const getNftById = async (req, res) => {
         return;
     }
     try {
-        const data = await Nft.presalenfts.findOne({ _id: nftId });
+        const data = await Nft.presalenfts.findOne({ $and: [{ _id: nftId},{  active:true } ] });
         res.send({
             data: data,
             msg: "Successfull",
