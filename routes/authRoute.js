@@ -35,7 +35,7 @@ router.post('/verify-email', cors(), verifyEmail)
 router.post('/reset-password', cors(), resetPassword)
 router.post('/forgot-password', cors(), forgotPassword)
 router.post('/addMyReferral', cors(), addMyReferral)
-router.post('/myReferrals', cors(), authenticateUser, getAllMyReferrals)
+router.post('/myReferrals/:page/:pageSize', cors(), authenticateUser, getAllMyReferrals)
 router.get('/getAllSuperAdmin', cors(), authenticateSuperAdmin, getAllSuperAdmin)
 router.get('/getAllAdmin', cors(), authenticateAdmin, getAllAdmin)
 router.post('/changeUserStatus', cors(), authenticateUser, changeUserStatus)
@@ -48,7 +48,7 @@ router.get('/getPercent', cors(), getPercent)
 router.post('/updatePercent', cors(), authenticateAdmin, updatePercent)
 router.post('/updatePresaleLaunchpad', cors(), authenticateAdmin, updatePresaleLaunchPad)
 router.post('/activity', cors(), setactivity)
-router.post('/getactivity', cors(), getactivity)
+router.post('/getactivity/:page/:pageSize', cors(), getactivity)
 router.patch('/updateActivity', cors(), authenticateUser, updateActivity);
 
 module.exports = router
