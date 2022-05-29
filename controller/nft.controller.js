@@ -519,7 +519,6 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
            
     } catch (error) {
         console.log(error)
-        res.json({ status: 400, msg: error.toString() });
     }
 };
 
