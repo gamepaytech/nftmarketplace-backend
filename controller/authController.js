@@ -670,8 +670,8 @@ function getReferralCode() {
 
 const getAllMyReferrals = async function (req, res) {
     try {
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
         const getMyRefer = await referralModel.referralDetails.find(
             { userId: req.body.userId },
         )
@@ -708,7 +708,7 @@ const getAllMyReferrals = async function (req, res) {
                     data: getMyReferrals,
                     page:page,
                     pageSize:pageSize,
-                    total:getMyReferrals.length
+                    total:getMyReferralsId.length-1
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
@@ -1128,7 +1128,7 @@ const setactivity = async function (req, res) {
 }
 
 const getactivity = async function (req, res) {
-    if (Object.keys(req.query).length !== 0) {
+    if (Object.keys(req.params).length !== 0) {
       logger.info("user id ", req.body.userId);
       const user = await models.users.aggregate([
         { $match: { _id: mongoose.Types.ObjectId(req.body.userId) } },
@@ -1137,8 +1137,8 @@ const getactivity = async function (req, res) {
       const userActivity = await models.users
         .findOne({ _id: req.body.userId })
         .slice("activity", [
-          parseInt(req.query.pageSize) * (req.query.page - 1),
-          parseInt(req.query.pageSize),
+          parseInt(req.params.pageSize) * (req.params.page - 1),
+          parseInt(req.params.pageSize),
         ]);
       res.json({ userActivity: userActivity?.activity, total: user[0]?.count });
     } else {
