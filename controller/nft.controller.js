@@ -733,13 +733,13 @@ const createPreSaleNFTInitiated = async function (req, res) {
         logger.info('Start of createPreSaleNFTInitiated');
         const { nftId, nftCount, userId, promoApplied, email, paymentId, paymentStatus } = req.body;
 
-        logger.info('Request body received ' + req.body);
+        logger.info('Request body received ' + req.body.toString());
         const presaleNftInitiated = await PresaletNftInitiated.find({
             userId: userId,
             paymentId: paymentId
         });
 
-        logger.info('presaleNftInitiated object ' + presaleNftInitiated);
+        logger.info('presaleNftInitiated object ' + presaleNftInitiated.toString());
 
         if (presaleNftInitiated) {
             logger.info('PreSale NFT record already exists.');
