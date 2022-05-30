@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Token = require('../models/Token')
 const models = require('../models/User')
 const referralModel = require('../models/referralModel')
+const sysConfig = require('../models/SystemConfiguration')
 const CryptoJS = require('crypto-js')
 const crypto = require('crypto')
 const {
@@ -402,7 +403,7 @@ const addMyReferral = async function (req, res) {
             }
         }
         let referralCode = await getReferralCode()
-        console.log("test");
+        const commissionRate = await sysConfig.findOne({config_name:"BASE_COMMISSION"})
         query = { email: req.body.email }
         const checkMail = await models.users.findOne({ "$or": [ { email: req.body.email }, { username: req.body.username} ] })
         if (checkMail) {
@@ -486,8 +487,8 @@ const addMyReferral = async function (req, res) {
                             )
                             const addMyReferral = new referralModel.referralDetails({
                                 userId:insertNewReferral._id,
-                                myShare:"20",
-                                friendShare:"10",
+                                myShare: commissionRate ? commissionRate.config_value: "0",
+                                friendShare:"0",
                                 referralCode:referralCode.code,
                                 isDefault:true,
                             })
@@ -597,7 +598,6 @@ const addMyReferral = async function (req, res) {
                             refereeCode: refereeCode,
                         }
                     }
-                    console.log("test4")
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
                     if (insertNewReferral) {
@@ -606,8 +606,8 @@ const addMyReferral = async function (req, res) {
                         )
                         const addMyReferral = new referralModel.referralDetails({
                             userId:insertNewReferral._id,
-                            myShare:"20",
-                            friendShare:"10",
+                            myShare: commissionRate ? commissionRate.config_value: "0",
+                            friendShare:"0",
                             referralCode:referralCode.code,
                             isDefault:true,
                         })
@@ -672,6 +672,7 @@ const getAllMyReferrals = async function (req, res) {
     try {
         let page = req.params.page;
         let pageSize = req.params.pageSize;
+        let total = 0;
         const getMyRefer = await referralModel.referralDetails.find(
             { userId: req.body.userId },
         )
@@ -690,6 +691,7 @@ const getAllMyReferrals = async function (req, res) {
         logger.info(Ids)
 
         if (getMyReferralsId.length) {
+            total = await models.users.find({_id:{$in:Ids}}).count()
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids },  },
                 {
@@ -708,7 +710,7 @@ const getAllMyReferrals = async function (req, res) {
                     data: getMyReferrals,
                     page:page,
                     pageSize:pageSize,
-                    total:getMyReferralsId.length-1
+                    total:total
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
