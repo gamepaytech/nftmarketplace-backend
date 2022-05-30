@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Token = require('../models/Token')
 const models = require('../models/User')
 const referralModel = require('../models/referralModel')
+const sysConfig = require('../models/SystemConfiguration')
 const CryptoJS = require('crypto-js')
 const crypto = require('crypto')
 const {
@@ -402,7 +403,7 @@ const addMyReferral = async function (req, res) {
             }
         }
         let referralCode = await getReferralCode()
-        console.log("test");
+        const commissionRate = await sysConfig.findOne({config_name:"BASE_COMMISSION"})
         query = { email: req.body.email }
         const checkMail = await models.users.findOne({ "$or": [ { email: req.body.email }, { username: req.body.username} ] })
         if (checkMail) {
@@ -486,8 +487,8 @@ const addMyReferral = async function (req, res) {
                             )
                             const addMyReferral = new referralModel.referralDetails({
                                 userId:insertNewReferral._id,
-                                myShare:"20",
-                                friendShare:"10",
+                                myShare: commissionRate ? commissionRate.config_value: "0",
+                                friendShare:"0",
                                 referralCode:referralCode.code,
                                 isDefault:true,
                             })
@@ -597,7 +598,6 @@ const addMyReferral = async function (req, res) {
                             refereeCode: refereeCode,
                         }
                     }
-                    console.log("test4")
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
                     if (insertNewReferral) {
@@ -606,8 +606,8 @@ const addMyReferral = async function (req, res) {
                         )
                         const addMyReferral = new referralModel.referralDetails({
                             userId:insertNewReferral._id,
-                            myShare:"20",
-                            friendShare:"10",
+                            myShare: commissionRate ? commissionRate.config_value: "0",
+                            friendShare:"0",
                             referralCode:referralCode.code,
                             isDefault:true,
                         })
