@@ -1175,8 +1175,6 @@ const createCircleLaunchpadPayment = async (req, res) => {
             promoCode
             // encryptedData
         } = req.body;
-        // const buyNft = await Nft.presalenfts.find({ _id: nftId });
-        // logger.info("bb ", buyNft[0].price, quantity);
         var promoDiv = 0;
         if (promoCode) {
             logger.info(promoCode, "promo");
@@ -1211,7 +1209,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 metadata: {
                     email: email,
                     sessionId: sessionId,
-                    ipAddress: "172.33.222.1",
+                    ipAddress: "54.179.107.70",
                 },
                 amount: {
                     amount: nftAmount.toFixed(2).toString(),
@@ -1255,7 +1253,6 @@ const createCircleLaunchpadPayment = async (req, res) => {
             data: {
                 metadata: {
                     email: email,
-                    phoneNumber: "+918690258162",
                     sessionId: sessionId,
                     ipAddress: "127.38.233.23",
                 },
@@ -1428,16 +1425,13 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
                 logger.info("Received data from circle payment payments api");
                 logger.info("data ", data.data);
 
-                //console.log('Console the response');
-                // console.log(data.data);
                 res.status(200).json({
                     message: "Success",
                     data: data.data,
                 });
             })
             .catch((err) => {
-                //console.log(err);
-                //logger.error(err);
+
                 logger.error(
                     "Error occured while fetching data from circle payment payments api - {}",
                     err
@@ -1529,7 +1523,6 @@ const circleSNSResponse= async (request, response) => {
                                 const findUser = await models.users.findOne({
                                     email: event.payment.metadata.email,
                                 });
-                                console.log(findUser,"chal rha h webhookl")
                             }
                             else{
                                 const findUser = await models.users.findOne({
@@ -1603,7 +1596,6 @@ const circleSNSResponse= async (request, response) => {
                             const findCirclePay = await CirclePayment.findOne({
                                 uniqueId: JSON.parse(event.payment.description).uniqueId,
                             });
-                            console.log(findCirclePay,"jdfjlkj")
                             if (!findCirclePay) {
                                 const CirclePay = await CirclePayment.create({
                                     payId: event.payment.id,
