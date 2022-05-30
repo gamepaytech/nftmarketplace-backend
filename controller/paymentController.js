@@ -1171,13 +1171,30 @@ const createCircleLaunchpadPayment = async (req, res) => {
             quantity,
             nftId,
             updateId,
-            payment_activity
+            payment_activity,
+            promoCode
             // encryptedData
         } = req.body;
         // const buyNft = await Nft.presalenfts.find({ _id: nftId });
         // logger.info("bb ", buyNft[0].price, quantity);
+        var promoDiv = 0;
+        if (promoCode) {
+            logger.info(promoCode, "promo");
+            console.log(promoCode, "promo");
+            const promo = await PromoCode.findOne({ promoCode: promoCode });
+            logger.info(promo);
+            console.log(promo);
+            promoDiv = promo.percentDiscount;
+        }
 
-        const nftAmount = parseFloat(amount);
+        logger.info(quantity, "quantity");
+
+        var nftAmount =
+            parseFloat(amount) * quantity * ((100 - promoDiv) / 100);
+        nftAmount = Math.round(nftAmount);
+
+        console.log(nftAmount,"amount of nft")
+
         const idempotencyKey = uuid();
         console.log("Place 1");
         if (nftAmount < 0.5) {
@@ -1251,7 +1268,8 @@ const createCircleLaunchpadPayment = async (req, res) => {
                     userId: req.user.userId,
                     uniqueId: idempotencyKey,
                     nftId:nftId,
-                    quantity:quantity
+                    quantity:quantity,
+                    promoCode:promoCode
                 }),
                 autoCapture: true,
                 source: { id: cardId, type: "card" },
@@ -1580,7 +1598,7 @@ const circleSNSResponse= async (request, response) => {
                                 );
                             }
                         }
-                        else if (event.payment?.status == "confirmed") {
+                        else if (event.payment?.status == "confirmed" && event.payment.description!=='Merchant Payment') {
                             if(JSON.parse(event.payment.description).payment_activity=="NFT_PURCHASE"){
                             const findCirclePay = await CirclePayment.findOne({
                                 uniqueId: JSON.parse(event.payment.description).uniqueId,
