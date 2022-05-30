@@ -741,7 +741,13 @@ const createPreSaleNFTInitiated = async function (req, res) {
 
         console.log('presaleNftInitiated object ' + presaleNftInitiated);
 
-        if (!presaleNftInitiated) {
+        if (presaleNftInitiated) {
+            logger.info('PreSale NFT record already exists.');
+            res.json({
+                status: 500,
+                msg: "PreSale NFT record already exists !!",
+            });
+        } else {
             const presaleInft = await PresaletNftInitiated.create({
                 nftId: nftId,
                 nftCount: nftCount,
@@ -765,12 +771,6 @@ const createPreSaleNFTInitiated = async function (req, res) {
                     msg: "An error occured while PreSale NFT initiation"
                 });
             }
-        } else {
-            logger.info('PreSale NFT record already exists.');
-            res.json({
-                status: 500,
-                msg: "PreSale NFT record already exists !!",
-            });
         }
     } catch (error) {
         logger.info('Error occured in the createPreSaleNFTInitiated method - ' + error.toString());
