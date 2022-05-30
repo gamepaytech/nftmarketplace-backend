@@ -1252,7 +1252,11 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 encryptedData: cvvEncrpytion.encryptedMessage,
                 keyId: keyIdEncrpytion,
                 verification: "three_d_secure",
-                verificationSuccessUrl: `${
+                verificationSuccessUrl: payment_activity=="NFT_PURCHASE"? 
+                `${
+                    process.env.APP_FRONTEND_URL
+                }/profile?paymentCircle=${"payment-success"}`:
+                `${
                     process.env.APP_FRONTEND_URL
                 }/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
                     2
@@ -1260,7 +1264,11 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 // verificationSuccessUrl: `https://cicd.gamepay.sg/profile?paymentCircle=${"payment-success"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
                 //         2
                 //     )}`,
-                verificationFailureUrl: `${
+                verificationFailureUrl: payment_activity=="NFT_PURCHASE"? 
+                `${
+                    process.env.APP_FRONTEND_URL
+                }/profile?paymentCircle=${"payment-failed"}`:
+                `${
                     process.env.APP_FRONTEND_URL
                 }/profile?paymentCircle=${"payment-failed"}&&paymentVerification=${idempotencyKey}&&paymentUpdate=${updateId}&&amount=${nftAmount.toFixed(
                     2
