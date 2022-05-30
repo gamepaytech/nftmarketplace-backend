@@ -743,7 +743,7 @@ const createPreSaleNFTInitiated = async function (req, res) {
 
 
         logger.info('Request body received ' + JSON.stringify(req.body));
-        const presaleNftInitiated = await PresaletNftInitiated.find({
+        const presaleNftInitiated = await PresaletNftInitiated.findOne({
             userId: userId,
             paymentId: paymentId
         });
