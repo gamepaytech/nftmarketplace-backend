@@ -730,6 +730,7 @@ const getMyrewards = async function (req, res) {
 
 const createPreSaleNFTInitiated = async function (req, res) {
     try {
+        logger.info('Start of createPreSaleNFTInitiated');
         const { nftId, nftCount, userId, promoApplied, email, paymentId, paymentStatus } = req.body;
 
         const presaleNftInitiated = await PresaletNftInitiated.find({
@@ -748,29 +749,35 @@ const createPreSaleNFTInitiated = async function (req, res) {
                 paymentStatus: paymentStatus
             });
             if (presaleInft) {
+                logger.info('Successfully created PreSale NFT initiation record.');
+                logger.info('End of createPreSaleNFTInitiated');
                 res.json({
                     status: 200,
                     msg: "PreSale NFT initiation completed successfully!!",
                 });
             } else {
+                logger.info('Unable to create PreSale NFT initiation record.');
                 res.json({
                     status: 500,
-                    msg: "An error occured while PreSale NFT initiation",
+                    msg: "An error occured while PreSale NFT initiation"
                 });
             }
         } else {
+            logger.info('PreSale NFT record already exists.');
             res.json({
                 status: 500,
                 msg: "PreSale NFT record already exists !!",
             });
         }
     } catch (error) {
+        logger.info('Error occured in the createPreSaleNFTInitiated method - ' + error.toString());
         res.json({ sttaus: 500, msg: error.toString() });
     }
 };
 
 const updateNFTSaleOnPaidStatus = async function (req, res) {
     try {
+        logger.info('Start of updateNFTSaleOnPaidStatus');
         const { userId, paymentId, amount } = req.body;
 
         const presaleNft = await PresaletNftInitiated.find({
@@ -781,6 +788,8 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
         if (presaleNft) {
             const updatePreSaleNFT = await updatePreSaleNFTDetails(presaleNft, amount);
             if(updatePreSaleNFT === 'SUCCESS'){
+                logger.info('NFT pre sale info updated successfully.');
+                logger.info('End of updateNFTSaleOnPaidStatus');
                 res.status(200).json({
                     msg: 'NFT pre sale info updated successfully.',
                 });
@@ -803,41 +812,52 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
 };
 
 const updatePreSaleNFTDetails = async (presaleNft, amount) => {
-    const findNFT = await Nft.presalenfts.findOne({ _id: presaleNft.nftId });
-    if (findNFT) {
-        findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(presaleNft.nftCount);
-        await findNFT.save();
-        const promoApplied = presaleNft.promoApplied;
-        let promoDiv = 0
-        if (promoApplied !== "false") {
-            logger.info('Promo Applied during presale NFT purchase - ' + promoApplied);
-            const promo = await PromoCode.findOne({ promoCode: promoApplied })
-            promoDiv = promo.percentDiscount
+    try{
+        logger.info('Start of updatePreSaleNFTDetails');
+        const findNFT = await Nft.presalenfts.findOne({ _id: presaleNft.nftId });
+        if (findNFT) {
+            logger.info('Updating itemSold field for presaleNFT');
+            findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(presaleNft.nftCount);
+            await findNFT.save();
+            logger.info('Updating itemSold field for presaleNFT');
+            const promoApplied = presaleNft.promoApplied;
+            let promoDiv = 0
+            if (promoApplied !== "false") {
+                logger.info('Promo Applied during presale NFT purchase - ' + promoApplied);
+                const promo = await PromoCode.findOne({ promoCode: promoApplied })
+                promoDiv = promo.percentDiscount
+            }
+            const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100;
+            const updatePresale = await PresaleBoughtNft.create({
+                nftIdOwned: presaleNft.nftId,
+                owner: userId,
+                nft: ObjectId(presaleNft.nftId),
+                amountSpent: amountTotal,
+                promoCode: promoApplied,
+                quantity: presaleNft.nftCount
+            });
+            logger.info('Adding referral income for - ' + userId + 'for the nft with id - ' + presaleNft.nftId);
+            addMyIncomeMetaMask(nftId, userId, updatePresale._id);
+            logger.info('NFT pre sale info updated successfully.');
+    
+            const createObj = { email : presaleNft.email, amount, status: 'paid', nftId: presaleNft.nftId, paymentId: presaleNft.paymentId, quantity : presaleNft.nftCount };
+            logger.info('Creating record into Circle Payment');
+            await CirclePayment.create(createObj);
+            logger.info('Successfully created record into Circle Payment ' + createObj);
+            logger.info('Sending confirmation email to user');
+            await sendPaymentConfirmation({ email: presaleNft.email, amount: amount });
+            logger.info('Sent confirmation email to user ' + presaleNft.email);
+            logger.info('End of updatePreSaleNFTDetails');
+            return 'SUCCESS';
+        }else{
+            logger.info('Unable to find presaleNFT');
+            return 'ERROR';
         }
-        const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100;
-        const updatePresale = await PresaleBoughtNft.create({
-            nftIdOwned: presaleNft.nftId,
-            owner: userId,
-            nft: ObjectId(presaleNft.nftId),
-            amountSpent: amountTotal,
-            promoCode: promoApplied,
-            quantity: presaleNft.nftCount
-        });
-        logger.info('Adding referral income for - ' + userId + 'for the nft with id - ' + presaleNft.nftId);
-        addMyIncomeMetaMask(nftId, userId, updatePresale._id);
-        logger.info('NFT pre sale info updated successfully.');
-
-        const createObj = { email : presaleNft.email, amount, status: 'paid', nftId: presaleNft.nftId, paymentId: presaleNft.paymentId, quantity : presaleNft.nftCount };
-        logger.info('Creating record into Circle Payment');
-        await CirclePayment.create(createObj);
-        logger.info('Successfully created record into Circle Payment ' + createObj);
-        logger.info('Sending confirmation email to user');
-        await sendPaymentConfirmation({ email: presaleNft.email, amount: amount });
-        logger.info('Sent confirmation email to user ' + presaleNft.email);
-        return 'SUCCESS';
-    }else{
-        return 'ERROR';
+    }catch(error){
+       logger.info('Error occured while updatePreSaleNFTDetails - ' + error.toString());
+       return 'ERROR';
     }
+    
 }
 
 module.exports = {
