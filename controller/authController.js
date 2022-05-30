@@ -708,7 +708,7 @@ const getAllMyReferrals = async function (req, res) {
                     data: getMyReferrals,
                     page:page,
                     pageSize:pageSize,
-                    total:getMyReferralsId.length-1
+                    total:getMyReferralsId.length
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
