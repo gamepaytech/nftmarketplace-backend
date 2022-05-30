@@ -237,17 +237,16 @@ const getNFTByUserId = async (req, res) => {
 };
 // fetch NFT using nft id
 const getNftById = async (req, res) => {
-    const { nftId } = req.body;
-
-    if (!nftId) {
-        res.status(400).json({ msg: "Please provide NFT id" });
-        return;
-    } else if (nftId === "undefined") {
-        res.status(400).json({ msg: "Wrong NFT Credentials!!" });
-        return;
-    }
     try {
-        const data = await Nft.presalenfts.findOne({ $and: [{ _id: nftId},{  active:true } ] });
+        const nftId = req.body.nftId;
+        if (!nftId) {
+            res.status(400).json({ msg: "Please provide NFT id" });
+            return;
+        } else if (nftId === "undefined") {
+            res.status(400).json({ msg: "Wrong NFT Credentials!!" });
+            return;
+        }
+        const data = req.body.type === "inventory" ? await Nft.presalenfts.findOne({ _id: nftId}): await Nft.presalenfts.findOne({ $and: [{ _id: nftId},{  active:true } ] });
         res.send({
             data: data,
             msg: "Successfull",
