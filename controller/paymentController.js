@@ -1643,9 +1643,9 @@ const circleSNSResponse= async (request, response) => {
                                 );
 
                                 await sendPaymentConfirmation({
-                                    email: userInfo[0].email,
+                                    email: event.payment.metadata.email,
                                     quantity: JSON.parse(event.payment.description).quantity,
-                                    amount: JSON.parse(event.payment.description).amount,
+                                    amount: event.payment.amount.amount,
                                 });
                             }
                                 }
@@ -1657,7 +1657,7 @@ const circleSNSResponse= async (request, response) => {
                                     await updateActivity(
                                         findUser._id,
                                         event.payment.id,
-                                        `You have ${event.payment.status} for ${event.payment.amount.amount} USDT amount using Circle.`
+                                        `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Circle.`
                                     );
                                 }
                             }
