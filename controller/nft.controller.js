@@ -519,7 +519,6 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
            
     } catch (error) {
         console.log(error)
-        res.json({ status: 400, msg: error.toString() });
     }
 };
 
@@ -669,8 +668,8 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
 
 const getMyrewards = async function (req, res) {
     try {
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
         if (req.body.userId == undefined || req.body.userId == "") {
             res.json({ status: 400, msg: "nftId is required" });
             return;
@@ -683,7 +682,7 @@ const getMyrewards = async function (req, res) {
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
-        });
+        }).limit(pageSize).skip(pageSize * page);
 
         let totalRewards = 0;
         let Ids = [];
@@ -696,7 +695,7 @@ const getMyrewards = async function (req, res) {
 
         const getMyReferees = await models.users.find({
             _id: { $in: Ids },
-        }).limit(pageSize).skip(pageSize * page);;
+        });
         logger.info(myRewards,"getMyReferees")
 
         let myreferees = [];

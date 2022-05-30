@@ -344,7 +344,7 @@ const coinbasePayment = async (req, res) => {
         };
 
         const charge = await Charge.create(chargeData);
-        await createActivity(userId, nftAmount, false, "Coinbase");
+        await createActivity(userId, nftAmount, false, "Coinbase", uniqueId);
 
 
         logger.info("COINBASE CHARGE ", charge);
@@ -596,7 +596,7 @@ const tripleAWebhook = async (req, res) => {
                 await updateActivity(
                     req.body.webhook_data.userId,
                     req.body.webhook_data.uniqueId,
-                    `You have bought CHIKY #${req.body.payment_amount} USD using TripleA.`
+                    `You have completed the payment of ${req.body.payment_amount} USD using TripleA.`
                 );
 
                 const userInfo = await models.users.findOne({
@@ -840,13 +840,24 @@ const handleLaunchpadHook = async (req, res) => {
 
                     console.log(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id,"add to my reward")
     
-                    addMyIncomeMetaMask(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id)
+                    await addMyIncomeMetaMask(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id).then((res)=>{
+                        console.log("status")
+                       
+                    })
     
+                    console.log(event.data.metadata.userId,
+                        event.data.metadata.uniqueId,
+                        event.data.metadata.amount,
+                        )
                     await updateActivity(
                         event.data.metadata.userId,
                         event.data.metadata.uniqueId,
-                        `You have bought CHIKY #${event.data.metadata.nftId} for ${event.data.metadata.amount} USD using Coinbase.`
+                        `You have completed the payment of ${event.data.metadata.amount} USD using Coinbase.`
                     );
+                    console.log(userInfo[0].email,
+                        event.data.metadata.quantity,
+                        event.data.metadata.amount,)
+
                     await sendPaymentConfirmation({
                         email: userInfo[0].email,
                         quantity: event.data.metadata.quantity,
