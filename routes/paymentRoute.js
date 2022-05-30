@@ -32,7 +32,7 @@ const bodyParser = require('body-parser');
 router.route("/create-pay").post(authenticateUser,createPayment);
 router.route("/circle-store-pay").post(authenticateUser,saveCirclePaymentData);
 router.route("/create-pay-aaa").post(authenticateUser,createPaymentAAA);
-router.route("/coin-create-pay/:chikId/:email/:userId/:quantity/:promoCode").get(authenticateUser,coinbasePayment);
+router.route("/coin-create-pay/:chikId/:email/:userId/:quantity").post(authenticateUser,coinbasePayment);
 router.route("/coin-handle-pay").post(handleCoinbasePayment);
 router.route("/send-confirmation").post(sendPaymentEmail);
 
