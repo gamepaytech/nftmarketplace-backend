@@ -1203,29 +1203,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
         console.log("Place 2");
         logger.info("NFT AMOUNT", nftAmount.toFixed(2).toString());
 
-        console.log(
-            "DATA ",
-            {
-                metadata: {
-                    email: email,
-                    sessionId: sessionId,
-                    ipAddress: "54.179.107.70",
-                },
-                amount: {
-                    amount: nftAmount.toFixed(2).toString(),
-                    currency: "USD",
-                },
-                autoCapture: true,
-                source: { id: cardId, type: "card" },
-                idempotencyKey: idempotencyKey,
-                verification: "cvv",
-                encryptedData: cvvEncrpytion.encryptedMessage,
-                keyId: "key1",
-                // verificationSuccessUrl: "http://localhost:3000/payment_success",
-                // verificationFailureUrl: "http://localhost:3000/payment_failure",
-            },
-            "SDF"
-        );
+
         console.log("Place 3");
         await createActivity(
             req.user.userId,
@@ -1254,7 +1232,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 metadata: {
                     email: email,
                     sessionId: sessionId,
-                    ipAddress: "127.38.233.23",
+                    ipAddress: "54.179.107.70",
                 },
                 amount: {
                     amount: nftAmount.toFixed(2).toString(),
