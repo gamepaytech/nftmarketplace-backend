@@ -672,6 +672,7 @@ const getAllMyReferrals = async function (req, res) {
     try {
         let page = req.params.page;
         let pageSize = req.params.pageSize;
+        let total = 0;
         const getMyRefer = await referralModel.referralDetails.find(
             { userId: req.body.userId },
         )
@@ -690,6 +691,7 @@ const getAllMyReferrals = async function (req, res) {
         logger.info(Ids)
 
         if (getMyReferralsId.length) {
+            total = await models.users.find({_id:{$in:Ids}}).count()
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids },  },
                 {
@@ -708,7 +710,7 @@ const getAllMyReferrals = async function (req, res) {
                     data: getMyReferrals,
                     page:page,
                     pageSize:pageSize,
-                    total:getMyReferralsId.length
+                    total:total
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
