@@ -23,11 +23,11 @@ const ObjectId = mongoose.Types.ObjectId;
 const logger = require("../logger");
 const r = require("request");
 const MessageValidator = require("sns-validator");
-const {addMyIncomeMetaMask} = require('./nft.controller')
+const {addMyIncomeMetaMask, updatePreSaleNFTDetails} = require('./nft.controller')
 const circleArn =
     /^arn:aws:sns:.*:908968368384:(sandbox|prod)_platform-notifications-topic$/;
 const validator = new MessageValidator();
-
+const PresaletNftInitiated = require("../models/presaleNftsInitiated");
 
 
 const createPayment = async (req, res) => {
@@ -1549,17 +1549,28 @@ const circleSNSResponse= async (request, response) => {
                                 logger.info("found --0", findLaunchpad);
                                 await findLaunchpad.save();
                             }
-                            await sendPaymentConfirmation({
-                                email: event.metadata.email,
-                                quantity: 1,
-                                amount: event.amount.amount,
-                            });
-
+                            
                             await updateActivity(
                                 findUser._id,
                                 event.payment.id,
-                                `You have commited ${event.amount.amount} USDT amount using Coinbase.`
+                                `You have completed payment of ${event.amount.amount} USDT amount using Circle.`
                             );
+
+                            // update presaleNFT details
+                            const presaleNft = await PresaletNftInitiated.find({
+                                userId: findUser._id,
+                                paymentId: event.payment.id
+                            });
+                            if(presaleNft){
+                                 const updatePreSaleNFT = await updatePreSaleNFTDetails(presaleNft, event.amount.amount);
+                                 if(updatePreSaleNFT === 'SUCCESS'){
+                                    logger.info('NFT pre sale info updated successfully.');
+                                }else{
+                                    logger.info('NFT record not found.');
+                                }
+                            }else{
+                                logger.info('PreSaleNFT details not updated as the initiation record does not exist');
+                            }
                         }
                         else if (event.status == "confirmed") {
                             const findUser = await models.users.findOne({
@@ -1568,7 +1579,7 @@ const circleSNSResponse= async (request, response) => {
                             await updateActivity(
                                 findUser._id,
                                 event.payment.id,
-                                `You have status as ${event.status} for ${event.amount.amount} USDT amount using Coinbase.`
+                                `You have ${event.status} payment of ${event.amount.amount} USDT amount using Circle.`
                             );
                         }
                         break;
