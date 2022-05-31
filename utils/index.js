@@ -11,7 +11,7 @@ const { getSystemMessage,
 } = require('./getSystemMessage')
 const getSystemConfig = require('./getSystemConfiguration');
 const getFeatureControl = require('./getFeatureControl');
-
+const sendGridApi = require('./sendGrid');
 module.exports = {
     createJWT,
     isTokenValid,
@@ -24,5 +24,6 @@ module.exports = {
     getSystemMessage,
     getSystemMessageByLang,
     getSystemConfig,
-    getFeatureControl
+    getFeatureControl,
+    sendGridApi
 }
