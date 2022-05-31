@@ -1187,8 +1187,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
 
         logger.info(quantity, "quantity");
 
-        var nftAmount =
-            parseFloat(amount) * quantity * ((100 - promoDiv) / 100);
+        let nftAmount = parseFloat(amount) * ((100 - promoDiv) / 100);
         nftAmount = Math.round(nftAmount);
 
         console.log(nftAmount,"amount of nft")

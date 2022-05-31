@@ -814,7 +814,7 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
 const updatePreSaleNFTDetails = async (presaleNft, amount) => {
     try{
         logger.info('Start of updatePreSaleNFTDetails');
-        const findNFT = await Nft.presalenfts.findOne({ _id: presaleNft.nftId });
+        const findNFT = await Nft.presalenfts.findById(presaleNft.nftId);
         if (findNFT) {
             logger.info('Updating itemSold field for presaleNFT');
             findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(presaleNft.nftCount);
