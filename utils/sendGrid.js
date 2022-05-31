@@ -1,6 +1,5 @@
 const axios = require("axios");
 
-
 const sendGridApi=(email, username)=>{
     var data = JSON.stringify({
         "contacts": [{
