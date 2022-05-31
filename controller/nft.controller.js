@@ -335,8 +335,6 @@ const userBoughtNftMetamask = async (req, res) => {
         }
     }
 
-    console.log(tx.blockNumber, latest,tx.blockNumber + 30 > latest,"condition")
-
     if (tx.blockNumber + 30 > latest) {
         const findNftById = await Nft.presalenfts.find({ _id: nftId });
         // logger.info("NFT ",findNftById)
