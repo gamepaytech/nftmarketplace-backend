@@ -348,12 +348,7 @@ const userBoughtNftMetamask = async (req, res) => {
         logger.info(promoDiv, findNftById)
         const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100
         logger.info(amountTotal, "amountTotal")
-        console.log(nftId,
-            userId,
-            ObjectId(nftId),
-            amountTotal,
-            promoApplied,
-            quantity,"quantity and all")
+
         const updatePresale = await PresaleBoughtNft.create({
             nftIdOwned: nftId,
             owner: userId,
