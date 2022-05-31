@@ -39,7 +39,7 @@ const register = async (req, res) => {
             const sysMsg = await getSystemMessage('GPAY_00004_PASSWORD_MISMATCH')
             res.status(401).json({ msg: sysMsg ? sysMsg.message :'Password not match' })
         }
-        console.log(req.body);
+        
         const emailAlreadyExists = await models.users.findOne({
             email: email,
         })
