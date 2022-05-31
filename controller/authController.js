@@ -1068,6 +1068,21 @@ const checkRegisterredWallet = async (req, res) => {
     }
 }
 
+const checkWalletKeyBeforeRegister = async function(req,res) {
+    try {
+        const {address} = req.body;
+        const userInfo = await models.users.find({ metamaskKey: address });
+        if(userInfo !== null){
+            res
+            .status(200)
+            .json(
+                { status: 200, msg:'Success', data: true })
+        }
+    } catch (error) {
+        res.status(400).json({ status: 400, msg: 'Internal Server Error!' ,data: true})
+    }
+}
+
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
@@ -1277,5 +1292,6 @@ module.exports = {
     updatePresaleLaunchPad,
     setactivity,
     getactivity,
-    updateActivity
+    updateActivity,
+    checkWalletKeyBeforeRegister
 }

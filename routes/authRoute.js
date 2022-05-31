@@ -24,7 +24,8 @@ const {
     setactivity,
     getactivity,
     updatePresaleLaunchPad,
-    updateActivity
+    updateActivity,
+    checkWalletKeyBeforeRegister
 } = require('../controller/authController')
 const { authenticateUser, authenticateAdmin, authenticateSuperAdmin } = require('../middleware/authentication')
 
@@ -44,6 +45,7 @@ router.post('/getAllWalletKey', cors(), authenticateUser, getAllWallet)
 router.post('/deleteWalletKey', cors(), authenticateUser, removeWalletKey)
 router.post('/checkWalletKey', cors(), checkRegisterredWallet)
 router.post('/checkUserWalletKey', cors(), authenticateUser, checkWalletKey)
+router.post('/checkWalletKeyBeforeRegister', cors(),  checkWalletKeyBeforeRegister)
 router.get('/getPercent', cors(), getPercent)
 router.post('/updatePercent', cors(), authenticateAdmin, updatePercent)
 router.post('/updatePresaleLaunchpad', cors(), authenticateAdmin, updatePresaleLaunchPad)
