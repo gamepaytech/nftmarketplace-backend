@@ -335,6 +335,7 @@ const userBoughtNftMetamask = async (req, res) => {
         }
     }
 
+    console.log(tx.blockNumber, latest,tx.blockNumber + 30 > latest,"condition")
 
     if (tx.blockNumber + 30 > latest) {
         const findNftById = await Nft.presalenfts.find({ _id: nftId });
@@ -349,6 +350,12 @@ const userBoughtNftMetamask = async (req, res) => {
         logger.info(promoDiv, findNftById)
         const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100
         logger.info(amountTotal, "amountTotal")
+        console.log(nftId,
+            userId,
+            ObjectId(nftId),
+            amountTotal,
+            promoApplied,
+            quantity,"quantity and all")
         const updatePresale = await PresaleBoughtNft.create({
             nftIdOwned: nftId,
             owner: userId,
@@ -358,7 +365,9 @@ const userBoughtNftMetamask = async (req, res) => {
             quantity: quantity
         });
 
-        console.log(userId)
+
+
+        console.log(updatePresale, "updatePresale")
 
         addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
@@ -386,6 +395,7 @@ const userBoughtNft = async (req, res) => {
     logger.info(promoDiv, findNftById)
     const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100
     logger.info(amountTotal, "amountTotal")
+    console.log(nftId,userId,amountTotal,promoApplied,quantity,"389")
     const updatePresale = await PresaleBoughtNft.create({
         nftIdOwned: nftId,
         owner: userId,

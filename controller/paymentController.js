@@ -585,7 +585,7 @@ const tripleAWebhook = async (req, res) => {
                     owner: req.body.webhook_data.userId,
                     nft: ObjectId(req.body.webhook_data.nftId),
                     quantity: req.body.webhook_data.quantity,
-                    amountSpent: req.body.payment_amount,
+                    amountSpent: (req.body.payment_amount/req.body.webhook_data.quantity).toFixed(4),
                     currency: req.body.payment_currency,
                     paymentId:webhook_data.order_id,
                     paymentMode: "TripleA",
@@ -795,7 +795,7 @@ const handleLaunchpadHook = async (req, res) => {
                     const CoinbasePay = await CoinbasePayment.create({
                         payId: event.id,
                         code: event.data.code,
-                        amount: event.data.metadata.amount,
+                        amount: (event.data.metadata.amount/event.data.metadata.quantity).toFixed(4),
                         chickId: event.data.metadata.nftId,
                         owner: event.data.metadata.userId,
                         nft: ObjectId(event.data.metadata.nftId),
@@ -1585,7 +1585,7 @@ const circleSNSResponse= async (request, response) => {
                             if (!findCirclePay) {
                                 const CirclePay = await CirclePayment.create({
                                     payId: event.payment.id,
-                                    amount: event.payment.amount.amount,
+                                    amount: (event.payment.amount.amount/JSON.parse(event.payment.description).quantity).toFixed(4),
                                     chickId: JSON.parse(event.payment.description).nftId,
                                     owner: JSON.parse(event.payment.description).userId,
                                     nft: ObjectId(JSON.parse(event.payment.description).nftId),
@@ -1616,7 +1616,7 @@ const circleSNSResponse= async (request, response) => {
                                     owner: JSON.parse(event.payment.description).userId,
                                     nft: ObjectId(JSON.parse(event.payment.description).nftId),
                                     quantity: JSON.parse(event.payment.description).quantity,
-                                    amountSpent: event.payment.amount.amount,
+                                    amountSpent: (event.payment.amount.amount/JSON.parse(event.payment.description).quantity).toFixed(4),
                                     currency: "USD",
                                     paymentId: JSON.parse(event.payment.description).uniqueId,
                                     paymentMode: "Circle",
