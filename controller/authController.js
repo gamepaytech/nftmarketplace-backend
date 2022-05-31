@@ -12,10 +12,10 @@ const {
     sendResetPassswordEmail,
     createHash,
     createWalletAddressPayload,
-    getSystemMessage
+    getSystemMessage,
+    sendGridApi
 } = require('../utils')
 const logger = require('../logger')
-const axios = require("axios");
 
 const register = async (req, res) => {
     try {
@@ -39,7 +39,7 @@ const register = async (req, res) => {
             const sysMsg = await getSystemMessage('GPAY_00004_PASSWORD_MISMATCH')
             res.status(401).json({ msg: sysMsg ? sysMsg.message :'Password not match' })
         }
-        
+
         const emailAlreadyExists = await models.users.findOne({
             email: email,
         })
@@ -81,12 +81,10 @@ const register = async (req, res) => {
             origin,
         })
         logger.info('AFTER SENDING--- ',user.verificationToken)
-      
         const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
             msg: sysMsg ? sysMsg.message : 'Success! Please check your email to verify account',
-            status:201,
-           
+            status:201,  
         })
     } catch (err) {
         logger.info(err.msg)
@@ -391,31 +389,7 @@ const resetPassword = async (req, res) => {
         res.status(501).json({ msg: e.msg })
     }
 }
-function sendGridApi(email,username){
-    var data = JSON.stringify({
-                "contacts": [{
-                   "email": email,
-                   "first_name":username,
-              "list_ids": [
-                      "9e178209-a846-48ea-812b-054e25f24b67"
-                   ]
-               }],
-               "list_ids": [
-                  "9e178209-a846-48ea-812b-054e25f24b67"
-               ]
-            });
-            const headers = { 
-               'Authorization': 'Bearer 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',
-               "Content-Type": "application/json"
-           };
-            axios.put("https://api.sendgrid.com/v3/marketing/contacts", data,{headers})
-                .then(res => {
-                    //TODO-HANDLE SUCCESS
-                })
-                .catch(err => {
-                    //TODO-HANDLE ERROR
-                });
-}
+
 const addMyReferral = async function (req, res) {
     try {
         let refereeCode = ''
@@ -481,8 +455,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
-                            }
-                           
+                            } 
                         }
                         else {
                             query = {
@@ -501,8 +474,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
-                            }
-                           
+                            }  
                         }
                         const newUser = new models.users(query)
                         const insertNewReferral = await newUser.save()
