@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Token = require('../models/Token')
 const models = require('../models/User')
 const referralModel = require('../models/referralModel')
+const sysConfig = require('../models/SystemConfiguration')
 const CryptoJS = require('crypto-js')
 const crypto = require('crypto')
 const {
@@ -11,7 +12,8 @@ const {
     sendResetPassswordEmail,
     createHash,
     createWalletAddressPayload,
-    getSystemMessage
+    getSystemMessage,
+    sendGridApi
 } = require('../utils')
 const logger = require('../logger')
 
@@ -37,6 +39,7 @@ const register = async (req, res) => {
             const sysMsg = await getSystemMessage('GPAY_00004_PASSWORD_MISMATCH')
             res.status(401).json({ msg: sysMsg ? sysMsg.message :'Password not match' })
         }
+
         const emailAlreadyExists = await models.users.findOne({
             email: email,
         })
@@ -78,11 +81,10 @@ const register = async (req, res) => {
             origin,
         })
         logger.info('AFTER SENDING--- ',user.verificationToken)
-        
         const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
             msg: sysMsg ? sysMsg.message : 'Success! Please check your email to verify account',
-            status:201
+            status:201,  
         })
     } catch (err) {
         logger.info(err.msg)
@@ -402,7 +404,7 @@ const addMyReferral = async function (req, res) {
             }
         }
         let referralCode = await getReferralCode()
-        console.log("test");
+        const commissionRate = await sysConfig.findOne({config_name:"BASE_COMMISSION"})
         query = { email: req.body.email }
         const checkMail = await models.users.findOne({ "$or": [ { email: req.body.email }, { username: req.body.username} ] })
         if (checkMail) {
@@ -453,7 +455,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
-                            }
+                            } 
                         }
                         else {
                             query = {
@@ -472,11 +474,12 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
-                            }
+                            }  
                         }
                         const newUser = new models.users(query)
                         const insertNewReferral = await newUser.save()
                         if (insertNewReferral) {
+                            sendGridApi(req.body.email,req.body.username)
                             query = {
                                 userId: insertNewReferral._id,
                                 referredBy: checkReferralCode._id,
@@ -486,8 +489,8 @@ const addMyReferral = async function (req, res) {
                             )
                             const addMyReferral = new referralModel.referralDetails({
                                 userId:insertNewReferral._id,
-                                myShare:"20",
-                                friendShare:"10",
+                                myShare: commissionRate ? commissionRate.config_value: "0",
+                                friendShare:"0",
                                 referralCode:referralCode.code,
                                 isDefault:true,
                             })
@@ -597,17 +600,17 @@ const addMyReferral = async function (req, res) {
                             refereeCode: refereeCode,
                         }
                     }
-                    console.log("test4")
                     const newUser = new models.users(query)
                     const insertNewReferral = await newUser.save()
                     if (insertNewReferral) {
+                        sendGridApi(req.body.email,req.body.username)
                         const newUserInfo = await models.users.findById(
                             insertNewReferral._id
                         )
                         const addMyReferral = new referralModel.referralDetails({
                             userId:insertNewReferral._id,
-                            myShare:"20",
-                            friendShare:"10",
+                            myShare: commissionRate ? commissionRate.config_value: "0",
+                            friendShare:"0",
                             referralCode:referralCode.code,
                             isDefault:true,
                         })
@@ -670,8 +673,9 @@ function getReferralCode() {
 
 const getAllMyReferrals = async function (req, res) {
     try {
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
+        let total = 0;
         const getMyRefer = await referralModel.referralDetails.find(
             { userId: req.body.userId },
         )
@@ -690,6 +694,7 @@ const getAllMyReferrals = async function (req, res) {
         logger.info(Ids)
 
         if (getMyReferralsId.length) {
+            total = await models.users.find({_id:{$in:Ids}}).count()
             const getMyReferrals = await models.users.find(
                 { _id: { $in: Ids },  },
                 {
@@ -708,7 +713,7 @@ const getAllMyReferrals = async function (req, res) {
                     data: getMyReferrals,
                     page:page,
                     pageSize:pageSize,
-                    total:getMyReferrals.length
+                    total:total
                 })
             } else {
                 const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
@@ -1066,6 +1071,21 @@ const checkRegisterredWallet = async (req, res) => {
     }
 }
 
+const checkWalletKeyBeforeRegister = async function(req,res) {
+    try {
+        const {address} = req.body;
+        const userInfo = await models.users.find({ metamaskKey: address });
+        if(userInfo !== null){
+            res
+            .status(200)
+            .json(
+                { status: 200, msg:'Success', data: true })
+        }
+    } catch (error) {
+        res.status(400).json({ status: 400, msg: 'Internal Server Error!' ,data: true})
+    }
+}
+
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
@@ -1128,7 +1148,7 @@ const setactivity = async function (req, res) {
 }
 
 const getactivity = async function (req, res) {
-    if (Object.keys(req.query).length !== 0) {
+    if (Object.keys(req.params).length !== 0) {
       logger.info("user id ", req.body.userId);
       const user = await models.users.aggregate([
         { $match: { _id: mongoose.Types.ObjectId(req.body.userId) } },
@@ -1137,8 +1157,8 @@ const getactivity = async function (req, res) {
       const userActivity = await models.users
         .findOne({ _id: req.body.userId })
         .slice("activity", [
-          parseInt(req.query.pageSize) * (req.query.page - 1),
-          parseInt(req.query.pageSize),
+          parseInt(req.params.pageSize) * (req.params.page - 1),
+          parseInt(req.params.pageSize),
         ]);
       res.json({ userActivity: userActivity?.activity, total: user[0]?.count });
     } else {
@@ -1175,6 +1195,8 @@ const updatePresaleLaunchPad = async function (req, res) {
             const setting = await referralModel.appsetting.updateOne({
                 launchpad: req.body.launchpad,
                 presale: req.body.presale,
+                popup: req.body.popup,
+                popupAlertText: req.body.popupAlertText,
             })
             logger.info(setting, 'setting')
             
@@ -1273,5 +1295,6 @@ module.exports = {
     updatePresaleLaunchPad,
     setactivity,
     getactivity,
-    updateActivity
+    updateActivity,
+    checkWalletKeyBeforeRegister
 }

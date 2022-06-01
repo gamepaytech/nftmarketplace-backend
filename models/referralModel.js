@@ -97,7 +97,9 @@ let appsetting = new mongoose.Schema({
         default: 5
     },
     presale:{type: Boolean},
-    launchpad:{type: Boolean}
+    launchpad:{type: Boolean},
+    popup:{type: Boolean},
+    popupAlertText:{type: String}
 })
 
 module.exports = {

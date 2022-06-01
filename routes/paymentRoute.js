@@ -25,6 +25,11 @@ const {
     paymentsCircleLaunchpadPayment
 } = require("../controller/paymentController");
 
+const {
+    getAllPaymentsFromCircle,
+    getPaymentInfoFromCircle
+} = require('../controller/circleController');
+
 const router = express.Router();
 const { authenticateUser } = require("../middleware/authentication");
 const bodyParser = require('body-parser');
@@ -32,7 +37,7 @@ const bodyParser = require('body-parser');
 router.route("/create-pay").post(authenticateUser,createPayment);
 router.route("/circle-store-pay").post(authenticateUser,saveCirclePaymentData);
 router.route("/create-pay-aaa").post(authenticateUser,createPaymentAAA);
-router.route("/coin-create-pay/:chikId/:email/:userId/:quantity").get(authenticateUser,coinbasePayment);
+router.route("/coin-create-pay/:chikId/:email/:userId/:quantity").post(authenticateUser,coinbasePayment);
 router.route("/coin-handle-pay").post(handleCoinbasePayment);
 router.route("/send-confirmation").post(sendPaymentEmail);
 
@@ -55,8 +60,8 @@ router.route("/circleSNSLaunchpad").post(circleSNSResponse);
 router.route("/getKeyForCircleLaunchpadPayment").get(authenticateUser,getKeyForCircleLaunchpadPayment);
 router.route("/getCardDetailsCircleLaunchpadPayment").post(authenticateUser,getCardDetailsCircleLaunchpadPayment);
 router.route("/paymentsCircleLaunchpadPayment").post(authenticateUser,paymentsCircleLaunchpadPayment);
-
-
+router.route("/getAllPaymentsFromCircle/:userName").get(authenticateUser,getAllPaymentsFromCircle);
+router.route("/getPaymentInfoFromCircle/:userName/:paymentId").get(authenticateUser,getPaymentInfoFromCircle);
 
 router.route("/update-activity").put(authenticateUser,updateActivity);
 module.exports = router;

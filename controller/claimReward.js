@@ -6,6 +6,7 @@ const Provider = require('@truffle/hdwallet-provider');
 const { address, abi } = require('../config')
 const axios = require("axios");
 const logger = require('../logger')
+const Moralis = require('moralis/node')
 
 const updateClaimed = async (req, res) => {
     try {
@@ -26,8 +27,9 @@ const updateClaimed = async (req, res) => {
             totalRewards += rewards[i].amount
         }
 
+        console.log(totalClaimed, totalRewards,"check point")
 
-        const claimAmount = (totalRewards - totalClaimed) / Math.pow(10, 6)
+        const claimAmount = (totalRewards - totalClaimed)
         const provider = new Provider(process.env.PRIVATE_KEY, process.env.RPC);
         const web3 = new Web3(provider)
         const contract = new web3.eth.Contract(abi, address);
@@ -99,8 +101,51 @@ const withdrawDetails = async(req, res) =>{
     }
 }
 
+const watchContractEvents = async(req, res) =>{
+    console.log("starting>>>")
+    const serverUrl = "https://7e97nawu9isc.usemoralis.com:2053/server";
+    const appId = "UzI09s80iJUhe06OSKrJSyQT72vFdqCzC2Jsz8gu"
+    const masterKey = "fXrqYoOWPlbA1Eh4ewEQ0lBTvc48ptC0rSyC62Xr"
+    await Moralis.start({ serverUrl, appId, masterKey });
+  // code example of creating a sync event from cloud code
+  let options = {
+    chainId: "",
+    address: "0x71efAD425d7fCdF723858F69993eD0a2497f049C",
+    topic: "Paid(uint256, address)",
+    abi: {
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "Paid",
+		"type": "event"
+	},
+    limit: 5,
+    tableName: "PayTab",
+    sync_historical: false,
+  };
+
+  Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true }).then(
+    (result) => {
+      console.log(result,"the data is coming correctly");
+    }
+  );
+}
+
 module.exports = {
     updateClaimed,
     claimable,
-    withdrawDetails
+    withdrawDetails,
+    watchContractEvents
 }
