@@ -45,7 +45,7 @@ const register = async (req, res) => {
         })
         if (emailAlreadyExists) {
             const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
-            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
@@ -53,7 +53,7 @@ const register = async (req, res) => {
         })
         if (usernameAlreadyExists) {
             const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
-            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
