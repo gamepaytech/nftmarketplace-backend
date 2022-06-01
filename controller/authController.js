@@ -1071,8 +1071,9 @@ const checkRegisterredWallet = async (req, res) => {
 const checkWalletKeyBeforeRegister = async function(req,res) {
     try {
         const {address} = req.body;
-        const userInfo = await models.users.find({ metamaskKey: address });
-        if(userInfo[0] !== undefined){
+        const userInfo = await models.users.findOne({ metamaskKey: address });
+        console.log(userInfo)
+        if(userInfo !== null){
             res
             .status(200)
             .json(
