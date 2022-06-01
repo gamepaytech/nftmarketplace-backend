@@ -1074,15 +1074,20 @@ const checkRegisterredWallet = async (req, res) => {
 const checkWalletKeyBeforeRegister = async function(req,res) {
     try {
         const {address} = req.body;
-        const userInfo = await models.users.find({ metamaskKey: address });
+        const userInfo = await models.users.findOne({ metamaskKey: address });
+        console.log(userInfo)
         if(userInfo !== null){
             res
             .status(200)
             .json(
                 { status: 200, msg:'Success', data: true })
         }
+        else{
+            res.status(200).json({ status: 200, msg: 'Internal Server Error!' ,data: false})
+        }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: 'Internal Server Error!' ,data: true})
+        console.log(error)
+        res.status(400).json({ status: 400, msg: 'Internal Server Error!'})
     }
 }
 
