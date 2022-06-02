@@ -785,7 +785,8 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
 
         const presaleNft = await PresaletNftInitiated.find({
             userId: userId,
-            paymentId: paymentId
+            paymentId: paymentId,
+            paymentStatus : 'action_required'
         });
 
         if (presaleNft) {
