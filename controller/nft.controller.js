@@ -362,7 +362,7 @@ const userBoughtNftMetamask = async (req, res) => {
 
         console.log(updatePresale, "updatePresale")
 
-        addMyIncomeMetaMask(nftId, userId, updatePresale._id)
+        await addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
         logger.info(updatePresale);
         res.status(200).json({
@@ -398,7 +398,7 @@ const userBoughtNft = async (req, res) => {
         quantity: quantity
     });
     console.log(nftId, userId, updatePresale._id, "add my income")
-    addMyIncomeMetaMask(nftId, userId, updatePresale._id)
+    await addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
     logger.info(updatePresale);
     res.status(200).json({
@@ -841,7 +841,7 @@ const updatePreSaleNFTDetails = async (presaleNft, amount) => {
                 quantity: presaleNft.nftCount
             });
             logger.info('Adding referral income for - ' + userId + 'for the nft with id - ' + presaleNft.nftId);
-            addMyIncomeMetaMask(nftId, userId, updatePresale._id);
+            await addMyIncomeMetaMask(nftId, userId, updatePresale._id);
             logger.info('NFT pre sale info updated successfully.');
     
             const createObj = { email : presaleNft.email, amount, status: 'paid', nftId: presaleNft.nftId, paymentId: presaleNft.paymentId, quantity : presaleNft.nftCount };

@@ -469,7 +469,7 @@ const handleCoinbasePayment = async (req, res) => {
             
             console.log(alreadySaved,"alreadySaved")
             if(alreadySaved == null){
-                addMyIncomeMetaMask(event.data.metadata.nftId, event.data.metadata.customer_id,createPresale._id)
+                await addMyIncomeMetaMask(event.data.metadata.nftId, event.data.metadata.customer_id,createPresale._id)
 
                 await createActivity(
                     owner,
@@ -593,7 +593,7 @@ const tripleAWebhook = async (req, res) => {
 
                 console.log(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
 
-                addMyIncomeMetaMask(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id)
+                await addMyIncomeMetaMask(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id)
     
                 await updateActivity(
                     req.body.webhook_data.userId,
