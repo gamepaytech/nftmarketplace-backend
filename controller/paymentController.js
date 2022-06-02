@@ -1455,13 +1455,7 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
                 logger.info("Received data from circle payment payments api");
                 logger.info("data ", data.data);
                 logger.info('Logging circle response received' + JSON.stringify(data.data));
-                await logCircleResponse(
-                    'Response received from v1/payments/${paymentId}',
-                    '',
-                    paymentId,
-                    'Get it from response object',
-                    JSON.stringify(data.data)
-                );
+                // x
                 res.status(200).json({
                     message: "Success",
                     data: data.data,
