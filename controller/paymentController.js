@@ -593,6 +593,16 @@ const tripleAWebhook = async (req, res) => {
 
                 console.log(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
 
+                const findNFT = await Nft.presalenfts.findById(req.body.webhook_data.nftId);
+                if (findNFT) {
+                    logger.info('Start of Updating itemSold field for presaleNFT using TripleA.');
+                    findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(req.body.webhook_data.quantity);
+                    await findNFT.save();
+                    logger.info('End of Updating itemSold field for presaleNFT using TripleA.');
+                } else {
+                    logger.info('Unable to fetch presale NFT from collection using TripleA.');
+                }
+
                 addMyIncomeMetaMask(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id)
     
                 await updateActivity(
