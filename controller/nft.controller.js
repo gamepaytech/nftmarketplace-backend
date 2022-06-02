@@ -781,7 +781,7 @@ const createPreSaleNFTInitiated = async function (req, res) {
 const updateNFTSaleOnPaidStatus = async function (req, res) {
     try {
         logger.info('Start of updateNFTSaleOnPaidStatus');
-        const { userId, paymentId, amount } = req.body;
+        const { userId, paymentId, amount, paymentStatus } = req.body;
 
         const presaleNft = await PresaletNftInitiated.find({
             userId: userId,
@@ -797,6 +797,8 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
                 res.status(200).json({
                     msg: 'NFT pre sale info updated successfully.',
                 });
+                presaleNft.paymentStatus=paymentStatus;
+                await presaleNft.save();
             }else{
                 logger.info('NFT record not found.');
                 res.status(200).json({
@@ -849,7 +851,8 @@ const updatePreSaleNFTDetails = async (presaleNft, amount) => {
             await CirclePayment.create(createObj);
             logger.info('Successfully created record into Circle Payment ' + createObj);
             logger.info('Sending confirmation email to user');
-            await sendPaymentConfirmation({ email: presaleNft.email, amount: amount });
+
+            await sendPaymentConfirmation({ email: presaleNft.email, quantity : presaleNft.nftCount,amount: amount });
             logger.info('Sent confirmation email to user ' + presaleNft.email);
             logger.info('End of updatePreSaleNFTDetails');
             return 'SUCCESS';
