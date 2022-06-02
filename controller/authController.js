@@ -1155,18 +1155,27 @@ const setactivity = async function (req, res) {
 const getactivity = async function (req, res) {
     if (Object.keys(req.params).length !== 0) {
       logger.info("user id ", req.body.userId);
-      const user = await models.users.aggregate([
-        { $match: { _id: mongoose.Types.ObjectId(req.body.userId) } },
-        { $project: { count: { $size: "$activity" } } },
+      const userActivity = await models.users.aggregate([
+        {
+          $match: {
+            _id: mongoose.Types.ObjectId(req.body.userId),
+          },
+        },
+        {
+          $project: {
+            activity: {
+              $slice: [
+                { $reverseArray: "$activity" },
+                parseInt(req.params.pageSize) * (req.params.page - 1),
+                parseInt(req.params.pageSize), 
+              ],
+            },
+            count: { $size: "$activity" },
+            _id: 1,
+          },
+        },
       ]);
-      const userActivity = await models.users
-        .findOne({ _id: req.body.userId })
-        .sort({"activity.timestamp":-1})
-        .slice("activity", [
-          parseInt(req.params.pageSize) * (req.params.page - 1),
-          parseInt(req.params.pageSize),
-        ]);
-      res.json({ userActivity: userActivity?.activity, total: user[0]?.count });
+      res.json({ userActivity: userActivity[0]?.activity, total: userActivity[0]?.count });
     } else {
       const userActivity = await models.users.findOne({ _id: req.body.userId });
       res.json({ userActivity: userActivity?.activity });
