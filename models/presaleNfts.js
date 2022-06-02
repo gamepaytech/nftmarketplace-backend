@@ -53,6 +53,12 @@ let NftSchema = new mongoose.Schema(
         chain: {
             type: Number,
         },
+        hp: {
+            type: String,
+        },
+        attack: {
+            type: String,
+        },
         price: {
             type: Number,
         },
