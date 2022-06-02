@@ -1555,7 +1555,7 @@ const circleSNSResponse= async (request, response) => {
                         console.log(event,"event",typeof event)
                         logger.info("CIRCLE EVENT ", event);
 
-                        logger.info('Logging circle response received' + JSON.stringify(respObject));
+                        logger.info('Logging circle response received' + JSON.stringify(event));
                         // await logCircleResponse(
                         //     "Notification received from Circle",
                         //     event.payment.metadata.email,
@@ -1638,7 +1638,7 @@ const circleSNSResponse= async (request, response) => {
                             if(JSON.parse(event.payment.description).payment_activity=="NFT_PURCHASE"){
                             const findCirclePay = await CirclePayment.findOne({
                                 uniqueId: JSON.parse(event.payment.description).uniqueId,
-                            });
+                            }); 
                             if (!findCirclePay) {
                                 const CirclePay = await CirclePayment.create({
                                     payId: event.payment.id,
