@@ -593,6 +593,16 @@ const tripleAWebhook = async (req, res) => {
 
                 console.log(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
 
+                const findNFT = await Nft.presalenfts.findById(req.body.webhook_data.nftId);
+                if (findNFT) {
+                    logger.info('Start of Updating itemSold field for presaleNFT using TripleA.');
+                    findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(req.body.webhook_data.quantity);
+                    await findNFT.save();
+                    logger.info('End of Updating itemSold field for presaleNFT using TripleA.');
+                } else {
+                    logger.info('Unable to fetch presale NFT from collection using TripleA.');
+                }
+
                 addMyIncomeMetaMask(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id)
     
                 await updateActivity(
@@ -1564,6 +1574,7 @@ const circleSNSResponse= async (request, response) => {
                                     logger.info("found --0", findLaunchpad);
                                     await findLaunchpad.save();
                                 }
+                                logger.info('Sending Payment confirmation email to admin upon amount credit to Gamepay account');
                                 await sendPaymentConfirmation({
                                     email: 'hello@gamepay.sg',
                                     quantity: 1,
@@ -1571,99 +1582,120 @@ const circleSNSResponse= async (request, response) => {
                                 });
                             }
                         }
-                        else if (event.payment?.status == "confirmed" && event.payment.description!=='Merchant Payment') {
-                            if(JSON.parse(event.payment.description).payment_activity=="NFT_PURCHASE"){
-                            const findCirclePay = await CirclePayment.findOne({
-                                uniqueId: JSON.parse(event.payment.description).uniqueId,
-                            });
-                            if (!findCirclePay) {
-                                const CirclePay = await CirclePayment.create({
-                                    payId: event.payment.id,
-                                    amount: (event.payment.amount.amount/JSON.parse(event.payment.description).quantity).toFixed(4),
-                                    chickId: JSON.parse(event.payment.description).nftId,
-                                    owner: JSON.parse(event.payment.description).userId,
-                                    nft: ObjectId(JSON.parse(event.payment.description).nftId),
-                                    quantity: JSON.parse(event.payment.description).quantity,
-                                    uniquId: JSON.parse(event.payment.description).uniqueId,
+                        else if (event.payment?.status == "confirmed" && event.payment.description !== 'Merchant Payment') {
+                            logger.info('Inisde notification when the status received is confirmed from Circle');
+                            if (JSON.parse(event.payment.description).payment_activity == "NFT_PURCHASE") {
+                                const findCirclePay = await CirclePayment.findOne({
+                                    uniqueId: JSON.parse(event.payment.description).uniqueId,
                                 });
-                                console.log(CirclePay,802)
-                            } else {
-                                const updateCirclePay = await CirclePayment.updateOne(
-                                    { uniqueId: JSON.parse(event.payment.description).uniqueId},
-                                    { $set: { status: "Confirmed" } }
-                                );
-                            }
-                            
-                            console.log(JSON.parse(event.payment.description).uniqueId,"payment id")
-                            const alreadySaved = await PresaleBoughtNft.findOne({paymentId:JSON.parse(event.payment.description).uniqueId})
-
-                            console.log(alreadySaved,"is null")
-                            if(alreadySaved == null){
-                                console.log( JSON.parse(event.payment.description).nftId,
-                                    JSON.parse(event.payment.description).userId,
-                                    ObjectId(JSON.parse(event.payment.description).nftId),
-                                    JSON.parse(event.payment.description).quantity,
-                                    event.payment.amount.amount,
-                                    "Cirlce")
-                                const createPresale = await PresaleBoughtNft.create({
-                                    nftIdOwned: JSON.parse(event.payment.description).nftId,
-                                    owner: JSON.parse(event.payment.description).userId,
-                                    nft: ObjectId(JSON.parse(event.payment.description).nftId),
-                                    quantity: JSON.parse(event.payment.description).quantity,
-                                    amountSpent: (event.payment.amount.amount/JSON.parse(event.payment.description).quantity).toFixed(4),
-                                    currency: "USD",
-                                    paymentId: JSON.parse(event.payment.description).uniqueId,
-                                    paymentMode: "Circle",
-                                });
-
-                                console.log(createPresale,'create presale')
-                                const findNFT = await Nft.presalenfts.findById(JSON.parse(event.payment.description).nftId);
-                                if (findNFT) {
-                                    logger.info('Start of Updating itemSold field for presaleNFT');
-                                    findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(JSON.parse(event.payment.description).quantity);
-                                    await findNFT.save();
-                                    logger.info('End of Updating itemSold field for presaleNFT');
-                                }else{
-                                    logger.info('Unable to fetch presale NFT from collection');
-                                }
-                
-                                const userInfo = await models.users.find({
-                                    _id: JSON.parse(event.payment.description).userId,
-                                });
-
-                                console.log(userInfo)
-
-                                console.log(JSON.parse(event.payment.description).nftId,JSON.parse(event.payment.description).userId,createPresale._id,"add to my reward")
-                
-                                await addMyIncomeMetaMask(JSON.parse(event.payment.description).nftId,JSON.parse(event.payment.description).userId,createPresale._id).then((res)=>{
-                                    console.log("status")
-                                })
-                
-                                await updateActivity(
-                                    JSON.parse(event.payment.description).userId,
-                                    JSON.parse(event.payment.description).uniqueId,
-                                    `You have completed the payment of ${event.payment.amount.amount} USD using Circle.`
-                                );
-
-                                await sendPaymentConfirmation({
-                                    email: event.payment.metadata.email,
-                                    quantity: JSON.parse(event.payment.description).quantity,
-                                    amount: event.payment.amount.amount,
-                                });
-                            }
-                                }
-                            else
-                                {
-                                    const findUser = await models.users.findOne({
-                                        email: event.payment.metadata.email,
+                                if (!findCirclePay) {
+                                    const CirclePay = await CirclePayment.create({
+                                        payId: event.payment.id,
+                                        amount: (event.payment.amount.amount / JSON.parse(event.payment.description).quantity).toFixed(4),
+                                        chickId: JSON.parse(event.payment.description).nftId,
+                                        owner: JSON.parse(event.payment.description).userId,
+                                        nft: ObjectId(JSON.parse(event.payment.description).nftId),
+                                        quantity: JSON.parse(event.payment.description).quantity,
+                                        uniquId: JSON.parse(event.payment.description).uniqueId,
                                     });
-                                    await updateActivity(
-                                        findUser._id,
-                                        event.payment.id,
-                                        `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Circle.`
+                                    console.log(CirclePay, 802)
+                                } else {
+                                    const updateCirclePay = await CirclePayment.updateOne(
+                                        { uniqueId: JSON.parse(event.payment.description).uniqueId },
+                                        { $set: { status: "Confirmed" } }
                                     );
                                 }
+
+                                logger.info('Checking if the presale nft exists in database');
+                                const presaleNft = await PresaletNftInitiated.find({
+                                    userId: JSON.parse(event.payment.description).userId,
+                                    paymentId: JSON.parse(event.payment.description).uniqueId,
+                                    paymentStatus: 'action_required'
+                                });
+
+                                if (presaleNft) {
+                                    logger.info('Presale nft exists in database');
+                                    console.log(JSON.parse(event.payment.description).uniqueId, "payment id")
+                                    const alreadySaved = await PresaleBoughtNft.findOne({ paymentId: JSON.parse(event.payment.description).uniqueId })
+
+                                    console.log(alreadySaved, "is null")
+                                    if (alreadySaved == null) {
+                                        logger.info('Creating PresaleBoughtNft collection with the nft count and amount');
+                                        console.log(JSON.parse(event.payment.description).nftId,
+                                            JSON.parse(event.payment.description).userId,
+                                            ObjectId(JSON.parse(event.payment.description).nftId),
+                                            JSON.parse(event.payment.description).quantity,
+                                            event.payment.amount.amount,
+                                            "Cirlce")
+                                        const createPresale = await PresaleBoughtNft.create({
+                                            nftIdOwned: JSON.parse(event.payment.description).nftId,
+                                            owner: JSON.parse(event.payment.description).userId,
+                                            nft: ObjectId(JSON.parse(event.payment.description).nftId),
+                                            quantity: JSON.parse(event.payment.description).quantity,
+                                            amountSpent: (event.payment.amount.amount / JSON.parse(event.payment.description).quantity).toFixed(4),
+                                            currency: "USD",
+                                            paymentId: JSON.parse(event.payment.description).uniqueId,
+                                            paymentMode: "Circle",
+                                        });
+
+                                        console.log(createPresale, 'create presale')
+
+                                        logger.info('Fetching user details from db');
+                                        const userInfo = await models.users.find({
+                                            _id: JSON.parse(event.payment.description).userId,
+                                        });
+
+                                        logger.info('Fetching PRESALE NFT details from db');
+                                        const findNFT = await Nft.presalenfts.findById(JSON.parse(event.payment.description).nftId);
+                                        if (findNFT) {
+                                            logger.info('Start of Updating itemSold field for presaleNFT');
+                                            findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(JSON.parse(event.payment.description).quantity);
+                                            await findNFT.save();
+                                            logger.info('End of Updating itemSold field for presaleNFT');
+                                        } else {
+                                            logger.info('Unable to fetch presale NFT from collection');
+                                        }
+                                        logger.info('Fetching presaleinitiated collection with the status received from Circle');
+                                        presaleNft.paymentStatus = event.payment?.status;
+                                        await presaleNft.save();
+
+                                        console.log(userInfo)
+
+                                        console.log(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
+                                        logger.info(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
+
+                                        await addMyIncomeMetaMask(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id).then((res) => {
+                                            console.log("status");
+                                            logger.info('Added my Income under referrals');
+                                        })
+
+                                        logger.info('Updating Activity status to completed');
+                                        await updateActivity(
+                                            JSON.parse(event.payment.description).userId,
+                                            JSON.parse(event.payment.description).uniqueId,
+                                            `You have completed the payment of ${event.payment.amount.amount} USD using Circle.`
+                                        );
+
+                                        logger.info('Sending Payment confirmation email to user');
+                                        await sendPaymentConfirmation({
+                                            email: event.payment.metadata.email,
+                                            quantity: JSON.parse(event.payment.description).quantity,
+                                            amount: event.payment.amount.amount,
+                                        });
+                                    }
+                                }
                             }
+                            else {
+                                const findUser = await models.users.findOne({
+                                    email: event.payment.metadata.email,
+                                });
+                                await updateActivity(
+                                    findUser._id,
+                                    event.payment.id,
+                                    `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Circle.`
+                                );
+                            }
+                        }
                         break;
                     }
                     default: {
