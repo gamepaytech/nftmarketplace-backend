@@ -1161,6 +1161,7 @@ const getactivity = async function (req, res) {
       ]);
       const userActivity = await models.users
         .findOne({ _id: req.body.userId })
+        .sort({"activity.timestamp":-1})
         .slice("activity", [
           parseInt(req.params.pageSize) * (req.params.page - 1),
           parseInt(req.params.pageSize),
