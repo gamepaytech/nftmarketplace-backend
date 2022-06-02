@@ -1182,8 +1182,8 @@ const createCircleLaunchpadPayment = async (req, res) => {
             nftId,
             updateId,
             payment_activity,
-            promoCode
-            // encryptedData
+            promoCode,
+            ipAddress
         } = req.body;
         var promoDiv = 0;
         if (promoCode) {
@@ -1242,7 +1242,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 metadata: {
                     email: email,
                     sessionId: sessionId,
-                    ipAddress: "54.179.107.70",
+                    ipAddress: ipAddress,
                 },
                 amount: {
                     amount: nftAmount.toFixed(2).toString(),
@@ -1298,9 +1298,9 @@ const createCircleLaunchpadPayment = async (req, res) => {
             })
             .catch((err) => {
                 console.log(err);
-                //logger.info("Circle err ", err.response.data);
+                logger.info("Circle error during v1 payments " +  err.response.data.message);
                 console.log("Circle err ", err.response.data);
-                res.status(400).json({ error: "a.Some error ocurred" });
+                res.status(400).json({ error: err.response.data.message });
             });
     } catch (err) {
         console.log(err);
