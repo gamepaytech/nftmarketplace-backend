@@ -1428,7 +1428,7 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
                     JSON.stringify(err.response)
                 );
                 res.status(500).json({ error: err.response.data?.message });
-        });
+            });
     } catch (err) {
         logger.info(err);
         console.log('Internal Server Error');
