@@ -1279,15 +1279,15 @@ const createCircleLaunchpadPayment = async (req, res) => {
                 //verificationFailureUrl: `https://cicd.gamepay.sg/profile?paymentCircle=${"payment-failed"}`,
             },
         })
-            .then(async (ares) => {
-                logger.info('Logging circle response received');
-                await logCircleResponse(
-                    ' Response received from v1/payments',
-                    email,
-                    ares.datadata.res.data.id,
-                    'Initiated from user',
-                    JSON.stringify(ares.data)
-                );
+            .then( (ares) => {
+                logger.info('Logging circle response received' + JSON.stringify(ares.data));
+                // await logCircleResponse(
+                //     ' Response received from v1/payments',
+                //     email,
+                //     ares.datadata.res.data.id,
+                //     'Initiated from user',
+                //     JSON.stringify(ares.data)
+                // );
                 logger.info("Circle response reveived");
                 logger.info(ares.data);
                 res.status(200).json({
@@ -1298,6 +1298,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
             .catch((err) => {
                 console.log(err);
                 console.log("Circle err ", err.response.data);
+                logger.info("Circle err ", err.response.data);
                 res.status(400).json({ error: "a.Some error ocurred" });
             });
        }     
@@ -1329,16 +1330,16 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
                 "Content-Type": "application/json",
             },
         })
-            .then(async (resp) => {
+            .then( (resp) => {
                 logger.info("Received data from circle payment encryption api");
                 logger.info('Logging circle response received');
-                await logCircleResponse(
-                    'Response received from /v1/encryption/public',
-                    '',
-                    '',
-                    'Initiated from user',
-                    JSON.stringify(resp.data)
-                );
+                // await logCircleResponse(
+                //     'Response received from /v1/encryption/public',
+                //     '',
+                //     '',
+                //     'Initiated from user',
+                //     JSON.stringify(resp.data)
+                // );
                 logger.info({
                     message: "Success",
                     publicKey: resp.data.data.publicKey,
@@ -1350,18 +1351,18 @@ const getKeyForCircleLaunchpadPayment = async (req, res) => {
                     keyIdEncrpytion: resp.data.data.keyId,
                 });
             })
-            .catch(async (err) => {
+            .catch( (err) => {
                 logger.error(
                     "Error occured while fetching data from circle api"
                 );
-                logger.info('Logging circle response received');
-                await logCircleResponse(
-                    'Error Response received from /v1/encryption/public',
-                    '',
-                    '',
-                    'Initiated from user',
-                    JSON.stringify(err)
-                );
+                // logger.info('Logging circle response received');
+                // await logCircleResponse(
+                //     'Error Response received from /v1/encryption/public',
+                //     '',
+                //     '',
+                //     'Initiated from user',
+                //     JSON.stringify(err)
+                // );
                 res.status(500).json({ error: "Some error ocurred" });
             });
     } catch (err) {
@@ -1398,13 +1399,13 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
                     fundingType: response.data.data.fundingType,
                 });
                 logger.info('Logging circle response received');
-                await logCircleResponse(
-                    'Response received from /v1/cards',
-                    response.data.data.metadata.email,
-                    '',
-                    'Initiated from user',
-                    JSON.stringify(response.data)
-                );
+                // await logCircleResponse(
+                //     'Response received from /v1/cards',
+                //     response.data.data.metadata.email,
+                //     '',
+                //     'Initiated from user',
+                //     JSON.stringify(response.data)
+                // );
                 res.status(200).json({
                     message: "Success",
                     id: response.data.data.id,
@@ -1417,16 +1418,16 @@ const getCardDetailsCircleLaunchpadPayment = async (req, res) => {
                     fundingType: response.data.data.fundingType,
                 });
             })
-            .catch(async (err) => {
+            .catch( (err) => {
                 logger.error('Error occured while fetching data from circle payment cards api');
-                logger.info('Logging circle response received');
-                await logCircleResponse(
-                    'Error Response received from /v1/cards',
-                    req.body.metadata.email,
-                    '',
-                    'Initiated from user',
-                    JSON.stringify(err.response)
-                );
+                // logger.info('Logging circle response received');
+                // await logCircleResponse(
+                //     'Error Response received from /v1/cards',
+                //     req.body.metadata.email,
+                //     '',
+                //     'Initiated from user',
+                //     JSON.stringify(err.response)
+                // );
                 res.status(500).json({ error: err.response.data?.message });
             });
     } catch (err) {
@@ -1450,10 +1451,10 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
                 Authorization: `Bearer ${process.env.CIRCLE_TOKEN}`,
             },
         })
-            .then(async (data) => {
+            .then( (data) => {
                 logger.info("Received data from circle payment payments api");
                 logger.info("data ", data.data);
-                logger.info('Logging circle response received');
+                logger.info('Logging circle response received' + JSON.stringify(data.data));
                 await logCircleResponse(
                     'Response received from v1/payments/${paymentId}',
                     '',
@@ -1467,14 +1468,14 @@ const paymentsCircleLaunchpadPayment = async (req, res) => {
                 });
             })
             .catch(async (err) => {
-                logger.info('Logging circle response received');
-                await logCircleResponse(
-                    'Error Response received from v1/payments/${paymentId}',
-                    '',
-                    paymentId,
-                    'Error',
-                    JSON.stringify(err.response)
-                );
+                //logger.info('Logging circle response received');
+                // await logCircleResponse(
+                //     'Error Response received from v1/payments/${paymentId}',
+                //     '',
+                //     paymentId,
+                //     'Error',
+                //     JSON.stringify(err.response)
+                // );
                 logger.error(
                     "Error occured while fetching data from circle payment payments api - {}",
                     err.response
@@ -1560,14 +1561,14 @@ const circleSNSResponse= async (request, response) => {
                         console.log(event,"event",typeof event)
                         logger.info("CIRCLE EVENT ", event);
 
-                        logger.info('Logging circle response received');
-                        await logCircleResponse(
-                            "Notification received from Circle",
-                            event.payment.metadata.email,
-                            event.payment.id,
-                            event.payment?.status,
-                            JSON.stringify(respObject)
-                        );
+                        logger.info('Logging circle response received' + JSON.stringify(respObject));
+                        // await logCircleResponse(
+                        //     "Notification received from Circle",
+                        //     event.payment.metadata.email,
+                        //     event.payment.id,
+                        //     event.payment?.status,
+                        //     JSON.stringify(respObject)
+                        // );
 
                         if ((event.payment?.status == "paid")) {
                             logger.info("-----charge confirmed", event);
