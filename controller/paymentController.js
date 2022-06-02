@@ -224,7 +224,7 @@ const createPaymentAAA = async (req, res) => {
                         "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
                     success_url: successUrl,
                     cancel_url: cancleUrl,
-                    sandbox: true,
+                    sandbox: process.env.AAA_SANDBOX,
                     cart: {
                         items: [
                             {
