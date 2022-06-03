@@ -1589,8 +1589,6 @@ const circleSNSResponse= async (request, response) => {
                                                 await presaleNft.save();
                                                 logger.info('Updated status field in presaleinitiated collection');
 
-                                                console.log(userInfo)
-
                                                 console.log(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
                                                 logger.info(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
 
