@@ -1519,196 +1519,196 @@ const circleSNSResponse= async (request, response) => {
 
                         if (event.payment?.status === "paid" || event.payment?.status == "confirmed") {
                             logger.info("Payment Status from Circle is " + event.payment.status);
-                            try{
-                            if (findUser) {
-                                logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
-                                const paymentActivity = JSON.parse(event.payment.description).payment_activity;
+                            try {
+                                if (findUser) {
+                                    logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
+                                    const paymentActivity = JSON.parse(event.payment.description).payment_activity;
 
-                                logger.info('paymentActivity === NFT_PURCHASE' + (paymentActivity === 'NFT_PURCHASE'));
+                                    logger.info('paymentActivity === NFT_PURCHASE' + (paymentActivity === 'NFT_PURCHASE'));
 
-                                if (paymentActivity == "NFT_PURCHASE") {
+                                    if (paymentActivity == "NFT_PURCHASE") {
 
-                                    logger.info('Checking if the presale nft exists in database for userId - ' + userId + 'and payment id - ' + event.payment.id);
-                                    const presaleNft = await PresaletNftInitiated.findOne({
-                                        userId: findUser._id,
-                                        paymentId: event.payment.id,
-                                        paymentStatus: 'action_required'
-                                    });
+                                        logger.info('Checking if the presale nft exists in database for userId - ' + findUser._id + 'and payment id - ' + event.payment.id);
+                                        const presaleNft = await PresaletNftInitiated.findOne({
+                                            userId: findUser._id,
+                                            paymentId: event.payment.id,
+                                            paymentStatus: 'action_required'
+                                        });
 
-                                    logger.info('presaleNft object - ' + presaleNft);
+                                        logger.info('presaleNft object - ' + presaleNft);
 
-                                    logger.info('event.payment.id - ' + event.payment.id);
+                                        logger.info('event.payment.id - ' + event.payment.id);
 
-                                    if (presaleNft) {
-                                        logger.info('Presale nft exists in database');
-                                        console.log(event.payment.id, "payment id");
-                                        logger.info(event.payment.id +  "payment id");
+                                        if (presaleNft) {
+                                            logger.info('Presale nft exists in database');
+                                            console.log(event.payment.id, "payment id");
+                                            logger.info(event.payment.id + "payment id");
 
-                                        const alreadySaved = await PresaleBoughtNft.findOne({ paymentId: event.payment.id })
+                                            const alreadySaved = await PresaleBoughtNft.findOne({ paymentId: event.payment.id })
 
-                                        console.log(alreadySaved, "is null");
+                                            console.log(alreadySaved, "is null");
 
-                                        if (!alreadySaved) {
-                                            logger.info('Creating PresaleBoughtNft collection with nft count and amount');
-                                            console.log(JSON.parse(event.payment.description).nftId,
-                                                JSON.parse(event.payment.description).userId,
-                                                ObjectId(JSON.parse(event.payment.description).nftId),
-                                                JSON.parse(event.payment.description).quantity,
-                                                event.payment.amount.amount,
-                                                "Cirlce");
+                                            if (!alreadySaved) {
+                                                logger.info('Creating PresaleBoughtNft collection with nft count and amount');
+                                                console.log(JSON.parse(event.payment.description).nftId,
+                                                    JSON.parse(event.payment.description).userId,
+                                                    ObjectId(JSON.parse(event.payment.description).nftId),
+                                                    JSON.parse(event.payment.description).quantity,
+                                                    event.payment.amount.amount,
+                                                    "Cirlce");
 
-                                            logger.info('Creating PresaleBoughtNft entry for user - ' + findUser._id);
-                                            console.log('Creating PresaleBoughtNft entry for user - ' + findUser._id);
-                                            const createPresale = await PresaleBoughtNft.create({
-                                                nftIdOwned: JSON.parse(event.payment.description).nftId,
-                                                owner: JSON.parse(event.payment.description).userId,
-                                                nft: ObjectId(JSON.parse(event.payment.description).nftId),
-                                                quantity: JSON.parse(event.payment.description).quantity,
-                                                amountSpent: (event.payment.amount.amount).toFixed(4),
-                                                currency: 'USD',
-                                                paymentId: JSON.parse(event.payment.description).uniqueId,
-                                                paymentMode: 'Circle',
-                                                promoCode: presaleNft.promoApplied
-                                            });
+                                                logger.info('Creating PresaleBoughtNft entry for user - ' + findUser._id);
+                                                console.log('Creating PresaleBoughtNft entry for user - ' + findUser._id);
+                                                const createPresale = await PresaleBoughtNft.create({
+                                                    nftIdOwned: JSON.parse(event.payment.description).nftId,
+                                                    owner: JSON.parse(event.payment.description).userId,
+                                                    nft: ObjectId(JSON.parse(event.payment.description).nftId),
+                                                    quantity: JSON.parse(event.payment.description).quantity,
+                                                    amountSpent: (event.payment.amount.amount).toFixed(4),
+                                                    currency: 'USD',
+                                                    paymentId: JSON.parse(event.payment.description).uniqueId,
+                                                    paymentMode: 'Circle',
+                                                    promoCode: presaleNft.promoApplied
+                                                });
 
-                                            console.log(createPresale, 'create presale');
-                                            logger.info('Created PresaleBoughtNft entry for user - ' + findUser._id);
+                                                console.log(createPresale, 'create presale');
+                                                logger.info('Created PresaleBoughtNft entry for user - ' + findUser._id);
 
-                                            logger.info('Fetching PRESALE NFT details from db');
-                                            const findNFT = await Nft.presalenfts.findById(JSON.parse(event.payment.description).nftId);
-                                            if (findNFT) {
-                                                logger.info('Start of Updating itemSold field for presaleNFT');
-                                                findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(JSON.parse(event.payment.description).quantity);
-                                                await findNFT.save();
-                                                logger.info('End of Updating itemSold field for presaleNFT');
-                                            } else {
-                                                logger.info('Unable to fetch presale NFT from collection');
-                                            }
-                                            logger.info('Updating presaleinitiated collection with the status received from Circle' + event.payment?.status);
-                                            presaleNft.paymentStatus = event.payment?.status;
-                                            await presaleNft.save();
-                                            logger.info('Updated status field in presaleinitiated collection');
+                                                logger.info('Fetching PRESALE NFT details from db');
+                                                const findNFT = await Nft.presalenfts.findById(JSON.parse(event.payment.description).nftId);
+                                                if (findNFT) {
+                                                    logger.info('Start of Updating itemSold field for presaleNFT');
+                                                    findNFT.itemSold = parseInt(findNFT.itemSold) + parseInt(JSON.parse(event.payment.description).quantity);
+                                                    await findNFT.save();
+                                                    logger.info('End of Updating itemSold field for presaleNFT');
+                                                } else {
+                                                    logger.info('Unable to fetch presale NFT from collection');
+                                                }
+                                                logger.info('Updating presaleinitiated collection with the status received from Circle' + event.payment?.status);
+                                                presaleNft.paymentStatus = event.payment?.status;
+                                                await presaleNft.save();
+                                                logger.info('Updated status field in presaleinitiated collection');
 
-                                            console.log(userInfo)
+                                                console.log(userInfo)
 
-                                            console.log(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
-                                            logger.info(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
+                                                console.log(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
+                                                logger.info(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id, "add to my reward");
 
-                                            await addMyIncomeMetaMask(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id).then((res) => {
-                                                console.log('Added my Income under referrals');
+                                                await addMyIncomeMetaMask(JSON.parse(event.payment.description).nftId, JSON.parse(event.payment.description).userId, createPresale._id).then((res) => {
+                                                    console.log('Added my Income under referrals');
 
-                                            });
+                                                });
 
-                                            logger.info('Added my Income under referrals');
+                                                logger.info('Added my Income under referrals');
 
-                                            logger.info('Updating Activity status to completed');
-                                            logger.info('Updating Activity status to completed');
+                                                logger.info('Updating Activity status to completed');
+                                                logger.info('Updating Activity status to completed');
 
-                                            await updateActivity(
-                                                JSON.parse(event.payment.description).userId,
-                                                JSON.parse(event.payment.description).uniqueId,
-                                                `You have completed the payment of ${event.payment.amount.amount} USD using Fiat Payment.`
-                                            );
+                                                await updateActivity(
+                                                    JSON.parse(event.payment.description).userId,
+                                                    JSON.parse(event.payment.description).uniqueId,
+                                                    `You have completed the payment of ${event.payment.amount.amount} USD using Fiat Payment.`
+                                                );
 
-                                            logger.info('Payment Object - ' + event.payment);
-                                            logger.info('Amount Object - ' + event.payment.amount);
-                                            logger.info('Updated Activity status to completed');
-                                            logger.info('Amount - ' + event.payment.amount.amount);
+                                                logger.info('Payment Object - ' + event.payment);
+                                                logger.info('Amount Object - ' + event.payment.amount);
+                                                logger.info('Updated Activity status to completed');
+                                                logger.info('Amount - ' + event.payment.amount.amount);
 
-                                            logger.info('Sending Payment confirmation email to user');
-                                            await sendPaymentConfirmation({
-                                                email: event.payment.metadata.email,
-                                                quantity: JSON.parse(event.payment.description).quantity,
-                                                amount: event.payment.amount.amount,
-                                            });
-                                            logger.info('Sent Payment confirmation email to user');
-
-                                            logger.info('Fetching CirclePayment data based for payment id - ' + event.payment.id);
-                                            const findCirclePay = await CirclePayment.findOne({
-                                                paymentId: event.payment.id,
-                                            });
-                                            if (!findCirclePay) {
-                                                logger.info('CirclePayment data no found for payment id - ' + event.payment.id);
-                                                const CirclePay = await CirclePayment.create({
-                                                    paymentId: event.payment.id,
-                                                    amount: (event.payment.amount.amount).toFixed(4),
-                                                    nftId: JSON.parse(event.payment.description).nftId,
+                                                logger.info('Sending Payment confirmation email to user');
+                                                await sendPaymentConfirmation({
                                                     email: event.payment.metadata.email,
                                                     quantity: JSON.parse(event.payment.description).quantity,
-                                                    status: event.payment?.status
+                                                    amount: event.payment.amount.amount,
                                                 });
-                                                console.log(CirclePay, 802);
-                                                logger.info('Created CirclePayment object for the email - ' + event.payment.metadata.email + ' and payment id - ' + event.payment.id);
+                                                logger.info('Sent Payment confirmation email to user');
+
+                                                logger.info('Fetching CirclePayment data based for payment id - ' + event.payment.id);
+                                                const findCirclePay = await CirclePayment.findOne({
+                                                    paymentId: event.payment.id,
+                                                });
+                                                if (!findCirclePay) {
+                                                    logger.info('CirclePayment data no found for payment id - ' + event.payment.id);
+                                                    const CirclePay = await CirclePayment.create({
+                                                        paymentId: event.payment.id,
+                                                        amount: (event.payment.amount.amount).toFixed(4),
+                                                        nftId: JSON.parse(event.payment.description).nftId,
+                                                        email: event.payment.metadata.email,
+                                                        quantity: JSON.parse(event.payment.description).quantity,
+                                                        status: event.payment?.status
+                                                    });
+                                                    console.log(CirclePay, 802);
+                                                    logger.info('Created CirclePayment object for the email - ' + event.payment.metadata.email + ' and payment id - ' + event.payment.id);
+                                                } else {
+                                                    logger.info('Updating CirclePayment data for payment id - ' + event.payment.id);
+                                                    const updateCirclePay = await CirclePayment.updateOne(
+                                                        { paymentId: event.payment.id },
+                                                        { $set: { status: event.payment?.status } }
+                                                    );
+                                                    logger.info('Updated CirclePayment data for payment id - ' + event.payment.id);
+                                                }
                                             } else {
-                                                logger.info('Updating CirclePayment data for payment id - ' + event.payment.id);
-                                                const updateCirclePay = await CirclePayment.updateOne(
-                                                    { paymentId: event.payment.id },
-                                                    { $set: { status: event.payment?.status } }
-                                                );
-                                                logger.info('Updated CirclePayment data for payment id - ' + event.payment.id);
+                                                logger.info('PresaleBoughtNft already exists for the given payment id - .' + event.payment.id);
                                             }
-                                        }else{
-                                            logger.info('PresaleBoughtNft already exists for the given payment id - .' + event.payment.id);
+                                        } else {
+                                            logger.info('PreSaleNFT is not present for the user or has already been processed.');
                                         }
                                     } else {
-                                        logger.info('PreSaleNFT is not present for the user or has already been processed.');
-                                    }
-                                } else {
-                                    logger.info('Fetching LaunchpadPayment object from database');
-                                    const findExists = await LaunchpadPayment.findOne({
-                                        paymentId: event.payment.id,
-                                    });
-
-                                    if (!findExists) {
-                                        logger.info("LaunchpadPayment entry is not present for the payment id - " + event.payment.id);
-                                        await LaunchpadPayment.create({
-                                            userId: findUser._id,
-                                            amountCommited: event.payment.amount.amount,
-                                            paymentMethod: "Circle",
-                                            paymentStatus: event.payment.status,
+                                        logger.info('Fetching LaunchpadPayment object from database');
+                                        const findExists = await LaunchpadPayment.findOne({
                                             paymentId: event.payment.id,
                                         });
-                                        logger.info("LaunchpadPayment entry created for the payment id - " + event.payment.id);
-                                    } else {
-                                        logger.info("LaunchpadPayment entry exists for the payment id - " + event.payment.id);
-                                        logger.info("Updating launchpadPayment entry for the payment id - " + event.payment.id);
-                                        await LaunchpadPayment.updateOne(
-                                            {
-                                                paymentId: event.payment.id,
-                                            },
-                                            {
+
+                                        if (!findExists) {
+                                            logger.info("LaunchpadPayment entry is not present for the payment id - " + event.payment.id);
+                                            await LaunchpadPayment.create({
                                                 userId: findUser._id,
-                                                amountCommited: amount.amount,
+                                                amountCommited: event.payment.amount.amount,
                                                 paymentMethod: "Circle",
                                                 paymentStatus: event.payment.status,
                                                 paymentId: event.payment.id,
-                                                metadata: JSON.stringify(event.payment.metadata),
-                                            }
-                                        );
-                                    }
+                                            });
+                                            logger.info("LaunchpadPayment entry created for the payment id - " + event.payment.id);
+                                        } else {
+                                            logger.info("LaunchpadPayment entry exists for the payment id - " + event.payment.id);
+                                            logger.info("Updating launchpadPayment entry for the payment id - " + event.payment.id);
+                                            await LaunchpadPayment.updateOne(
+                                                {
+                                                    paymentId: event.payment.id,
+                                                },
+                                                {
+                                                    userId: findUser._id,
+                                                    amountCommited: amount.amount,
+                                                    paymentMethod: "Circle",
+                                                    paymentStatus: event.payment.status,
+                                                    paymentId: event.payment.id,
+                                                    metadata: JSON.stringify(event.payment.metadata),
+                                                }
+                                            );
+                                        }
 
-                                    logger.info('Fetching LaunchpadAmount object from database');
-                                    const launchpadAmount = await LaunchpadAmount.findOne({
-                                        userId: findUser._id
-                                    });
-                                    if (!launchpadAmount) {
-                                        logger.info('LaunchpadAmount object not found in database. Creating one');
-                                        await LaunchpadAmount.create({
-                                            userId: findUser._id,
-                                            amountCommited: event.payment.amount.amount,
+                                        logger.info('Fetching LaunchpadAmount object from database');
+                                        const launchpadAmount = await LaunchpadAmount.findOne({
+                                            userId: findUser._id
                                         });
-                                        logger.info('Created LaunchpadAmount object');
-                                    } else {
-                                        logger.info('Updating LaunchpadAmount object');
-                                        launchpadAmount.amountCommited = Number(launchpadAmount.amountCommited) + Number(event.payment.amount.amount);
-                                        await launchpadAmount.save();
-                                        logger.info('Updated LaunchpadAmount object');
+                                        if (!launchpadAmount) {
+                                            logger.info('LaunchpadAmount object not found in database. Creating one');
+                                            await LaunchpadAmount.create({
+                                                userId: findUser._id,
+                                                amountCommited: event.payment.amount.amount,
+                                            });
+                                            logger.info('Created LaunchpadAmount object');
+                                        } else {
+                                            logger.info('Updating LaunchpadAmount object');
+                                            launchpadAmount.amountCommited = Number(launchpadAmount.amountCommited) + Number(event.payment.amount.amount);
+                                            await launchpadAmount.save();
+                                            logger.info('Updated LaunchpadAmount object');
+                                        }
                                     }
+                                } else {
+                                    logger.info('User does not exists in the database.');
                                 }
-                            } else {
-                                logger.info('User does not exists in the database.');
-                            }
-                            }catch(excep){
+                            } catch (excep) {
                                 logger.info('Inside catch block');
                                 logger.info('exception is ' + excep);
                                 console.log('Inside catch block');
