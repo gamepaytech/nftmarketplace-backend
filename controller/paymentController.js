@@ -1458,7 +1458,7 @@ const circleSNSResponse= async (request, response) => {
         request.on("data", (data) => {
             body += data;
         });
-        request.on("end", () => {
+        request.on("end", async () => {
             console.log(`POST request, \nPath: ${request.url}`);
             console.log("Headers: ");
             console.dir(request.headers);
@@ -1468,7 +1468,7 @@ const circleSNSResponse= async (request, response) => {
                 "Content-Type": "text/html",
             });
             response.end(`POST request for ${request.url}`);
-            handleBody(body);
+            await handleBody(body);
         });
     } else {
         const msg = `${request.method} method not supported`;
