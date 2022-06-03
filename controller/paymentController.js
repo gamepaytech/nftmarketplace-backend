@@ -1524,6 +1524,8 @@ const circleSNSResponse= async (request, response) => {
                                 logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
                                 const paymentActivity = JSON.parse(event.payment.description).payment_activity;
 
+                                logger.info('paymentActivity === NFT_PURCHASE' + (paymentActivity === 'NFT_PURCHASE'));
+
                                 if (paymentActivity === 'NFT_PURCHASE') {
 
                                     logger.info('Checking if the presale nft exists in database for userId - ' + userId + 'and payment id - ' + event.payment.id);
@@ -1532,6 +1534,10 @@ const circleSNSResponse= async (request, response) => {
                                         paymentId: event.payment.id,
                                         paymentStatus: 'action_required'
                                     });
+
+                                    logger.info('presaleNft object - ' + presaleNft);
+
+                                    logger.info('event.payment.id - ' + event.payment.id);
 
                                     if (presaleNft) {
                                         logger.info('Presale nft exists in database');
