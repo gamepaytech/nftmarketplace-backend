@@ -1526,7 +1526,7 @@ const circleSNSResponse= async (request, response) => {
 
                                 logger.info('paymentActivity === NFT_PURCHASE' + (paymentActivity === 'NFT_PURCHASE'));
 
-                                if (paymentActivity === 'NFT_PURCHASE') {
+                                if (paymentActivity == "NFT_PURCHASE") {
 
                                     logger.info('Checking if the presale nft exists in database for userId - ' + userId + 'and payment id - ' + event.payment.id);
                                     const presaleNft = await PresaletNftInitiated.findOne({
