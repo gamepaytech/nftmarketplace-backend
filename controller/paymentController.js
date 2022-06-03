@@ -1515,16 +1515,14 @@ const circleSNSResponse= async (request, response) => {
                         logger.info("CIRCLE EVENT ", event);
 
                         logger.info('Fetching User object from database');
-                        const findUser = await models.users.findOne({
-                            email: event.payment.metadata.email,
-                        });
+                        const findUser = await models.users.findById(JSON.parse(event.payment.description).userId);
 
                         if (event.payment?.status === "paid" || event.payment?.status == "confirmed") {
-                            logger.info("Payment Status from Circle is ", event.payment?.status);
+                            logger.info("Payment Status from Circle is " + event.payment.status);
 
                             if (findUser) {
                                 logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
-                                if (JSON.parse(event.payment.description).payment_activity === 'NFT_PURCHASE') {
+                                if (JSON.parse(event.payment.description).payment_activity == "NFT_PURCHASE") {
 
                                     logger.info('Checking if the presale nft exists in database for userId - ' + userId + 'and payment id - ' + event.payment.id);
                                     const presaleNft = await PresaletNftInitiated.findOne({
@@ -1535,8 +1533,8 @@ const circleSNSResponse= async (request, response) => {
 
                                     if (presaleNft) {
                                         logger.info('Presale nft exists in database');
-                                        console.log(JSON.parse(event.payment.description).uniqueId, "payment id");
-                                        logger.info(JSON.parse(event.payment.description).uniqueId, "payment id");
+                                        console.log(event.payment.id, "payment id");
+                                        logger.info(event.payment.id +  "payment id");
 
                                         const alreadySaved = await PresaleBoughtNft.findOne({ paymentId: event.payment.id })
 
@@ -1641,7 +1639,8 @@ const circleSNSResponse= async (request, response) => {
                                                 );
                                                 logger.info('Updated CirclePayment data for payment id - ' + event.payment.id);
                                             }
-
+                                        }else{
+                                            logger.info('PresaleBoughtNft already exists for the given payment id - .' + event.payment.id);
                                         }
                                     } else {
                                         logger.info('PreSaleNFT is not present for the user or has already been processed.');
@@ -1705,8 +1704,11 @@ const circleSNSResponse= async (request, response) => {
                             logger.info('updateActivity for the received status from Notification');
                             console.log('updateActivity for the received status from Notification');
 
+                            logger.info('Payment status - '+ event.payment.status);
+                            logger.info('Payment amount - '+ event.payment.amount.amount);
+
                             await updateActivity(
-                                findUser._id,
+                                JSON.parse(event.payment.description).userId,
                                 event.payment.id,
                                 `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Fiat Payment.`
                             );
