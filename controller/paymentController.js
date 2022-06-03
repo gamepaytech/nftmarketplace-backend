@@ -1522,7 +1522,9 @@ const circleSNSResponse= async (request, response) => {
 
                             if (findUser) {
                                 logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
-                                if (JSON.parse(event.payment.description).payment_activity == "NFT_PURCHASE") {
+                                const paymentActivity = JSON.parse(event.payment.description).payment_activity;
+
+                                if (paymentActivity === 'NFT_PURCHASE') {
 
                                     logger.info('Checking if the presale nft exists in database for userId - ' + userId + 'and payment id - ' + event.payment.id);
                                     const presaleNft = await PresaletNftInitiated.findOne({
@@ -1700,16 +1702,17 @@ const circleSNSResponse= async (request, response) => {
                             } else {
                                 logger.info('User does not exists in the database.');
                             }
-                        } else {
+                        } else if(event.payment?.status === "failed" || event.payment?.status === "fail" ){
                             logger.info('updateActivity for the received status from Notification');
                             console.log('updateActivity for the received status from Notification');
 
                             logger.info('Payment status - '+ event.payment.status);
                             logger.info('Payment amount - '+ event.payment.amount.amount);
+                            logger.info('Unique id amount - '+ event.payment.amount.amount);
 
                             await updateActivity(
                                 JSON.parse(event.payment.description).userId,
-                                event.payment.id,
+                                JSON.parse(event.payment.description).uniqueId,
                                 `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Fiat Payment.`
                             );
                             console.log('Completed updateActivity for the received status from Notification');
