@@ -1564,9 +1564,9 @@ const circleSNSResponse= async (request, response) => {
                                                     owner: JSON.parse(event.payment.description).userId,
                                                     nft: ObjectId(JSON.parse(event.payment.description).nftId),
                                                     quantity: JSON.parse(event.payment.description).quantity,
-                                                    amountSpent: (event.payment.amount.amount).toFixed(4),
+                                                    amountSpent: event.payment.amount.amount,
                                                     currency: 'USD',
-                                                    paymentId: JSON.parse(event.payment.description).uniqueId,
+                                                    paymentId: event.payment.id,
                                                     paymentMode: 'Circle',
                                                     promoCode: presaleNft.promoApplied
                                                 });
