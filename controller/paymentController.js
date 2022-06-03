@@ -1519,7 +1519,7 @@ const circleSNSResponse= async (request, response) => {
 
                         if (event.payment?.status === "paid" || event.payment?.status == "confirmed") {
                             logger.info("Payment Status from Circle is " + event.payment.status);
-
+                            try{
                             if (findUser) {
                                 logger.info('Payment Activity - ' + JSON.parse(event.payment.description).payment_activity);
                                 const paymentActivity = JSON.parse(event.payment.description).payment_activity;
@@ -1707,6 +1707,12 @@ const circleSNSResponse= async (request, response) => {
                                 }
                             } else {
                                 logger.info('User does not exists in the database.');
+                            }
+                            }catch(excep){
+                                logger.info('Inside catch block');
+                                logger.info('exception is ' + excep);
+                                console.log('Inside catch block');
+                                console.log('exception is ' + excep);
                             }
                         } else if(event.payment?.status === "failed" || event.payment?.status === "fail" ){
                             logger.info('updateActivity for the received status from Notification');
