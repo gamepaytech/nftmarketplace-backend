@@ -1219,7 +1219,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
             req.user.userId,
             nftAmount,
             false,
-            "Circle",
+            "Fiat Payment",
             idempotencyKey
         );
         console.log("Place 4");
@@ -1708,9 +1708,10 @@ const circleSNSResponse= async (request, response) => {
                             await updateActivity(
                                 findUser._id,
                                 event.payment.id,
-                                `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Circle.`
+                                `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Fiat Payment.`
                             );
                             console.log('Completed updateActivity for the received status from Notification');
+                            logger.info('Completed updateActivity for the received status from Notification');
                         }
                         break;
                     }
