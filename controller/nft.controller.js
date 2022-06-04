@@ -412,37 +412,21 @@ const userBoughtNft = async (req, res) => {
 const getNftByUserId = async (req, res) => {
     try {
         const { userId } = req.body;
-
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
+        let total = 0;
+        total =  await PresaleBoughtNft.find({ owner: userId }).count()
         const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
             path: "nft"
-        });
-        // console.log("findNfts ",findNfts);
-        // logger.info("findnfts ",findNfts);
+        }).limit(pageSize).skip(pageSize * page);
         if (!findNfts) {
             return res.status(404).json({
                 error: "Error! No nft found",
             });
         }
-        //  logger.info(findNfts,"FIND NFTS")
-        //  let allNft = new Array();
-        //  for (let i = 0; i < findNfts.length; i++) {
-        //      const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
-        //      // logger.info("nfts ",findNft);
-        //      console.log("findNft", findNft);
-        //      if (findNft.length > 0) {
-        //          allNft[i] = {
-        //              buyData:findNfts,
-        //              nft:findNft
-        //          };
-        //      }
-        //  }
-        //  const newNft = allNft.filter(function (el) {
-        //      return el != null;
-        //  })
-        //  console.log("newNft", newNft);
-        //  logger.info("NFTS" ,newNft);
         res.status(200).json({
             allNft: findNfts,
+            total: total
         });
     }
     catch (err) {
@@ -781,7 +765,7 @@ const createPreSaleNFTInitiated = async function (req, res) {
 const updateNFTSaleOnPaidStatus = async function (req, res) {
     try {
         logger.info('Start of updateNFTSaleOnPaidStatus');
-        const { userId, paymentId, amount } = req.body;
+        const { userId, paymentId, amount, paymentStatus } = req.body;
 
         const presaleNft = await PresaletNftInitiated.find({
             userId: userId,
@@ -797,6 +781,8 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
                 res.status(200).json({
                     msg: 'NFT pre sale info updated successfully.',
                 });
+                presaleNft.paymentStatus=paymentStatus;
+                await presaleNft.save();
             }else{
                 logger.info('NFT record not found.');
                 res.status(200).json({
@@ -849,7 +835,8 @@ const updatePreSaleNFTDetails = async (presaleNft, amount) => {
             await CirclePayment.create(createObj);
             logger.info('Successfully created record into Circle Payment ' + createObj);
             logger.info('Sending confirmation email to user');
-            await sendPaymentConfirmation({ email: presaleNft.email, amount: amount });
+
+            await sendPaymentConfirmation({ email: presaleNft.email, quantity : presaleNft.nftCount,amount: amount });
             logger.info('Sent confirmation email to user ' + presaleNft.email);
             logger.info('End of updatePreSaleNFTDetails');
             return 'SUCCESS';
