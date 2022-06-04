@@ -22,80 +22,60 @@ const startPresale = async (req, res) => {
     getPresaleNFT.forEach(async (nft) => {
       let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
       if(!isSupplyCount){
-        if(nft.tier_type == "1"){
-          presale_status.push(nft.presale_status);
-          getCurrentPSTier = getPreSaleTier.find((el) => el.tier_type === nft.tier_type);
-          var isFutureDate = futureDate(addDays(nft.presale_start_date,getCurrentPSTier.duration_in_days));
-          if(!isFutureDate){
-          var index =   getPreSaleTier.findIndex((el) =>  el.tier_type === nft.tier_type );
-          if(index != getPreSaleTier.length - 1){
-            var activePresale1 = getPreSaleTier[index + 1]
-            if(activePresale1){
-              await nftModels.presalenfts.updateOne(
-                {
-                  _id:nft.id
-                },
-                [
-                  {
-                    $set: {
-                      price: activePresale1.price,
-                      tier_type: activePresale1.tier_type,
-                      presale_start_date:new Date(Date.now()).toISOString()
-                    },
-                  },
-                ],
-                { upsert: false }
-              );
-            }
-          }
-          }else{
-            var crossedPresale = filterPresale(getPreSaleTier,nft.tier_type); 
-            var pastPresale =
-              crossedPresale.length === 0
-              ? crossedPresale 
-              : getPreSaleTier.filter((el) =>  el.tier_type === nft.tier_type )
-                var totalCount = pastPresale.reduce(function(prev, cur) {
-                  return prev + parseInt(cur.quantity);
-                }, 0);
-            if(nft.itemSold >= totalCount){
-              var activePresale = getPreSaleTier[crossedPresale.length];
-              await nftModels.presalenfts.updateOne(
-                {
-                  _id:nft.id
-                },
-                [
-                  {
-                    $set: {
-                      price: activePresale.price,
-                      tier_type: activePresale.tier_type,
-                      presale_start_date:new Date(Date.now()).toISOString()
-                    },
-                  },
-                ],
-                { upsert: false }
-              );
-            }
-          }
-        }else{
-          var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
-          var activePresale1 =
-            getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
-          await nftModels.presalenfts.updateOne(
-            {
-              _id: nft.id,
-            },
-            [
-              {
-                $set: {
-                  price: activePresale1.price,
-                  tier_type: activePresale1.tier_type,
-                  presale_status: "started",
-                  presale_start_date: new Date(Date.now()).toISOString(),
-                },
-              },
-            ],
-            { upsert: false }
+        if (nft.tier_type) {
+          getCurrentPSTier = getPreSaleTier.find(
+            (el) => el.tier_type === nft.tier_type
           );
+          var isFutureDate = futureDate(
+            addDays(nft.presale_start_date, getCurrentPSTier.duration_in_days)
+          );
+          if (!isFutureDate) {
+            var index = getPreSaleTier.findIndex(
+              (el) => el.tier_type === nft.tier_type
+            );
+            if (index != getPreSaleTier.length - 1) {
+              var activePresale1 = getPreSaleTier[index + 1];
+              if (activePresale1) {
+                await nftModels.presalenfts.updateOne(
+                  {
+                    _id: nft.id,
+                  },
+                  [
+                    {
+                      $set: {
+                        price: activePresale1.price,
+                        tier_type: activePresale1.tier_type,
+                        presale_start_date: new Date(
+                          Date.now()
+                        ).toISOString(),
+                      },
+                    },
+                  ],
+                  { upsert: false }
+                );
+              }
+            }
+          } else {
+            var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
+            var activePresale =
+              getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
+            await nftModels.presalenfts.updateOne(
+              {
+                _id: nft.id,
+              },
+              [
+                {
+                  $set: {
+                    price: activePresale.price,
+                    tier_type: activePresale.tier_type,
+                    presale_status: "started",
+                    presale_start_date: new Date(Date.now()).toISOString(),
+                  },
+                },
+              ],
+              { upsert: false }
+            );
+          }
         }
       }else{
         await nftModels.presalenfts.updateOne(
@@ -177,80 +157,61 @@ const schedulePreSale = async(req,res) =>{
       getPresaleNFT.forEach(async (nft) => {
         let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
         if(!isSupplyCount){
-          if(nft.tier_type == "1"){
+          if (nft.tier_type) {
             presale_status.push(nft.presale_status);
-            getCurrentPSTier = getPreSaleTier.find((el) => el.tier_type === nft.tier_type);
-            var isFutureDate = futureDate(addDays(nft.presale_start_date,getCurrentPSTier.duration_in_days));
-            if(!isFutureDate){
-            var index =   getPreSaleTier.findIndex((el) =>  el.tier_type === nft.tier_type );
-            if(index != getPreSaleTier.length - 1){
-              var activePresale1 = getPreSaleTier[index + 1]
-              if(activePresale1){
-                await nftModels.presalenfts.updateOne(
-                  {
-                    _id:nft.id
-                  },
-                  [
-                    {
-                      $set: {
-                        price: activePresale1.price,
-                        tier_type: activePresale1.tier_type,
-                        presale_start_date:new Date(Date.now()).toISOString()
-                      },
-                    },
-                  ],
-                  { upsert: false }
-                );
-              }
-            }
-            }else{
-              var crossedPresale = filterPresale(getPreSaleTier,nft.tier_type); 
-                var pastPresale =
-                crossedPresale.length === 0
-                ? crossedPresale 
-                : getPreSaleTier.filter((el) =>  el.tier_type === nft.tier_type )
-                  var totalCount = pastPresale.reduce(function(prev, cur) {
-                    return prev + parseInt(cur.quantity);
-                  }, 0);
-              if(nft.itemSold >= totalCount){
-                var activePresale = getPreSaleTier[crossedPresale.length];
-                await nftModels.presalenfts.updateOne(
-                  {
-                    _id:nft.id
-                  },
-                  [
-                    {
-                      $set: {
-                        price: activePresale.price,
-                        tier_type: activePresale.tier_type,
-                        presale_start_date:new Date(Date.now()).toISOString()
-                      },
-                    },
-                  ],
-                  { upsert: false }
-                );
-              }
-            }
-          }else{
-            var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
-            var activePresale1 =
-              getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
-            await nftModels.presalenfts.updateOne(
-              {
-                _id: nft.id,
-              },
-              [
-                {
-                  $set: {
-                    price: activePresale1.price,
-                    tier_type: activePresale1.tier_type,
-                    presale_status: "started",
-                    presale_start_date: new Date(Date.now()).toISOString(),
-                  },
-                },
-              ],
-              { upsert: false }
+            getCurrentPSTier = getPreSaleTier.find(
+              (el) => el.tier_type === nft.tier_type
             );
+            var isFutureDate = futureDate(
+              addDays(nft.presale_start_date, getCurrentPSTier.duration_in_days)
+            );
+            if (!isFutureDate) {
+              var index = getPreSaleTier.findIndex(
+                (el) => el.tier_type === nft.tier_type
+              );
+              if (index != getPreSaleTier.length - 1) {
+                var activePresale1 = getPreSaleTier[index + 1];
+                if (activePresale1) {
+                  await nftModels.presalenfts.updateOne(
+                    {
+                      _id: nft.id,
+                    },
+                    [
+                      {
+                        $set: {
+                          price: activePresale1.price,
+                          tier_type: activePresale1.tier_type,
+                          presale_start_date: new Date(
+                            Date.now()
+                          ).toISOString(),
+                        },
+                      },
+                    ],
+                    { upsert: false }
+                  );
+                }
+              }
+            } else {
+              var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
+              var activePresale =
+                getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
+              await nftModels.presalenfts.updateOne(
+                {
+                  _id: nft.id,
+                },
+                [
+                  {
+                    $set: {
+                      price: activePresale.price,
+                      tier_type: activePresale.tier_type,
+                      presale_status: "started",
+                      presale_start_date: new Date(Date.now()).toISOString(),
+                    },
+                  },
+                ],
+                { upsert: false }
+              );
+            }
           }
         }else{
           await nftModels.presalenfts.updateOne(
@@ -337,7 +298,7 @@ const filterPresale = (arr, type) => {
 const filterQuantityPresale = (arr, min) => {
   var total = 0
   let arrList = [];
-  for (let i = 0; i <= arr.length; i++) {
+  for (let i = 0; i <= arr.length - 1; i++) {
     logger.info(total+ " < " +min , "total > min")
     if(total <= min){
       arrList.push(arr[i]);
