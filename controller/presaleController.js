@@ -205,7 +205,7 @@ const schedulePreSale = async(req,res) =>{
             }
             }else{
               var crossedPresale = filterPresale(getPreSaleTier,nft.tier_type); 
-              var pastPresale =
+                var pastPresale =
                 crossedPresale.length === 0
                 ? crossedPresale 
                 : getPreSaleTier.filter((el) =>  el.tier_type === nft.tier_type )

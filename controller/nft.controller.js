@@ -884,6 +884,5 @@ module.exports = {
     userBoughtNftMetamask,
     createPreSaleNFTInitiated,
     updateNFTSaleOnPaidStatus,
-    updatePreSaleNFTDetails,
-    testAPI
+    updatePreSaleNFTDetails
 };
