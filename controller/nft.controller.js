@@ -412,37 +412,22 @@ const userBoughtNft = async (req, res) => {
 const getNftByUserId = async (req, res) => {
     try {
         const { userId } = req.body;
-        if (Object.keys(req.params).length !== 0) {
-            let page = req.params.page;
-            let pageSize = req.params.pageSize;
-            let total = 0;
-            total =  await PresaleBoughtNft.find({ owner: userId }).count()
-            const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
-                path: "nft"
-            }).limit(pageSize).skip(pageSize * page);
-            if (!findNfts) {
-                return res.status(404).json({
-                    error: "Error! No nft found",
-                });
-            }
-            res.status(200).json({
-                allNft: findNfts,
-                total: total
-            });
-        }else{
-            const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
-                path: "nft"
-            });
-            if (!findNfts) {
-                return res.status(404).json({
-                    error: "Error! No nft found",
-                });
-            }
-            res.status(200).json({
-                allNft: findNfts,
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
+        let total = 0;
+        total =  await PresaleBoughtNft.find({ owner: userId }).count()
+        const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
+            path: "nft"
+        }).limit(pageSize).skip(pageSize * page);
+        if (!findNfts) {
+            return res.status(404).json({
+                error: "Error! No nft found",
             });
         }
-       
+        res.status(200).json({
+            allNft: findNfts,
+            total: total
+        });
     }
     catch (err) {
         logger.info(err);
