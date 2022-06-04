@@ -686,7 +686,7 @@ const getAllMyReferrals = async function (req, res) {
         const getMyReferralsId = await referralModel.myReferral.find(
             { referredBy: { $in: referIds } },
             { _id: 0, userId: 1 }
-        )
+        ).sort({createdDate:-1})
         let Ids = []
         for (let i = 0; i < getMyReferralsId.length; i++) {
             Ids.push(getMyReferralsId[i].userId)

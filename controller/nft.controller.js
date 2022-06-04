@@ -668,7 +668,7 @@ const getMyrewards = async function (req, res) {
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
-        }).limit(pageSize).skip(pageSize * page);
+        }).sort({createdDate:-1}).limit(pageSize).skip(pageSize * page);
 
         let totalRewards = 0;
         let Ids = [];
