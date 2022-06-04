@@ -1198,7 +1198,7 @@ const createCircleLaunchpadPayment = async (req, res) => {
         logger.info(quantity, "quantity");
 
         var nftAmount =
-            parseFloat(amount) * ((100 - promoDiv) / 100);
+            parseFloat(amount) * quantity *((100 - promoDiv) / 100);
         nftAmount = Math.round(nftAmount);
 
         console.log(nftAmount,"amount of nft")
@@ -1564,7 +1564,7 @@ const circleSNSResponse= async (request, response) => {
                                                     owner: JSON.parse(event.payment.description).userId,
                                                     nft: ObjectId(JSON.parse(event.payment.description).nftId),
                                                     quantity: JSON.parse(event.payment.description).quantity,
-                                                    amountSpent: event.payment.amount.amount,
+                                                    amountSpent: parseFloat(event.payment.amount.amount)/parseInt((JSON.parse(event.payment.description).quantity)),
                                                     currency: 'USD',
                                                     paymentId: event.payment.id,
                                                     paymentMode: 'Circle',
@@ -1629,7 +1629,7 @@ const circleSNSResponse= async (request, response) => {
                                                     logger.info('CirclePayment data no found for payment id - ' + event.payment.id);
                                                     const CirclePay = await CirclePayment.create({
                                                         paymentId: event.payment.id,
-                                                        amount: (event.payment.amount.amount).toFixed(4),
+                                                        amount: parseFloat(event.payment.amount.amount).toFixed(4),
                                                         nftId: JSON.parse(event.payment.description).nftId,
                                                         email: event.payment.metadata.email,
                                                         quantity: JSON.parse(event.payment.description).quantity,
@@ -1676,7 +1676,7 @@ const circleSNSResponse= async (request, response) => {
                                                 },
                                                 {
                                                     userId: findUser._id,
-                                                    amountCommited: amount.amount,
+                                                    amountCommited: event.payment.amount.amount,
                                                     paymentMethod: "Circle",
                                                     paymentStatus: event.payment.status,
                                                     paymentId: event.payment.id,
