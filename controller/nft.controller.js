@@ -8,6 +8,7 @@ const PresaletNftInitiated = require("../models/presaleNftsInitiated");
 const PromoCode = require("../models/PromoCode")
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
+const axios = require('axios');
 const logger = require('../logger')
 var Web3 = require('web3');
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
@@ -460,9 +461,11 @@ const approveNFT = async (req, res) => {
 
 const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
     try {
+
         if (
             nftId && userId
         ) {
+            await presaleSchedularTrigger();
             const userInfo = await models.users.findById(userId);
             console.log(userInfo, "userinfo")
             if (userInfo && userInfo.refereeCode != "") {
@@ -508,6 +511,14 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
     }
 };
 
+
+const presaleSchedularTrigger = async () => {
+    try {
+      return await axios.get(`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 // const addMyIncome = async function (req, res) {
 //     try {
 //         if (
