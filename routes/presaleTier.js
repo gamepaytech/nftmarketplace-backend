@@ -7,7 +7,7 @@ const { authenticateUser } = require('../middleware/authentication')
 
 router.get('/startPreSale', cors(),authenticateUser,startPresale)
 router.get('/stopPresale', cors(),authenticateUser,stopPresale)
-router.get('/schedulePreSale', cors(),schedulePreSale)
+// router.get('/schedulePreSale', cors(),schedulePreSale)
 router.get('/getAll', cors(), getPresale)
 router.post('/create', cors(),authenticateUser,createPreSaleTier)
 router.get('/:id', cors(),authenticateUser,getPreSaleTierById)
