@@ -1721,7 +1721,7 @@ const circleSNSResponse= async (request, response) => {
                             await updateActivity(
                                 JSON.parse(event.payment.description).userId,
                                 JSON.parse(event.payment.description).uniqueId,
-                                `You have ${event.payment.status} for ${event.payment.amount.amount} USD amount using Fiat Payment.`
+                                `Your Fiat Payment transaction failed for the amount of ${event.payment.amount.amount} USD.`
                             );
                             console.log('Completed updateActivity for the received status from Notification');
                             logger.info('Completed updateActivity for the received status from Notification');
