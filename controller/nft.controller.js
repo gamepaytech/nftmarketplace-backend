@@ -465,7 +465,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
         if (
             nftId && userId
         ) {
-            await schedulePreSale();
+            // await schedulePreSale();
             const userInfo = await models.users.findById(userId);
             console.log(userInfo, "userinfo")
             if (userInfo && userInfo.refereeCode != "") {
