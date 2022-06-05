@@ -1074,16 +1074,20 @@ const checkRegisterredWallet = async (req, res) => {
 const checkWalletKeyBeforeRegister = async function(req,res) {
     try {
         const {address} = req.body;
-        const userInfo = await models.users.findOne({ metamaskKey: address });
-        console.log(userInfo)
-        if(userInfo !== null){
-            res
-            .status(200)
-            .json(
-                { status: 200, msg:'Success', data: true })
-        }
-        else{
-            res.status(200).json({ status: 200, msg: 'Internal Server Error!' ,data: false})
+        if(address && address !=""){
+            const userInfo = await models.users.findOne({ metamaskKey: address });
+            console.log(userInfo)
+            if(userInfo !== null){
+                res
+                .status(200)
+                .json(
+                    { status: 200, msg:'Wallet address already exists.', data: true })
+            }
+            else{
+                res.status(200).json({ status: 200, msg: 'Wallet key is available.' ,data: false})
+            }
+        }else{
+            res.status(200).json({ status: 200, msg: 'Wallet address is empty.' ,data: false})
         }
     } catch (error) {
         console.log(error)
