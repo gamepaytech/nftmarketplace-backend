@@ -8,11 +8,11 @@ const PresaletNftInitiated = require("../models/presaleNftsInitiated");
 const PromoCode = require("../models/PromoCode")
 const ObjectId = mongoose.Types.ObjectId;
 // const nftPresale = require("../models/NftPresale");
-const axios = require('axios');
 const logger = require('../logger')
 var Web3 = require('web3');
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
 const CirclePayment = require("../models/circlePayments.js");
+const schedulePreSale = require("../utils/presaleSchedular");
 
 const getPresaleSetting = async (req, res) => {
     const data = await Nft.settingpresalenfts.findOne({});
@@ -465,7 +465,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
         if (
             nftId && userId
         ) {
-            await presaleSchedularTrigger();
+            await schedulePreSale();
             const userInfo = await models.users.findById(userId);
             console.log(userInfo, "userinfo")
             if (userInfo && userInfo.refereeCode != "") {
@@ -511,16 +511,6 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
     }
 };
 
-
-const presaleSchedularTrigger = async () => {
-    try {
-      logger.info("PRESALE API TRIGGER"  +`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
-      return await axios.get(`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
-    } catch (error) {
-        logger.info("Error occured during presale scheduler trigger - "  + error);
-      console.error(error)
-    }
-  }
 // const addMyIncome = async function (req, res) {
 //     try {
 //         if (
