@@ -514,6 +514,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
 
 const presaleSchedularTrigger = async () => {
     try {
+      logger.info("PRESALE API TRIGGER", `${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
       return await axios.get(`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
     } catch (error) {
       console.error(error)
