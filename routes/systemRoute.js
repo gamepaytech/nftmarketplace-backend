@@ -13,6 +13,6 @@ const { authenticateUser } = require('../middleware/authentication');
 router.get('/getSystemMessage/:msgCode',cors(),authenticateUser,getSysMessage);
 router.get('/getSystemMessageByLang/:msgCode/:language',cors(),authenticateUser,getSysMessageByLang);
 router.get('/getSystemConfig/:config',cors(),authenticateUser,getSysConfig);
-router.get('/getFeatureControl/:featureName/:userName', cors(),authenticateUser, getFeatureAccessController)
+router.get('/getFeatureControl/:featureName/:userEmail', cors(),authenticateUser, getFeatureAccessController)
 
 module.exports = router;
