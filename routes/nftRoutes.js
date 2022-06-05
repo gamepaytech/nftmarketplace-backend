@@ -45,7 +45,6 @@ router.route('/update-item-sold').put(updateTotalSupply)
 router.route('/add-user-presaleNft').post(userBoughtNft)
 router.route('/add-user-presaleNft-metamask').post(userBoughtNftMetamask)
 router.route('/get-by-userId/:page/:pageSize').post(getNftByUserId)
-
 router.route("/upload-pinata").post(imageUpload.single("image"), uploadToPinata);
 router.route('/create-presalenft-initiated').post(authenticateUser, createPreSaleNFTInitiated);
 router.route('/update-nftsale-on-paidStatus').post(authenticateUser, updateNFTSaleOnPaidStatus);
