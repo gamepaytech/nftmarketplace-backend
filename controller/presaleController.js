@@ -24,7 +24,6 @@ const startPresale = async (req, res) => {
       let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
       if(!isSupplyCount){
         if (nft.tier_type) {
-          presale_status.push(nft.presale_status);
           getCurrentPSTier = getPreSaleTier.find(
             (el) => el.tier_type === nft.tier_type
           );

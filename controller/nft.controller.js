@@ -322,7 +322,7 @@ const ownedNft = async (req, res) => {
 
 const userBoughtNftMetamask = async (req, res) => {
     const { nftId, address, promoApplied, quantity, txHash } = req.body;
-    console.log(process.env.RPC, "rpc")
+    logger.info(process.env.RPC, "rpc")
 
     var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
 
@@ -361,7 +361,7 @@ const userBoughtNftMetamask = async (req, res) => {
 
 
 
-        console.log(updatePresale, "updatePresale")
+        logger.info(updatePresale, "updatePresale")
 
         addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
@@ -376,7 +376,7 @@ const userBoughtNftMetamask = async (req, res) => {
 
 const userBoughtNft = async (req, res) => {
     const { nftId, userId, promoApplied, quantity } = req.body;
-    console.log("userBought running")
+    logger.info("userBought running")
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // logger.info("NFT ",findNftById)
     var promoDiv = 0
@@ -389,7 +389,7 @@ const userBoughtNft = async (req, res) => {
     logger.info(promoDiv, findNftById)
     const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100
     logger.info(amountTotal, "amountTotal")
-    console.log(nftId,userId,amountTotal,promoApplied,quantity,"389")
+    logger.info(nftId,userId,amountTotal,promoApplied,quantity,"389")
     const updatePresale = await PresaleBoughtNft.create({
         nftIdOwned: nftId,
         owner: userId,
@@ -398,7 +398,7 @@ const userBoughtNft = async (req, res) => {
         promoCode: promoApplied,
         quantity: quantity
     });
-    console.log(nftId, userId, updatePresale._id, "add my income")
+    logger.info(nftId, userId, updatePresale._id, "add my income")
     addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
     logger.info(updatePresale);
@@ -465,17 +465,13 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
         if (
             nftId && userId
         ) {
-            await schedulePreSale();
             const userInfo = await models.users.findById(userId);
-            console.log(userInfo, "userinfo")
             if (userInfo && userInfo.refereeCode != "") {
                 const bought = await PresaleBoughtNft.findOne({ _id: purchaseId })
-                console.log(bought, "bought")
                 logger.info("bought ", bought);
                 if (bought) {
                     const getMyRefferalsDetail = await referralModel.referralDetails.findOne({ referralCode: userInfo.refereeCode })
                     logger.info("getMyRefferalsDetail ", getMyRefferalsDetail);
-                    console.log("getMyRefferalsDetail ", getMyRefferalsDetail);
                     if (getMyRefferalsDetail) {
                         logger.info("GET MY REFERRAL ", getMyRefferalsDetail.userId)
                         let myShareAmount = (bought.amountSpent * bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
@@ -488,7 +484,6 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: userId,
                         });
                         await addMyIncome.save();
-                        console.log(addMyIncome, "addMyIncome")
                         const addFriendIncome = await new referralModel.referralIncome({
                             userId: userId,
                             amount: myFriendShareAmount,
@@ -497,17 +492,16 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: getMyRefferalsDetail.userId,
                         });
                         await addFriendIncome.save();
-                        console.log(addFriendIncome, "addMyfriewndIncome")
 
                     }
                 }
             } else {
-                console.log("do not have refree!")
+                logger.info("do not have refree!");
             }
         }
 
     } catch (error) {
-        console.log(error)
+        logger.info(error)
     }
 };
 
@@ -575,7 +569,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
 //             });
 //         }
 //     } catch (error) {
-//         console.log(error)
+//         logger.info(error)
 //         res.json({ status: 400, msg: error.toString() });
 //     }
 // };
