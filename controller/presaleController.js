@@ -193,24 +193,34 @@ const schedulePreSale = async(req,res) =>{
               }
             } else {
               var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
-              var activePresale =
+              var pastPresale =
+              crossed.length === 0
+              ? getPreSaleTier.filter((el) =>  el.tier_type === nft.tier_type )
+              : crossed 
+              var totalCount = pastPresale.reduce(function (prev, cur) {
+                return prev + parseInt(cur.quantity);
+              }, 0);
+              console.log(totalCount)
+              if (nft.itemSold >= totalCount) {
+                var activePresale =
                 getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
-              await nftModels.presalenfts.updateOne(
-                {
-                  _id: nft.id,
-                },
-                [
+                await nftModels.presalenfts.updateOne(
                   {
-                    $set: {
-                      price: activePresale.price,
-                      tier_type: activePresale.tier_type,
-                      presale_status: "started",
-                      presale_start_date: new Date(Date.now()).toISOString(),
-                    },
+                    _id: nft.id,
                   },
-                ],
-                { upsert: false }
-              );
+                  [
+                    {
+                      $set: {
+                        price: activePresale.price,
+                        tier_type: activePresale.tier_type,
+                        presale_status: "started",
+                        presale_start_date: new Date(Date.now()).toISOString(),
+                      },
+                    },
+                  ],
+                  { upsert: false }
+                );
+              }
             }
           }
         }else{
