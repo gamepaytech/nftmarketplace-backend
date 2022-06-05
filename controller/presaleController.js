@@ -149,12 +149,14 @@ const stopPresale = async(req,res) => {
 
 const schedulePreSale = async(req,res) =>{
   try {
+    logger.info("START SCHEDULE PRESALE")
     let isPresaleStart = await nftModels.settingpresalenfts.find({})
     if(isPresaleStart[0].event_start){
       let getPreSaleTier = await models.presaletiers.find({});
       let getPresaleNFT = await nftModels.presalenfts.find({});
       let presale_status = [];
       getPresaleNFT.forEach(async (nft) => {
+        logger.info("CHECK ALL PRESALE NFT")
         let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
         if(!isSupplyCount){
           if (nft.tier_type) {
@@ -165,6 +167,7 @@ const schedulePreSale = async(req,res) =>{
             var isFutureDate = futureDate(
               addDays(nft.presale_start_date, getCurrentPSTier.duration_in_days)
             );
+            logger.info("CHECK ALL PRESALE FUTURE DATE")
             if (!isFutureDate) {
               var index = getPreSaleTier.findIndex(
                 (el) => el.tier_type === nft.tier_type
@@ -200,7 +203,7 @@ const schedulePreSale = async(req,res) =>{
               var totalCount = pastPresale.reduce(function (prev, cur) {
                 return prev + parseInt(cur.quantity);
               }, 0);
-              console.log(totalCount)
+              logger.info("CHECK ITEM SOLD")
               if (nft.itemSold >= totalCount) {
                 var activePresale =
                 getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
@@ -254,13 +257,14 @@ const schedulePreSale = async(req,res) =>{
           { upsert: false }
         );
       }
-
+      logger.info("PRESALE SCHEDULE ENDED")
       res.status(200).json({
         status:"success",
         msg: "Presale Tier Updated",
       });
 
     }else{
+      logger.info("PRESALE EVENT NOT STARTED")
       res.status(200).json({
         status:"success",
         msg: "Presale Tier Event not Started",
@@ -268,7 +272,7 @@ const schedulePreSale = async(req,res) =>{
     }
     
   } catch (error) {
-    logger.info(error)
+    logger.info("PRESALE SCHEDULE ERROR" +error)
     res.status(400).json({
       status:"Error",
       msg: error,
