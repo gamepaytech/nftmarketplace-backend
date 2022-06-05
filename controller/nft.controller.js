@@ -517,6 +517,7 @@ const presaleSchedularTrigger = async () => {
       logger.info("PRESALE API TRIGGER"  +`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
       return await axios.get(`${process.env.APP_BACKEND_URL}/preSaleTier/schedulePreSale`)
     } catch (error) {
+        logger.info("Error occured during presale scheduler trigger - "  + error);
       console.error(error)
     }
   }
