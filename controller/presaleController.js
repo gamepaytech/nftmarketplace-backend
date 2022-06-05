@@ -20,15 +20,18 @@ const startPresale = async (req, res) => {
     let getPreSaleTier = await models.presaletiers.find({});
     let getPresaleNFT = await nftModels.presalenfts.find({});
     getPresaleNFT.forEach(async (nft) => {
+      logger.info("CHECK ALL PRESALE NFT")
       let isSupplyCount = nft.nftTotalSupply <= nft.itemSold
       if(!isSupplyCount){
         if (nft.tier_type) {
+          presale_status.push(nft.presale_status);
           getCurrentPSTier = getPreSaleTier.find(
             (el) => el.tier_type === nft.tier_type
           );
           var isFutureDate = futureDate(
             addDays(nft.presale_start_date, getCurrentPSTier.duration_in_days)
           );
+          logger.info("CHECK ALL PRESALE FUTURE DATE")
           if (!isFutureDate) {
             var index = getPreSaleTier.findIndex(
               (el) => el.tier_type === nft.tier_type
@@ -57,24 +60,52 @@ const startPresale = async (req, res) => {
             }
           } else {
             var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
-            var activePresale =
-              getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
-            await nftModels.presalenfts.updateOne(
-              {
-                _id: nft.id,
-              },
-              [
+            if (crossed.length == 0) {
+              var activePresale = getPreSaleTier[0];
+              await nftModels.presalenfts.updateOne(
                 {
-                  $set: {
-                    price: activePresale.price,
-                    tier_type: activePresale.tier_type,
-                    presale_status: "started",
-                    presale_start_date: new Date(Date.now()).toISOString(),
-                  },
+                  _id: nft.id,
                 },
-              ],
-              { upsert: false }
-            );
+                [
+                  {
+                    $set: {
+                      price: activePresale.price,
+                      tier_type: activePresale.tier_type,
+                      presale_status: "started",
+                      presale_start_date: new Date(Date.now()).toISOString(),
+                    },
+                  },
+                ],
+                { upsert: false }
+              );
+            } else {
+              var totalCount = crossed.reduce(function (prev, cur) {
+                return prev + parseInt(cur.quantity);
+              }, 0);
+              logger.info("CHECK ITEM SOLD");
+              if (nft.itemSold >= totalCount) { 
+                var activePresale = getPreSaleTier[ (getPreSaleTier.length === crossed.length) ? crossed.length -1 : crossed.length];
+                await nftModels.presalenfts.updateOne(
+                  {
+                    _id: nft.id,
+                  },
+                  [
+                    {
+                      $set: {
+                        price: activePresale.price,
+                        tier_type: activePresale.tier_type,
+                        presale_status: "started",
+                        presale_start_date: new Date(
+                          Date.now()
+                        ).toISOString(),
+                      },
+                    },
+                  ],
+                  { upsert: false }
+                );
+              }
+            }
+            
           }
         }
       }else{
@@ -196,17 +227,8 @@ const schedulePreSale = async(req,res) =>{
               }
             } else {
               var crossed = filterQuantityPresale(getPreSaleTier, nft.itemSold);
-              var pastPresale =
-              crossed.length === 0
-              ? getPreSaleTier.filter((el) =>  el.tier_type === nft.tier_type )
-              : crossed 
-              var totalCount = pastPresale.reduce(function (prev, cur) {
-                return prev + parseInt(cur.quantity);
-              }, 0);
-              logger.info("CHECK ITEM SOLD")
-              if (nft.itemSold >= totalCount) {
-                var activePresale =
-                getPreSaleTier[crossed.length == 0 ? 0 : crossed.length - 1];
+              if (crossed.length == 0) {
+                var activePresale = getPreSaleTier[0];
                 await nftModels.presalenfts.updateOne(
                   {
                     _id: nft.id,
@@ -217,13 +239,40 @@ const schedulePreSale = async(req,res) =>{
                         price: activePresale.price,
                         tier_type: activePresale.tier_type,
                         presale_status: "started",
-                        presale_start_date: new Date(Date.now()).toISOString(),
+                        // presale_start_date: new Date(Date.now()).toISOString(),
                       },
                     },
                   ],
                   { upsert: false }
                 );
+              } else {
+                var totalCount = crossed.reduce(function (prev, cur) {
+                  return prev + parseInt(cur.quantity);
+                }, 0);
+                logger.info("CHECK ITEM SOLD");
+                if (nft.itemSold >= totalCount) { 
+                  var activePresale = getPreSaleTier[ (getPreSaleTier.length === crossed.length) ? crossed.length -1 : crossed.length];
+                  await nftModels.presalenfts.updateOne(
+                    {
+                      _id: nft.id,
+                    },
+                    [
+                      {
+                        $set: {
+                          price: activePresale.price,
+                          tier_type: activePresale.tier_type,
+                          presale_status: "started",
+                          presale_start_date: new Date(
+                            Date.now()
+                          ).toISOString(),
+                        },
+                      },
+                    ],
+                    { upsert: false }
+                  );
+                }
               }
+              
             }
           }
         }else{
@@ -314,9 +363,9 @@ const filterQuantityPresale = (arr, min) => {
   let arrList = [];
   for (let i = 0; i <= arr.length - 1; i++) {
     logger.info(total+ " < " +min , "total > min")
+    total += parseInt(arr[i].quantity)
     if(total <= min){
       arrList.push(arr[i]);
-      total += parseInt(arr[i].quantity)
     }
   }
   return arrList;
