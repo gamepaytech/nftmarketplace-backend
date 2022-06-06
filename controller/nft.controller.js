@@ -484,6 +484,11 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: userId,
                         });
                         await addMyIncome.save();
+                        if(addMyIncome){
+                            logger.info("ADD MY REFERRAL COMMISSION", addMyIncome)
+                        }else{
+                            logger.info("NOT ADD MY REFERRAL COMMISSION")
+                        }
                         const addFriendIncome = await new referralModel.referralIncome({
                             userId: userId,
                             amount: myFriendShareAmount,
@@ -492,7 +497,11 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: getMyRefferalsDetail.userId,
                         });
                         await addFriendIncome.save();
-
+                        if(addFriendIncome){
+                            logger.info("ADD FRIEND REFERRAL COMMISSION", addMyIncome)
+                        }else{
+                            logger.info("NOT ADD FRIEND REFERRAL COMMISSION")
+                        }
                     }
                 }
             } else {
