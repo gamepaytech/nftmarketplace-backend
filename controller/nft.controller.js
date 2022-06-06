@@ -498,7 +498,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                         });
                         await addFriendIncome.save();
                         if(addFriendIncome){
-                            logger.info("ADD FRIEND REFERRAL COMMISSION", addMyIncome)
+                            logger.info("ADD FRIEND REFERRAL COMMISSION", addFriendIncome)
                         }else{
                             logger.info("NOT ADD FRIEND REFERRAL COMMISSION")
                         }
