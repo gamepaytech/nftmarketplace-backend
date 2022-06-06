@@ -704,7 +704,7 @@ const getAllMyReferrals = async function (req, res) {
                     "createdAt":1
                 },
                 { __v: 0 }
-            ).limit(pageSize).skip(pageSize * page);
+            ).sort({createdAt:-1}).limit(pageSize).skip(pageSize * page);
             if (getMyReferrals) {
                 const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                 res.json({
