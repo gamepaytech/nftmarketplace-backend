@@ -13,11 +13,11 @@ let myReferral = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    createdDate: {
-        type: Date,
-        default: Date.now(),
-    },
-})
+}, {
+    timestamps: true,
+    strictPopulate: false
+    }
+)
 
 let myReferralIncome = new mongoose.Schema({
     userId: {
@@ -41,11 +41,12 @@ let myReferralIncome = new mongoose.Schema({
         default: '',
         required: true,
     },
-    createdDate: {
-        type: Date,
-        default: Date.now(),
-    },
-})
+    
+},
+    {
+        timestamps: true,
+        strictPopulate: false
+    })
 
 let myreferralDetails = new mongoose.Schema({
     userId: {
@@ -75,11 +76,12 @@ let myreferralDetails = new mongoose.Schema({
         type:String,
         default:"active"
     },
-    createdDate: {
-        type: Date,
-        default: Date.now(),
-    },
-})
+},
+    {
+        timestamps: true,
+        strictPopulate: false
+    }
+)
 
 myreferralDetails.virtual('myFreindReferral', {
     ref: 'myReferral', //The Model to use
