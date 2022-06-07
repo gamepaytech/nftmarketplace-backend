@@ -665,7 +665,7 @@ const getMyrewards = async function (req, res) {
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
-        }).sort({createdDate:-1}).limit(pageSize).skip(pageSize * page);
+        }).sort({createdAt:-1}).limit(pageSize).skip(pageSize * page);
 
         let totalRewards = 0;
         let Ids = [];
@@ -690,7 +690,7 @@ const getMyrewards = async function (req, res) {
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
                             refereeCode: myRewards[j].refereeCode,
-                            rewardDate: myRewards[j].createdDate,
+                            rewardDate: myRewards[j].createdAt,
                             reward: myRewards[j].amount,
                         });
                     }
