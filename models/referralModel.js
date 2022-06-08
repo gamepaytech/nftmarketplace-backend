@@ -41,11 +41,8 @@ let myReferralIncome = new mongoose.Schema({
         default: '',
         required: true,
     },
-    createdDate: {
-        type: Date,
-        default: Date.now(),
-    },
-})
+},{ timestamps: true,
+    strictPopulate:false })
 
 let myreferralDetails = new mongoose.Schema({
     userId: {

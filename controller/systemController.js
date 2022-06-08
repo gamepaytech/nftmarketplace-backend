@@ -63,9 +63,9 @@ const getSysConfig = async (req, res) => {
 const getFeatureAccessController = async (req, res) => {
     try {
         const featureName = req.params.featureName;
-        const userName = req.params.userName;
+        const userEmail = req.params.userEmail;
         logger.info('Start of getting feature for the feature :: '+ featureName);
-        const isAccessible = await getFeatureControl(featureName, userName);
+        const isAccessible = await getFeatureControl(featureName, userEmail);
         res.status(200).json({
             data: isAccessible
         });

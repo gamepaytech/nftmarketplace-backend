@@ -45,7 +45,7 @@ const register = async (req, res) => {
         })
         if (emailAlreadyExists) {
             const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
-            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email already exists' })
         }
 
         const usernameAlreadyExists = await models.users.findOne({
@@ -53,7 +53,7 @@ const register = async (req, res) => {
         })
         if (usernameAlreadyExists) {
             const sysMsg = await getSystemMessage('GPAY_00005_EMAIL_USERNAME_EXISTS')
-            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Email or username already exists' })
+            res.status(401).json({ msg: sysMsg ? sysMsg.message :'Username already exists' })
         }
 
         hashedPassword = CryptoJS.AES.encrypt(
@@ -686,7 +686,7 @@ const getAllMyReferrals = async function (req, res) {
         const getMyReferralsId = await referralModel.myReferral.find(
             { referredBy: { $in: referIds } },
             { _id: 0, userId: 1 }
-        )
+        ).sort({createdDate:-1})
         let Ids = []
         for (let i = 0; i < getMyReferralsId.length; i++) {
             Ids.push(getMyReferralsId[i].userId)
@@ -704,7 +704,7 @@ const getAllMyReferrals = async function (req, res) {
                     "createdAt":1
                 },
                 { __v: 0 }
-            ).limit(pageSize).skip(pageSize * page);
+            ).sort({createdAt:-1}).limit(pageSize).skip(pageSize * page);
             if (getMyReferrals) {
                 const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
                 res.json({
@@ -1074,15 +1074,24 @@ const checkRegisterredWallet = async (req, res) => {
 const checkWalletKeyBeforeRegister = async function(req,res) {
     try {
         const {address} = req.body;
-        const userInfo = await models.users.find({ metamaskKey: address });
-        if(userInfo !== null){
-            res
-            .status(200)
-            .json(
-                { status: 200, msg:'Success', data: true })
+        if(address && address !=""){
+            const userInfo = await models.users.findOne({ metamaskKey: address });
+            console.log(userInfo)
+            if(userInfo !== null){
+                res
+                .status(200)
+                .json(
+                    { status: 200, msg:'Wallet address already exists.', data: true })
+            }
+            else{
+                res.status(200).json({ status: 200, msg: 'Wallet key is available.' ,data: false})
+            }
+        }else{
+            res.status(200).json({ status: 200, msg: 'Wallet address is empty.' ,data: false})
         }
     } catch (error) {
-        res.status(400).json({ status: 400, msg: 'Internal Server Error!' ,data: true})
+        console.log(error)
+        res.status(400).json({ status: 400, msg: 'Internal Server Error!'})
     }
 }
 
@@ -1150,17 +1159,27 @@ const setactivity = async function (req, res) {
 const getactivity = async function (req, res) {
     if (Object.keys(req.params).length !== 0) {
       logger.info("user id ", req.body.userId);
-      const user = await models.users.aggregate([
-        { $match: { _id: mongoose.Types.ObjectId(req.body.userId) } },
-        { $project: { count: { $size: "$activity" } } },
+      const userActivity = await models.users.aggregate([
+        {
+          $match: {
+            _id: mongoose.Types.ObjectId(req.body.userId),
+          },
+        },
+        {
+          $project: {
+            activity: {
+              $slice: [
+                { $reverseArray: "$activity" },
+                parseInt(req.params.pageSize) * (req.params.page - 1),
+                parseInt(req.params.pageSize), 
+              ],
+            },
+            count: { $size: "$activity" },
+            _id: 1,
+          },
+        },
       ]);
-      const userActivity = await models.users
-        .findOne({ _id: req.body.userId })
-        .slice("activity", [
-          parseInt(req.params.pageSize) * (req.params.page - 1),
-          parseInt(req.params.pageSize),
-        ]);
-      res.json({ userActivity: userActivity?.activity, total: user[0]?.count });
+      res.json({ userActivity: userActivity[0]?.activity, total: userActivity[0]?.count });
     } else {
       const userActivity = await models.users.findOne({ _id: req.body.userId });
       res.json({ userActivity: userActivity?.activity });

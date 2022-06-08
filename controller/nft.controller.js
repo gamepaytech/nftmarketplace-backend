@@ -12,6 +12,7 @@ const logger = require('../logger')
 var Web3 = require('web3');
 const sendPaymentConfirmation = require("../utils/sendPaymentConfirmation");
 const CirclePayment = require("../models/circlePayments.js");
+const schedulePreSale = require("../utils/presaleSchedular");
 
 const getPresaleSetting = async (req, res) => {
     const data = await Nft.settingpresalenfts.findOne({});
@@ -321,7 +322,7 @@ const ownedNft = async (req, res) => {
 
 const userBoughtNftMetamask = async (req, res) => {
     const { nftId, address, promoApplied, quantity, txHash } = req.body;
-    console.log(process.env.RPC, "rpc")
+    logger.info(process.env.RPC, "rpc")
 
     var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
 
@@ -360,7 +361,7 @@ const userBoughtNftMetamask = async (req, res) => {
 
 
 
-        console.log(updatePresale, "updatePresale")
+        logger.info(updatePresale, "updatePresale")
 
         addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
@@ -375,7 +376,7 @@ const userBoughtNftMetamask = async (req, res) => {
 
 const userBoughtNft = async (req, res) => {
     const { nftId, userId, promoApplied, quantity } = req.body;
-    console.log("userBought running")
+    logger.info("userBought running")
     const findNftById = await Nft.presalenfts.find({ _id: nftId });
     // logger.info("NFT ",findNftById)
     var promoDiv = 0
@@ -388,7 +389,7 @@ const userBoughtNft = async (req, res) => {
     logger.info(promoDiv, findNftById)
     const amountTotal = (findNftById[0].price * (100 - promoDiv)) / 100
     logger.info(amountTotal, "amountTotal")
-    console.log(nftId,userId,amountTotal,promoApplied,quantity,"389")
+    logger.info(nftId,userId,amountTotal,promoApplied,quantity,"389")
     const updatePresale = await PresaleBoughtNft.create({
         nftIdOwned: nftId,
         owner: userId,
@@ -397,7 +398,7 @@ const userBoughtNft = async (req, res) => {
         promoCode: promoApplied,
         quantity: quantity
     });
-    console.log(nftId, userId, updatePresale._id, "add my income")
+    logger.info(nftId, userId, updatePresale._id, "add my income")
     addMyIncomeMetaMask(nftId, userId, updatePresale._id)
 
     logger.info(updatePresale);
@@ -412,37 +413,21 @@ const userBoughtNft = async (req, res) => {
 const getNftByUserId = async (req, res) => {
     try {
         const { userId } = req.body;
-
-        const findNfts = await PresaleBoughtNft.find({ owner: userId }).populate({
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
+        let total = 0;
+        total =  await PresaleBoughtNft.find({ owner: userId }).count()
+        const findNfts = await PresaleBoughtNft.find({ owner: userId }).sort({ createdAt:-1 }).populate({
             path: "nft"
-        });
-        // console.log("findNfts ",findNfts);
-        // logger.info("findnfts ",findNfts);
+        }).limit(pageSize).skip(pageSize * page);
         if (!findNfts) {
             return res.status(404).json({
                 error: "Error! No nft found",
             });
         }
-        //  logger.info(findNfts,"FIND NFTS")
-        //  let allNft = new Array();
-        //  for (let i = 0; i < findNfts.length; i++) {
-        //      const findNft = await Nft.presalenfts.find({ _id: findNfts[i].nft });
-        //      // logger.info("nfts ",findNft);
-        //      console.log("findNft", findNft);
-        //      if (findNft.length > 0) {
-        //          allNft[i] = {
-        //              buyData:findNfts,
-        //              nft:findNft
-        //          };
-        //      }
-        //  }
-        //  const newNft = allNft.filter(function (el) {
-        //      return el != null;
-        //  })
-        //  console.log("newNft", newNft);
-        //  logger.info("NFTS" ,newNft);
         res.status(200).json({
             allNft: findNfts,
+            total: total
         });
     }
     catch (err) {
@@ -476,19 +461,17 @@ const approveNFT = async (req, res) => {
 
 const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
     try {
+
         if (
             nftId && userId
         ) {
             const userInfo = await models.users.findById(userId);
-            console.log(userInfo, "userinfo")
             if (userInfo && userInfo.refereeCode != "") {
                 const bought = await PresaleBoughtNft.findOne({ _id: purchaseId })
-                console.log(bought, "bought")
                 logger.info("bought ", bought);
                 if (bought) {
                     const getMyRefferalsDetail = await referralModel.referralDetails.findOne({ referralCode: userInfo.refereeCode })
                     logger.info("getMyRefferalsDetail ", getMyRefferalsDetail);
-                    console.log("getMyRefferalsDetail ", getMyRefferalsDetail);
                     if (getMyRefferalsDetail) {
                         logger.info("GET MY REFERRAL ", getMyRefferalsDetail.userId)
                         let myShareAmount = (bought.amountSpent * bought.quantity / 100) * parseInt(getMyRefferalsDetail.myShare);
@@ -501,7 +484,6 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: userId,
                         });
                         await addMyIncome.save();
-                        console.log(addMyIncome, "addMyIncome")
                         const addFriendIncome = await new referralModel.referralIncome({
                             userId: userId,
                             amount: myFriendShareAmount,
@@ -510,17 +492,16 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
                             recievedFrom: getMyRefferalsDetail.userId,
                         });
                         await addFriendIncome.save();
-                        console.log(addFriendIncome, "addMyfriewndIncome")
 
                     }
                 }
             } else {
-                console.log("do not have refree!")
+                logger.info("do not have refree!");
             }
         }
 
     } catch (error) {
-        console.log(error)
+        logger.info(error)
     }
 };
 
@@ -588,7 +569,7 @@ const addMyIncomeMetaMask = async function (nftId, userId, purchaseId) {
 //             });
 //         }
 //     } catch (error) {
-//         console.log(error)
+//         logger.info(error)
 //         res.json({ status: 400, msg: error.toString() });
 //     }
 // };
@@ -684,7 +665,7 @@ const getMyrewards = async function (req, res) {
 
         const myRewards = await referralModel.referralIncome.find({
             userId: req.body.userId,
-        }).limit(pageSize).skip(pageSize * page);
+        }).sort({createdAt:-1}).limit(pageSize).skip(pageSize * page);
 
         let totalRewards = 0;
         let Ids = [];
@@ -709,7 +690,7 @@ const getMyrewards = async function (req, res) {
                             id: getMyReferees[i].id,
                             email: getMyReferees[i].email,
                             refereeCode: myRewards[j].refereeCode,
-                            rewardDate: myRewards[j].createdDate,
+                            rewardDate: myRewards[j].createdAt,
                             reward: myRewards[j].amount,
                         });
                     }
@@ -781,11 +762,12 @@ const createPreSaleNFTInitiated = async function (req, res) {
 const updateNFTSaleOnPaidStatus = async function (req, res) {
     try {
         logger.info('Start of updateNFTSaleOnPaidStatus');
-        const { userId, paymentId, amount } = req.body;
+        const { userId, paymentId, amount, paymentStatus } = req.body;
 
         const presaleNft = await PresaletNftInitiated.find({
             userId: userId,
-            paymentId: paymentId
+            paymentId: paymentId,
+            paymentStatus : 'action_required'
         });
 
         if (presaleNft) {
@@ -796,6 +778,8 @@ const updateNFTSaleOnPaidStatus = async function (req, res) {
                 res.status(200).json({
                     msg: 'NFT pre sale info updated successfully.',
                 });
+                presaleNft.paymentStatus=paymentStatus;
+                await presaleNft.save();
             }else{
                 logger.info('NFT record not found.');
                 res.status(200).json({
@@ -848,7 +832,8 @@ const updatePreSaleNFTDetails = async (presaleNft, amount) => {
             await CirclePayment.create(createObj);
             logger.info('Successfully created record into Circle Payment ' + createObj);
             logger.info('Sending confirmation email to user');
-            await sendPaymentConfirmation({ email: presaleNft.email, amount: amount });
+
+            await sendPaymentConfirmation({ email: presaleNft.email, quantity : presaleNft.nftCount,amount: amount });
             logger.info('Sent confirmation email to user ' + presaleNft.email);
             logger.info('End of updatePreSaleNFTDetails');
             return 'SUCCESS';
