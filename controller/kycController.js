@@ -2,6 +2,7 @@
 const mongoose = require('mongoose')
 const models = require("../models/kyc")
 const logger = require('../logger')
+const users = require('../models/User') 
 
 const getKYC = async (req, res) => {
     let page = req.query.page;
@@ -167,6 +168,71 @@ const getKYC = async (req, res) => {
     
   }
 
+  const checkSuperAdmin = async(req,res)=>{
+    const userId = req.params.userId;
+    // console.log(userId);
+    const admin = await users.users.findById(userId)
+    console.log(admin);
+    if(admin){
+      // if(admin.isSuperAdmin == true && admin.isAdmin == true){
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        let total = await models.kycs.count({});
+        models.kycs.find({}).populate({path:"userDetails", select:'email'})
+          // .select("name")
+          .sort({ price:1 })
+          .limit(pageSize)
+          .skip(pageSize * page)
+          .then((results) => {
+            return res
+              .status(200)
+              .json({ status:"success", total: total, page: page, pageSize: pageSize, data: results });
+          })
+          .catch((err) => {
+            return res.status(500).send(err);
+          });
+      // }
+    }else{
+      res.json({ status: 400, msg:"User Not Found" });
+      return;
+    }
+
+  }
+
+  const reviewKYC = async(req, res) => {
+    try{
+       const keys = ["userId"];
+        for (i in keys) {
+          if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+            res.json({ status: "error", msg: keys[i] + " are required" });
+            return;
+          }
+        }
+
+        const checkUser = await models.kycs.findOne({userId:req.body.userId})
+        if(checkUser) {
+          const data = await models.kycs.updateOne(
+            {
+              userId: req.body.userId
+            },
+            {
+              $set: {                
+                status: "INRIVEW"
+              }
+            }
+            );
+          return res.status(201).json({
+            status: "success",
+            msg: "Success! KYC Update",
+            data: data
+          });
+        }
+
+    } catch (error) {
+      res.json({ status: 400, msg: "Invalid User" })
+      return
+    }
+  }
 
   const updateKYC = async(req, res) => {
     try {
@@ -240,6 +306,6 @@ const getKYC = async (req, res) => {
 }
 
 
-  module.exports = {getKYC,getKYCById,saveKYC,updateKYC,getKYCByUserId}
+  module.exports = {getKYC,getKYCById,saveKYC,updateKYC,getKYCByUserId,reviewKYC,checkSuperAdmin}
 
 
