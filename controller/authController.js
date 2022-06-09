@@ -455,6 +455,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
+                                sourceName:req.body.sourceName,
                             } 
                         }
                         else {
@@ -474,6 +475,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
+                                sourceName:req.body.sourceName,
                             }  
                         }
                         const newUser = new models.users(query)
@@ -579,6 +581,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             refereeCode: refereeCode,
+                            sourceName:req.body.sourceName,
                         }
                     }
                     else {
@@ -598,6 +601,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             refereeCode: refereeCode,
+                            sourceName:req.body.sourceName,
                         }
                     }
                     const newUser = new models.users(query)
