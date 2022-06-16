@@ -10,6 +10,7 @@ const {
     createJWT,
     sendVerificationEmail,
     sendResetPassswordEmail,
+    sendWelcomeEmail,
     createHash,
     createWalletAddressPayload,
     getSystemMessage,
@@ -80,6 +81,7 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
+        await sendWelcomeEmail({email: user.email})
         logger.info('AFTER SENDING--- ',user.verificationToken)
         const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
@@ -521,6 +523,7 @@ const addMyReferral = async function (req, res) {
                                         newUserInfo.verificationToken,
                                     origin: process.env.APP_BACKEND_URL,
                                 })
+                                sendWelcomeEmail({email:newUserInfo.email})
                                 if (newUserInfo) {
                                     const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                                     res.status(201).json({
@@ -626,6 +629,7 @@ const addMyReferral = async function (req, res) {
                             verificationToken: newUserInfo.verificationToken,
                             origin: process.env.APP_BACKEND_URL,
                         })
+                        sendWelcomeEmail({email:newUserInfo.email})
                         if (newUserInfo) {
                             const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                             res.status(201).json({
