@@ -573,6 +573,7 @@ const addMyReferral = async function (req, res) {
                             username: req.body.username,
                             email: req.body.email,
                             password: hashedPassword,
+                            country: req.body.country,
                             metamaskKey: req.body.metamaskKey || '',
                             verificationToken: verificationToken,
                             isAdmin:
@@ -594,6 +595,7 @@ const addMyReferral = async function (req, res) {
                             username: req.body.username,
                             email: req.body.email,
                             password: hashedPassword,
+                            country: req.body.country,
                             verificationToken: verificationToken,
                             isAdmin:
                                 req.body.isAdmin !== undefined &&
