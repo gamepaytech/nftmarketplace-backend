@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
             type: [],
         },
         role: { type: Array },
+        country: { type: String, default: 'xxxxx' },
     },
     { timestamps: true }
 )
