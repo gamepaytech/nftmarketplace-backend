@@ -30,8 +30,8 @@ const createReferral = async (req, res) => {
                 logger.info("Referral code already exists");
                 if(!!referralCode){
                     logger.info("Referral code note created it already exists");
-                    res.status(201).json({
-                        msg: 'Referral Code already exists'
+                    return res.status(500).json({
+                        err: 'Referral Code already exists'
                     });
                 }else{
                     let generateRefCode = true;
