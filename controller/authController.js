@@ -10,6 +10,7 @@ const {
     createJWT,
     sendVerificationEmail,
     sendResetPassswordEmail,
+    sendWelcomeEmail,
     createHash,
     createWalletAddressPayload,
     getSystemMessage,
@@ -80,6 +81,7 @@ const register = async (req, res) => {
             verificationToken: user.verificationToken,
             origin,
         })
+        await sendWelcomeEmail({email: user.email})
         logger.info('AFTER SENDING--- ',user.verificationToken)
         const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
         res.status(201).json({
@@ -442,6 +444,7 @@ const addMyReferral = async function (req, res) {
                                 username: req.body.username,
                                 email: req.body.email,
                                 password: hashedPassword,
+                                country: req.body.country,
                                 metamaskKey: req.body.metamaskKey,
                                 verificationToken: verificationToken,
                                 isAdmin:
@@ -455,6 +458,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
+                                sourceName:req.body.sourceName,
                             } 
                         }
                         else {
@@ -462,6 +466,7 @@ const addMyReferral = async function (req, res) {
                                 username: req.body.username,
                                 email: req.body.email,
                                 password: hashedPassword,
+                                country: req.body.country,
                                 verificationToken: verificationToken,
                                 isAdmin:
                                     req.body.isAdmin !== undefined &&
@@ -474,6 +479,7 @@ const addMyReferral = async function (req, res) {
                                         ? true
                                         : false,
                                 refereeCode: refereeCode,
+                                sourceName:req.body.sourceName,
                             }  
                         }
                         const newUser = new models.users(query)
@@ -519,6 +525,7 @@ const addMyReferral = async function (req, res) {
                                         newUserInfo.verificationToken,
                                     origin: process.env.APP_BACKEND_URL,
                                 })
+                                sendWelcomeEmail({email:newUserInfo.email})
                                 if (newUserInfo) {
                                     const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                                     res.status(201).json({
@@ -566,6 +573,7 @@ const addMyReferral = async function (req, res) {
                             username: req.body.username,
                             email: req.body.email,
                             password: hashedPassword,
+                            country: req.body.country,
                             metamaskKey: req.body.metamaskKey || '',
                             verificationToken: verificationToken,
                             isAdmin:
@@ -579,6 +587,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             refereeCode: refereeCode,
+                            sourceName:req.body.sourceName,
                         }
                     }
                     else {
@@ -586,6 +595,7 @@ const addMyReferral = async function (req, res) {
                             username: req.body.username,
                             email: req.body.email,
                             password: hashedPassword,
+                            country: req.body.country,
                             verificationToken: verificationToken,
                             isAdmin:
                                 req.body.isAdmin !== undefined &&
@@ -598,6 +608,7 @@ const addMyReferral = async function (req, res) {
                                     ? true
                                     : false,
                             refereeCode: refereeCode,
+                            sourceName:req.body.sourceName,
                         }
                     }
                     const newUser = new models.users(query)
@@ -622,6 +633,7 @@ const addMyReferral = async function (req, res) {
                             verificationToken: newUserInfo.verificationToken,
                             origin: process.env.APP_BACKEND_URL,
                         })
+                        sendWelcomeEmail({email:newUserInfo.email})
                         if (newUserInfo) {
                             const sysMsg = await getSystemMessage('GPAY_00006_VERIFY_EMAIL')
                             res.status(201).json({
