@@ -78,5 +78,5 @@ app.use("/luckydraw", luckyDrawRouter);
  
 //  Listening
 app.listen(PORT, () => {
-    console.log(` App successfully started on port : ${PORT}`);
+    console.log(` App successfully started on port 1: ${PORT}`);
 });
