@@ -64,7 +64,6 @@ const create = async (req, res) => {
 
 
     const contract = new web3.eth.Contract(mintingAbi,mintingAddress)
-    console.log(account.address);
     const estimated = await contract.methods.mintNFT("https://dingers.mypinata.cloud/ipfs/QmPZ6YdwwKskVEexoyr5MDPKZcPCEQRqR8cHBfapStGFeH/1.json",
     nftTotalSupply,
     account.address,
@@ -83,7 +82,7 @@ const create = async (req, res) => {
     account.address,
     price
     ).send({ from: account.address, gas: estimated+600000})
-    console.log(mintRes,"Minted")
+    logger.info(mintRes,"Minted")
     const tokenId = mintRes.events.Minted.returnValues.nftId
     const saleId = mintRes.events.saleCreated.returnValues.itemId
     const createObj = {
