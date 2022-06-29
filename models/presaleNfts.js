@@ -34,7 +34,7 @@ let NftSchema = new mongoose.Schema(
         },
         itemSold: {
             type: Number,
-            default: 1
+            default: 0
         },
         nftTotalSupply: {
             type: Number,

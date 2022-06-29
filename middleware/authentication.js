@@ -15,7 +15,6 @@ const authenticateUser = async (req, res, next) => {
             }
 
             req.user = payload
-            // console.log(req.user)
             // console.log('authenticate')
 
             return next()
@@ -34,7 +33,6 @@ const authenticateUser = async (req, res, next) => {
 const authenticateAdmin = async (req,res, next) => {
     try {
         const accessToken = req.headers['authorization']
-        console.log(accessToken);
         const bearerToken = accessToken.split(' ')[1]
         if (accessToken) {
             const payload = isTokenValid(bearerToken)
@@ -43,7 +41,6 @@ const authenticateAdmin = async (req,res, next) => {
             }
 
             req.user = payload
-            // console.log(req.user._id);
             // console.log(req.user,"sdfd");
             // console.log(!req.user.isAdmin);
             if(!req.user.isAdmin) {
