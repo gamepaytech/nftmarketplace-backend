@@ -41,17 +41,6 @@ const saveLuckyDrawTickets = async (req, res) => {
             err: "Ticket Count cannot be empty",
         });
        }
-    
-        // .then(
-        //     res.status(200).json({
-        //         data: "Saved Successfully"
-        //     })
-        // ).catch(err => {
-        //     res.status(500).json({
-        //         err: err,
-        //     });
-        // });
-        //Include Transaction Details
         
     } catch (err) {
         logger.info(err);
