@@ -6,20 +6,11 @@ const TransactionSchema = new mongoose.Schema({
         },
         userId: {
             type:String,
-            unique:true
         },
         walletAddress: {
             type:String,
-            unique:true
-        },
-        ticketId: {
-            type:String,
-            unique:true
         },
         ticketCount: Number,
-        createdBy: {
-            type:String
-        }
     },
     { timestamps: true })
 

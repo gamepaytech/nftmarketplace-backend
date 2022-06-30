@@ -1,11 +1,12 @@
 const logger = require('../logger');
 const Ticket = require("../models/LuckyDraw/Ticket");
 const Result = require("../models/LuckyDraw/Results");
+const LdTransaction = require("../models/LuckyDraw/Transactions");
 
 const saveLuckyDrawTickets = async (req, res) => {
     try {
         const {userId, luckyDrawId, ticketCount, walletAddress} = req.body;
-
+       if(ticketCount && ticketCount>0){
         const tickets = [];
         for (let i = 0; i < ticketCount; i++) {
             const ticket = {
@@ -16,16 +17,42 @@ const saveLuckyDrawTickets = async (req, res) => {
             tickets.push(ticket);
             logger.info(`${ticket} , tickets: ${tickets}`);
         }
-
-        await Ticket.insertMany(tickets).then(
-            res.status(200).json({
-                data: "Saved Successfully"
-            })
-        ).catch(err => {
+        
+        const ticketDbResponse = await Ticket.insertMany(tickets);
+        if(ticketDbResponse){
+            const transaction = await LdTransaction.create({userId, luckyDrawId, ticketCount, walletAddress})
+             if(transaction){
+                res.status(200).json({
+                            data: "Saved Successfully"
+                        })
+             } else{
+                res.status(500).json({
+                            err: err,
+                        });
+             }
+            
+        } else{
             res.status(500).json({
-                err: err,
-            });
+                        err: "Error occured while saving tickets",
+                    });
+        }
+       } else {
+        res.status(400).json({
+            err: "Ticket Count cannot be empty",
         });
+       }
+    
+        // .then(
+        //     res.status(200).json({
+        //         data: "Saved Successfully"
+        //     })
+        // ).catch(err => {
+        //     res.status(500).json({
+        //         err: err,
+        //     });
+        // });
+        //Include Transaction Details
+        
     } catch (err) {
         logger.info(err);
         res.status(500).json({
