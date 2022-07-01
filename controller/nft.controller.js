@@ -22,6 +22,7 @@ const getPresaleSetting = async (req, res) => {
     res.status(201).json({ "msg": "success", data: data });
 };
 
+
 const create = async (req, res) => {
     try{
         const provider = new Provider(process.env.PRIVATE_KEY, process.env.POLYGON_RPC);
@@ -75,7 +76,7 @@ const create = async (req, res) => {
             logger.info(error?.message)
           }
         }
-      )
+    )
 
     const mintRes = await contract.methods.mintNFT("https://dingers.mypinata.cloud/ipfs/QmPZ6YdwwKskVEexoyr5MDPKZcPCEQRqR8cHBfapStGFeH/1.json",
     nftTotalSupply,
