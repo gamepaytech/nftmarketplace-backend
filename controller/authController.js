@@ -1107,6 +1107,7 @@ const checkWalletKeyBeforeRegister = async function(req,res) {
     }
 }
 
+
 const checkWalletKey = async function (req, res) {
     try {
         if (req.body.userId == undefined || req.body.userId == '') {
@@ -1124,13 +1125,13 @@ const checkWalletKey = async function (req, res) {
             return
         }
 
-        const walletInfo = await models.users.find({
+        const walletInfo = await models.users.findOne({
             _id: req.body.userId,
         })
         logger.info('l',req.body.walletAddress)
         logger.info('k',walletInfo)
 
-        if (walletInfo && walletInfo.length > 0 && walletInfo.includes(req.body.walletAddress)) {
+        if (walletInfo?.metamaskKey && walletInfo.metamaskKey.length > 0 && walletInfo.metamaskKey.includes(req.body.walletAddress)) {
             logger.info(walletInfo);
             const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
             res
@@ -1146,7 +1147,6 @@ const checkWalletKey = async function (req, res) {
         res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Internal Server Error!' })
     }
 }
-
 const getPercent = async function (req, res) {
     try {
         const setting = await referralModel.appsetting.find({})
