@@ -34,6 +34,10 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
         },
         paymentMode: {
             type:String
+        },
+        metamaskKey: {
+            type:String,
+            default:""
         }
     },
     { timestamps: true,
