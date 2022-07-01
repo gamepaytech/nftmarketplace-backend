@@ -356,7 +356,8 @@ const userBoughtNftMetamask = async (req, res) => {
             nft: ObjectId(nftId),
             amountSpent: amountTotal,
             promoCode: promoApplied,
-            quantity: quantity
+            quantity: quantity,
+            metamaskKey: address,
         });
 
 
