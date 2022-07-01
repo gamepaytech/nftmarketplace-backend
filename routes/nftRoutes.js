@@ -50,7 +50,7 @@ router.route("/add-user-presaleNft-metamask").post(userBoughtNftMetamask);
 router.route("/get-by-userId/:page/:pageSize").post(getNftByUserId);
 router
   .route("/upload-pinata")
-  .post(imageUpload.single("image"), uploadToPinata);
+  .post(authenticateUser, imageUpload.single("image"), uploadToPinata);
 router
   .route("/create-presalenft-initiated")
   .post(authenticateUser, createPreSaleNFTInitiated);

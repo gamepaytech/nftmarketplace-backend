@@ -24,12 +24,6 @@ const getPresaleSetting = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const provider = new Provider(
-      process.env.PRIVATE_KEY,
-      process.env.POLYGON_RPC
-    );
-    const web3 = new Web3(provider);
-    const account = await web3.eth.accounts.wallet.add(process.env.PRIVATE_KEY);
     const {
       // jsonHash,
       name,
@@ -42,7 +36,6 @@ const create = async (req, res) => {
       royalty,
       cloudinaryUrl,
       uploadedBy,
-      price,
       nftClass,
       gender,
       owner,
@@ -52,7 +45,9 @@ const create = async (req, res) => {
       others,
       breedCount,
       nftTotalSupply,
+      result,
     } = req.body;
+    console.log(result);
     // const jk = 'kkdskds'
     // logger.info(req, req.body)
     if (!name) {
@@ -63,68 +58,45 @@ const create = async (req, res) => {
       return;
     }
 
-    const contract = new web3.eth.Contract(mintingAbi, mintingAddress);
-    const estimated = await contract.methods
-      .mintNFT(
-        "https://dingers.mypinata.cloud/ipfs/QmPZ6YdwwKskVEexoyr5MDPKZcPCEQRqR8cHBfapStGFeH/1.json",
-        nftTotalSupply,
-        account.address,
-        price
-      )
-      .estimateGas(
-        { gas: 4000000, from: account.address },
-        function (error, gasAmount) {
-          if (error) {
-            logger.info(error?.message);
-          }
-        }
-      );
+    var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
 
-    const mintRes = await contract.methods
-      .mintNFT(
-        "https://dingers.mypinata.cloud/ipfs/QmPZ6YdwwKskVEexoyr5MDPKZcPCEQRqR8cHBfapStGFeH/1.json",
+    const latest = await web3.eth.getBlockNumber();
+    if (result.blockNumber + 30 > latest) {
+      const createObj = {
+        // jsonHash,
+        name,
+        nftType,
+        description,
+        chain,
+        tokenId: result.events.Minted.returnValues.nftId,
+        mintedBy,
+        collectionName,
+        category,
+        royalty,
+        cloudinaryUrl,
+        owner,
+        uploadedBy,
+        price: result.events.saleCreated.returnValues.price,
+        nftClass,
+        gender,
+        accessories,
+        colour,
+        chikCount,
+        others,
+        breedCount,
         nftTotalSupply,
-        account.address,
-        price
-      )
-      .send({ from: account.address, gas: estimated + 600000 });
-    logger.info(mintRes, "Minted");
-    const tokenId = mintRes.events.Minted.returnValues.nftId;
-    const saleId = mintRes.events.saleCreated.returnValues.itemId;
-    const createObj = {
-      // jsonHash,
-      name,
-      nftType,
-      description,
-      chain,
-      tokenId,
-      mintedBy,
-      collectionName,
-      category,
-      royalty,
-      cloudinaryUrl,
-      owner,
-      uploadedBy,
-      price,
-      nftClass,
-      gender,
-      accessories,
-      colour,
-      chikCount,
-      others,
-      breedCount,
-      nftTotalSupply,
-      saleId,
-    };
-    logger.info(createObj);
-    const data = await Nfts.nftDetails.create(createObj);
-    // logger.info("data ",data);
-    res.status(200).json({ data: data });
+        saleId: result.events.saleCreated.returnValues.itemId,
+      };
+      logger.info(createObj);
+      const data = await Nfts.nftDetails.create(createObj);
+      // logger.info("data ",data);
+      res.status(200).json({ data: data });
+    }
   } catch (e) {
+    console.log(e);
     res.status(500).json({
       msg: "Internal Server Error",
     });
-    console.log(e);
   }
 };
 
@@ -352,24 +324,25 @@ const mintNFT = async (req, res) => {
 // };
 
 const buyNft = async (req, res) => {
-  const { amountSpent, quantity, nftId, saleId } = req.body;
+  const { amountSpent, quantity, nftId } = req.body;
   const preSaleData = await Nfts.nftDetails.findById({ _id: ObjectId(nftId) });
 
-  if (Number(preSaleData.nftTotalSupply - quantity)) {
-    const newData = {
-      itemSold: Number(preSaleData.itemSold + quantity),
-      nftTotalSupply: Number(preSaleData.nftTotalSupply - quantity),
-    };
-    await Nfts.nftDetails.findByIdAndUpdate({ _id: ObjectId(nftId) }, newData);
-  } else {
-    const newData = {
-      itemSold: Number(preSaleData.itemSold + quantity),
+  // if (Number(preSaleData.nftTotalSupply - quantity)) {
+  //   const newData = {
+  //     itemSold: Number(preSaleData.itemSold + quantity),
+  //     nftTotalSupply: Number(preSaleData.nftTotalSupply - quantity),
+  //   };
+  //   await Nfts.nftDetails.findByIdAndUpdate({ _id: ObjectId(nftId) }, newData);
+  // } else {
+  //   const newData = {
+  //     itemSold: Number(preSaleData.itemSold + quantity),
+  //     nftTotalSupply: Number(preSaleData.nftTotalSupply - quantity),
+  //     active: false,
+  //   };
+  //   await Nfts.nftDetails.findByIdAndUpdate({ _id: ObjectId(nftId) }, newData);
+  // }
 
-      nftTotalSupply: Number(preSaleData.nftTotalSupply - quantity),
-      active: false,
-    };
-    await Nfts.nftDetails.findByIdAndUpdate({ _id: ObjectId(nftId) }, newData);
-  }
+  //Updating the activity section of both users(buyer and Seller)
   await models.users.findByIdAndUpdate(
     { _id: ObjectId(req.user.userId) },
     {
@@ -396,6 +369,7 @@ const buyNft = async (req, res) => {
     }
   );
 
+  //creating bought details on buying nft
   const preSaleBoughtData = await PresaleBoughtNft.create({
     owner: req.user.username,
     nftIdOwned: req.user.userId,
@@ -405,14 +379,25 @@ const buyNft = async (req, res) => {
     amountSpent,
     quantity,
     active: true,
-    saleId,
+    saleId: preSaleData.saleId,
   });
+
+  console.log("PreSaleBoughtData");
+  //User which put nft on sell
   if (preSaleData.boughtId) {
     await PresaleBoughtNft.findByIdAndUpdate(
       { _id: ObjectId(preSaleData.boughtId) },
       { active: false }
     );
   }
+  await Nfts.nftDetails.findByIdAndUpdate(
+    { _id: ObjectId(nftId) },
+    {
+      itemSold: 1,
+      nftTotalSupply: 0,
+      active: false,
+    }
+  );
   res.status(201).json({
     message: "Purchase is Successfull",
     preSaleBoughtData,
@@ -433,44 +418,58 @@ const buyNft = async (req, res) => {
 // };
 
 const sellNft = async (req, res) => {
-  const { nftId, price, boughtId } = req.body; //nftTotalSupply
-  const {
-    name,
-    nftType,
-    description,
-    nftClass,
-    gender,
-    accessories,
-    colour,
-    others,
-    breedCount,
-    nftStatus,
-    tierType,
-    mintedBy,
-    chikCount,
-  } = await Nfts.nftDetails.findById({ _id: ObjectId(nftId) });
-  nftData = {
-    name,
-    nftType,
-    description,
-    nftClass,
-    gender,
-    accessories,
-    colour,
-    others,
-    breedCount,
-    nftStatus,
-    tierType,
-    mintedBy,
-    price,
-    itemSold: 0,
-    chikCount,
-    nftTotalSupply: 1,
-    boughtId: ObjectId(boughtId),
-    owner: req.user.username,
-    ownerId: req.user.userId,
-    saleId,
-  };
+  const { nftId, price, boughtId } = req.body;
+  // const {
+  //   name,
+  //   nftType,
+  //   description,
+  //   nftClass,
+  //   gender,
+  //   accessories,
+  //   colour,
+  //   others,
+  //   breedCount,
+  //   nftStatus,
+  //   tierType,
+  //   mintedBy,
+  //   chikCount,
+  //   saleId, //have some doubts
+  // } = await Nfts.nftDetails.findById({ _id: ObjectId(nftId) });
+  // nftData = {
+  //   name,
+  //   nftType,
+  //   description,
+  //   nftClass,
+  //   gender,
+  //   accessories,
+  //   colour,
+  //   others,
+  //   breedCount,
+  //   nftStatus,
+  //   tierType,
+  //   mintedBy,
+  //   price,
+  //   itemSold: 0,
+  //   chikCount,
+  //   nftTotalSupply: 1,
+  //   boughtId: ObjectId(boughtId),
+  //   owner: req.user.username,
+  //   ownerId: req.user.userId,
+  //   saleId,
+  // };
+  await Nfts.nftDetails.findByIdAndUpdate(
+    { _id: ObjectId(nftId) },
+    {
+      itemSold: 0,
+      nftTotalSupply: 1,
+      price,
+      boughtId: ObjectId(boughtId),
+      owner: req.user.username,
+      ownerId: req.user.userId,
+      active: true,
+    }
+  );
+
   await models.users.findByIdAndUpdate(
     { _id: ObjectId(req.user.userId) },
     {
@@ -483,11 +482,11 @@ const sellNft = async (req, res) => {
       },
     }
   );
-  const onSaleNft = await Nfts.nftDetails.create(nftData);
+  // const onSaleNft = await Nfts.nftDetails.create(nftData);
 
   res.status(201).json({
     message: "Nft Successfully Put On Sale",
-    onSaleNft,
+    // onSaleNft,
   });
 };
 
@@ -501,7 +500,7 @@ const getPriceTrail = async (req, res) => {
   const { nftId } = req.body;
   let priceData = [];
   const boughtData = await PresaleBoughtNft.find({
-    nft: nftId,
+    nft: ObjectId(nftId),
   });
   !!boughtData &&
     boughtData.map((data) => {
