@@ -215,7 +215,6 @@ const getAllData = async (req, res) => {
   }
 };
 
-//search in nft database using their attributes
 const searchNftsFilter = async (req, res) => {
   // const {filter} = req.body
   //array of class

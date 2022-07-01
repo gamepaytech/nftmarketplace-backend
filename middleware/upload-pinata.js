@@ -9,17 +9,6 @@ const uploadToPinata = async (req, res, next) => {
         process.env.PINATA_SECRET_KEY
     )
 
-    //   pinata
-    //     .testAuthentication()
-    //     .then((result) => {
-    //       //handle successful authentication here
-    //       console.log(`Authentication successful ---->`, result);
-    //     })
-    //     .catch((err) => {
-    //       //handle error here
-    //       console.log(err);
-    //     });
-
     var data = req.body
     const file = req.file
     try {
@@ -48,8 +37,8 @@ const uploadToPinata = async (req, res, next) => {
                 msg: `Error occurred while pin file to IPFS ${e}`,
             })
         }
-        const unicusUrl = 'https://unicus.mypinata.cloud/ipfs/'
-        data.imageIpfs = unicusUrl + ipfsResult.IpfsHash
+        const gamePayGateWay = process.env.PINATA_GATEWAY
+        data.imageIpfs = gamePayGateWay + ipfsResult.IpfsHash
         // req.body.imageIpfs = data.image;
         options = {
             pinataMetadata: {
@@ -68,8 +57,7 @@ const uploadToPinata = async (req, res, next) => {
                 msg: 'Error occurred while pin JSON to IPFS',
             })
         }
-        data.jsonIpfs = unicusUrl + jsonResult.IpfsHash
-        // req.body.jsonIpfs = unicusUrl + jsonResult.IpfsHash;
+        req.body.jsonIpfs = gamePayGateWay + jsonResult.IpfsHash;
         next()
     } catch (err) {
         console.log(err)
