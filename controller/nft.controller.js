@@ -415,11 +415,11 @@ const buyNft = async (req, res) => {
 // };
 
 const sellNft = async (req, res) => {
-  const { nftId, price, boughtId } = req.body;
+  const { nftId, result, boughtId,dolorPrice } = req.body;
   // const {
   //   name,
   //   nftType,
-  //   description,
+  //   description, 
   //   nftClass,
   //   gender,
   //   accessories,
@@ -454,31 +454,38 @@ const sellNft = async (req, res) => {
   //   ownerId: req.user.userId,
   //   saleId,
   // };
-  await Nfts.nftDetails.findByIdAndUpdate(
-    { _id: ObjectId(nftId) },
-    {
-      itemSold: 0,
-      nftTotalSupply: 1,
-      price,
-      boughtId: ObjectId(boughtId),
-      owner: req.user.username,
-      ownerId: req.user.userId,
-      active: true,
-    }
-  );
 
-  await models.users.findByIdAndUpdate(
-    { _id: ObjectId(req.user.userId) },
-    {
-      $push: {
-        activity: {
-          activity: `You have listed ${nftId} for price ${price}`,
-          timestamp: new Date(),
-          orderId: "1233", // we need to add sale Id
+  var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
+  const latest = await web3.eth.getBlockNumber();
+
+  if (result.blockNumber + 30 > latest) {
+    await Nfts.nftDetails.findByIdAndUpdate(
+      { _id: ObjectId(nftId) },
+      {
+        itemSold: 0,
+        nftTotalSupply: 1,
+        price:result.events.saleCreated.returnValues.price,
+        boughtId: ObjectId(boughtId),
+        owner: req.user.username,
+        ownerId: req.user.userId,
+        saleId:result.events.saleCreated.returnValues.itemId,
+        active: true,
+      }
+    );
+
+    await models.users.findByIdAndUpdate(
+      { _id: ObjectId(req.user.userId) },
+      {
+        $push: {
+          activity: {
+            activity: `You have listed ${nftId} for price ${dolorPrice}`,
+            timestamp: new Date(),
+            orderId: "1233", // we need to add sale Id
+          },
         },
-      },
-    }
-  );
+      }
+    );
+  }
   // const onSaleNft = await Nfts.nftDetails.create(nftData);
 
   res.status(201).json({
