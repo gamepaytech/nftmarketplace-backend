@@ -47,7 +47,7 @@ const create = async (req, res) => {
       nftTotalSupply,
       result,
     } = req.body;
-    console.log(result);
+
     // const jk = 'kkdskds'
     // logger.info(req, req.body)
     if (!name) {
@@ -93,7 +93,7 @@ const create = async (req, res) => {
       res.status(200).json({ data: data });
     }
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     res.status(500).json({
       msg: "Internal Server Error",
     });
@@ -382,7 +382,7 @@ const buyNft = async (req, res) => {
     saleId: preSaleData.saleId,
   });
 
-  console.log("PreSaleBoughtData");
+  logger.info("PreSaleBoughtData");
   //User which put nft on sell
   if (preSaleData.boughtId) {
     await PresaleBoughtNft.findByIdAndUpdate(
@@ -886,7 +886,7 @@ const getMyrewards = async function (req, res) {
 
     logger.info(
       Ids,
-      "idssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+      "ids"
     );
 
     const getMyReferees = await models.users.find({

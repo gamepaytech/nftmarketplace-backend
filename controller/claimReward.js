@@ -27,8 +27,6 @@ const updateClaimed = async (req, res) => {
             totalRewards += rewards[i].amount
         }
 
-        console.log(totalClaimed, totalRewards,"check point")
-
         const claimAmount = (totalRewards - totalClaimed)
         const provider = new Provider(process.env.PRIVATE_KEY, process.env.RPC);
         const web3 = new Web3(provider)
@@ -102,7 +100,6 @@ const withdrawDetails = async(req, res) =>{
 }
 
 const watchContractEvents = async(req, res) =>{
-    console.log("starting>>>")
     const serverUrl = "https://7e97nawu9isc.usemoralis.com:2053/server";
     const appId = "UzI09s80iJUhe06OSKrJSyQT72vFdqCzC2Jsz8gu"
     const masterKey = "fXrqYoOWPlbA1Eh4ewEQ0lBTvc48ptC0rSyC62Xr"
@@ -138,7 +135,7 @@ const watchContractEvents = async(req, res) =>{
 
   Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true }).then(
     (result) => {
-      console.log(result,"the data is coming correctly");
+      logger.error(result,"the data is coming correctly");
     }
   );
 }
