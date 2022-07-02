@@ -48,8 +48,6 @@ const create = async (req, res) => {
       result,
     } = req.body;
 
-    // const jk = 'kkdskds'
-    // logger.info(req, req.body)
     if (!name) {
       res.status(400).json({ msg: "Please provide the nft name" });
       return;
