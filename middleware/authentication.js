@@ -41,20 +41,17 @@ const authenticateAdmin = async (req,res, next) => {
             }
 
             req.user = payload
-            // console.log(req.user,"sdfd");
-            // console.log(!req.user.isAdmin);
             if(!req.user.isAdmin) {
                 return res.status(401).json({err:"100: Invalid Authorization: No access Granted!"});
             }
 
             return next()
         } else {
-            // console.log('authentication failed')
 
             return res.status(500).json({ error: 'Invalid Token' })
         }
     } catch (error) {
-        console.log(error)
+       logger.error(error)
         res.status(500).send('Authentication Invalid')
     }
 }
