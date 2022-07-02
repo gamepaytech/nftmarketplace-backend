@@ -413,6 +413,20 @@ const buyNft = async (req, res) => {
 //         newOwner: newOwner,
 //     });
 // };
+const cancelSale = async (req, res) =>{
+  try {
+    const {nftId} = req.body
+    await Nfts.nftDetails.findByIdAndUpdate(
+      { _id: ObjectId(nftId) },
+      {
+        active: false,
+      }
+    );
+    res.status(200).json({msg:"Delisted fom sale!"})
+  } catch (error) {
+    res.status(500).json({msg:"Internal error occured!"})
+  }
+}
 
 const sellNft = async (req, res) => {
   const { nftId, result, boughtId,dolorPrice } = req.body;
@@ -463,7 +477,7 @@ const sellNft = async (req, res) => {
       { _id: ObjectId(nftId) },
       {
         itemSold: 0,
-        nftTotalSupply: 1,
+        nftTotalSupply: 1, // Ajaypal singh TODO
         price:result.events.saleCreated.returnValues.price,
         boughtId: ObjectId(boughtId),
         owner: req.user.username,
@@ -1127,4 +1141,5 @@ module.exports = {
   createPreSaleNFTInitiated,
   updateNFTSaleOnPaidStatus,
   updatePreSaleNFTDetails,
+  cancelSale
 };
