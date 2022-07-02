@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const PresaleBoughtNftSchema = new mongoose.Schema(
+<<<<<<< HEAD
   {
     owner: {
       type: String,
@@ -52,6 +53,50 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
     },
   },
   { timestamps: true, strictPopulate: false }
+=======
+    {
+        owner: {
+            type: String,
+            ref: "User",
+        },
+        nftIdOwned: {
+            type: String,
+            required: true,
+        },
+        nft: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "presalenfts",
+            required:true
+        },
+        amountSpent: {
+            type: Number,
+        },
+        promoCode: {
+            type: String,
+        },
+        quantity: {
+            type: String,
+            default: 1
+        },
+        currency:{
+            type:String,
+            default:"USD"
+        },
+        paymentId: {
+            type:String
+        },
+        paymentMode: {
+            type:String
+        },
+        metamaskKey: {
+            type:String,
+            default:""
+        }
+    },
+    { timestamps: true,
+        strictPopulate:false }
+
+>>>>>>> afe16818e43c7124559bce882ab5291f48fe7fbf
 );
 
 module.exports = mongoose.model("PresaleBoughtNft", PresaleBoughtNftSchema);
