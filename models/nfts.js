@@ -60,7 +60,7 @@ let nftSchema = new mongoose.Schema(
             type: String,
         },
         price: {
-            type: Number,
+            type: String,
         },
         category: {
             type: String,
@@ -89,15 +89,15 @@ let nftSchema = new mongoose.Schema(
             type: mongoose.Schema.ObjectId,
             ref:'PresaleBoughtNft'
         },
-        owner: {
-            type: String,
-            ref: 'User',
-        },
         ownerId:{
             type:mongoose.Schema.ObjectId,
             ref:"User"
         },
         saleId:{
+            type:Number,
+            required:true
+        },
+        tokenId:{
             type:Number,
             required:true
         },

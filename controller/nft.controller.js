@@ -57,7 +57,6 @@ const create = async (req, res) => {
     }
 
     var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
-
     const latest = await web3.eth.getBlockNumber();
     if (result.blockNumber + 30 > latest) {
       const createObj = {
@@ -66,13 +65,13 @@ const create = async (req, res) => {
         nftType,
         description,
         chain,
-        tokenId: result.events.Minted.returnValues.nftId,
+        tokenId: result.events.Minted.returnValues.id,
         mintedBy,
         collectionName,
         category,
         royalty,
         cloudinaryUrl,
-        owner,
+        ownerId:owner,
         uploadedBy,
         price: result.events.saleCreated.returnValues.price,
         nftClass,

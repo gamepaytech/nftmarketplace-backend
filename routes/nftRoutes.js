@@ -24,7 +24,7 @@ const {
   getPriceTrail,
 } = require("../controller/nft.controller.js");
 const router = express.Router();
-const { authenticateUser } = require("../middleware/authentication");
+const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
 const imageUpload = require("../middleware/image-upload");
 const { uploadToPinata } = require("../middleware/upload-pinata");
 
