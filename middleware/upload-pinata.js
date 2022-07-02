@@ -1,68 +1,115 @@
-const pinataSDK = require('@pinata/sdk')
-const fs = require('fs')
+const pinataSDK = require("@pinata/sdk");
+const multer = require("multer");
+const fs = require("fs");
+const logger = require('../logger')
+// const {fs} = require('memfs')
 
-const uploadToPinata = async (req, res, next) => {
-    console.log('pinata')
 
-    const pinata = pinataSDK(
-        process.env.PINATA_API_KEY,
-        process.env.PINATA_SECRET_KEY
-    )
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+const path = require("path");
 
-    var data = req.body
-    const file = req.file
-    try {
-        if (!file) {
-            res.status(400).json({ msg: 'Please upload an image' })
-        }
+const uploadToPinata = async (req, res) => {
+  logger.info('Start of upload to pinata');
 
-        var readableStreamForFile = fs.createReadStream(file.path)
+  const pinata = pinataSDK(
+    process.env.PINATA_API_KEY,
+    process.env.PINATA_SECRET_APY_KEY
+  );
+  const data = req.body;
+  const buf = Buffer.from(data.image, "base64");
+  fs.writeFileSync(data.name, buf);
+    const read = fs.createReadStream(data.name);
+  try {
+    const options = {
+      pinataMetadata: {
+        name: `${data.name}.img`,
+      },
+      pinataOptions: {
+        cidVersion: 0,
+      },
+    };
+    let result = await pinata.pinFileToIPFS(read, options);
+      logger.info('Result from pinata.pinFileToIPFS ', result);
+      const newData =  {
+        name : data.name,
+        image : process.env.PINATA_GATEWAY + result.IpfsHash,
+        nftType: data.nftType,
+        description : data.description,
+        "traits": [
+        {
+          "trait_type": "Attack",
+          "value": data.attack,
+          "display_type": "number",
+          "max_value": 5,
+          "trait_count": 3,
+          "order": null
+        },
+        {
+          "trait_type": "Health",
+          "value": data.hp,
+          "display_type": "number",
+          "max_value": 5,
+          "trait_count": 2,
+          "order": null
+        },
+        {
+          "trait_type": "Gender",
+          "value": data.Gender,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        },
+        {
+          "trait_type": "Color",
+          "value": data.nftAttributesColour,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        },
+        {
+          "trait_type": "class",
+          "value": data.Class,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        },
+        {
+          "trait_type": "Accessories",
+          "value": data.Accessories,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        },
+        {
+          "trait_type": "others",
+          "value": data.others,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        },
+        {
+          "trait_type": "breedCount",
+          "value": data.breedCount,
+          "display_type": null,
+          "max_value": null,
+          "trait_count": 1,
+          "order": null
+        }]}
+      result = await pinata.pinJSONToIPFS(newData, options);
+      logger.info('Result from pinata.pinJSONToIPFS ', result);
+    res.status(200).send(process.env.PINATA_GATEWAY + result.IpfsHash);
+  } catch (err) {
+    logger.info('Error occured while uploadToPinata');
+    return res.status(500).send(err);
+  }
 
-        var options = {
-            pinataMetadata: {
-                name: `${data.name}.img`,
-            },
-            pinataOptions: {
-                cidVersion: 0,
-            },
-        }
+};
 
-        try {
-            var ipfsResult = await pinata.pinFileToIPFS(
-                readableStreamForFile,
-                options
-            )
-        } catch (e) {
-            res.status(400).json({
-                msg: `Error occurred while pin file to IPFS ${e}`,
-            })
-        }
-        const gamePayGateWay = process.env.PINATA_GATEWAY
-        data.imageIpfs = gamePayGateWay + ipfsResult.IpfsHash
-        // req.body.imageIpfs = data.image;
-        options = {
-            pinataMetadata: {
-                name: `${data.name}.json`,
-            },
-            pinataOptions: {
-                cidVersion: 0,
-            },
-        }
-
-        try {
-            jsonResult = await pinata.pinJSONToIPFS(data, options)
-        } catch (e) {
-            console.log(e, 'error')
-            res.status(400).json({
-                msg: 'Error occurred while pin JSON to IPFS',
-            })
-        }
-        req.body.jsonIpfs = gamePayGateWay + jsonResult.IpfsHash;
-        next()
-    } catch (err) {
-        console.log(err)
-        throw new CustomError.BadRequestError(err)
-    }
-}
 
 module.exports = { uploadToPinata }

@@ -7,7 +7,7 @@ var bodyParser = require('body-parser')
 // Database
 const DBConnect = require("./database");
 // Other
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 const rateLimiter = require("express-rate-limit");
@@ -51,6 +51,7 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.json());
+app.use(bodyParser.json({limit: "50mb" }));
 app.use(cors());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.static("./public"));
