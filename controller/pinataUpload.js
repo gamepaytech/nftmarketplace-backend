@@ -13,7 +13,7 @@ const uploadToPinata = async (req, res) => {
 
   const pinata = pinataSDK(
     process.env.PINATA_API_KEY,
-    process.env.PINATA_SECRET_APY_KEY
+    process.env.PINATA_SECRET_API_KEY
   );
   const data = req.body;
   const file = req.files;
@@ -58,7 +58,7 @@ const uploadToPinata = async (req, res) => {
 const uploadJSONToPinata = async (data) => {
   const pinata = pinataSDK(
     process.env.PINATA_API_KEY,
-    process.env.PINATA_SECRET_APY_KEY
+    process.env.PINATA_SECRET_API_KEY
   );
   let result;
     try {

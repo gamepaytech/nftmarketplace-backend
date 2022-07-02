@@ -14,7 +14,7 @@ const uploadToPinata = async (req, res) => {
 
   const pinata = pinataSDK(
     process.env.PINATA_API_KEY,
-    process.env.PINATA_SECRET_APY_KEY
+    process.env.PINATA_SECRET_API_KEY
   );
   const data = req.body;
   const buf = Buffer.from(data.image, "base64");
