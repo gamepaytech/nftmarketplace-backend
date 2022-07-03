@@ -51,6 +51,7 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.json());
+app.use(bodyParser.json({limit: "50mb" }));
 app.use(cors());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.static("./public"));

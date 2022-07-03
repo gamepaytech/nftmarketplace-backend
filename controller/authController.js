@@ -1088,7 +1088,6 @@ const checkWalletKeyBeforeRegister = async function(req,res) {
         const {address} = req.body;
         if(address && address !=""){
             const userInfo = await models.users.findOne({ metamaskKey: address });
-            console.log(userInfo)
             if(userInfo !== null){
                 res
                 .status(200)
@@ -1102,7 +1101,7 @@ const checkWalletKeyBeforeRegister = async function(req,res) {
             res.status(200).json({ status: 200, msg: 'Wallet address is empty.' ,data: false})
         }
     } catch (error) {
-        console.log(error)
+        logger.error(error)
         res.status(400).json({ status: 400, msg: 'Internal Server Error!'})
     }
 }
@@ -1253,7 +1252,6 @@ const updateActivity = async function(req,res) {
         { $set: { "activity.$.activity": req.body.dataString } }
     );
     const sysMsg = await getSystemMessage('GPAY_00050_DONE')
-    console.log("UD ",ud);
     res.status(200).json(sysMsg ? sysMsg.message : 'Done')
 }
 

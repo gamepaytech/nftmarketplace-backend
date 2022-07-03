@@ -143,10 +143,6 @@ const getKYC = async (req, res) => {
         status: "SUBMITED"
       };
 
-   
-      // if(!checkUser) {
-
-        // console.log("carete function");
         const createKYC = new models.kycs(query);
         const kycInfo = await createKYC.save();
         return res.status(201).json({

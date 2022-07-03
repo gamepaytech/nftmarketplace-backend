@@ -153,25 +153,16 @@ const createPaymentAAA = async (req, res) => {
 
         const buyNft = await Nft.presalenfts.findOne({ _id: nftId });
         const user = await models.users.findOne({ _id: userId });
-        console.log("buyNft ", buyNft);
+        logger.info("buyNft ", buyNft);
         var promoDiv = 0;
         if (promoCode) {
             logger.info(promoCode, "promo");
-            console.log(promoCode, "promo");
             const promo = await PromoCode.findOne({ promoCode: promoCode });
             logger.info(promo);
-            console.log(promo);
             promoDiv = promo.percentDiscount;
         }
 
         logger.info(quantity, "quantity");
-        console.log(
-            quantity,
-            "quantity price",
-            buyNft.price,
-            " promoDiv ",
-            promoDiv
-        );
         var nftAmount =
             parseFloat(buyNft.price) * quantity * ((100 - promoDiv) / 100);
         nftAmount = Math.round(nftAmount);
@@ -180,7 +171,6 @@ const createPaymentAAA = async (req, res) => {
 
         await createActivity(userId, nftAmount, false, "TripleA", uniqueId);
         logger.info("Price ", nftAmount);
-        console.log(nftAmount, " nftAmount");
         if (nftAmount < 0.001) {
             return res.status(400).json({
                 error: "Price is less than 0.1$",
@@ -202,8 +192,7 @@ const createPaymentAAA = async (req, res) => {
 
         await axios(config)
             .then(async function (response) {
-                logger.info(response.data);
-                console.log(response.data, "1st api");
+                logger.info(response.data, "1st api");
 
                 const orderId = uuid();
                 var dataPay = JSON.stringify({
@@ -247,7 +236,7 @@ const createPaymentAAA = async (req, res) => {
                         nftAmount: nftAmount,
                     },
                 });
-                console.log(dataPay, "datapay");
+                logger.info(dataPay, "datapay");
                 var config = {
                     method: "post",
                     url: reqPayment,
@@ -262,12 +251,10 @@ const createPaymentAAA = async (req, res) => {
                 axios(config)
                     .then(function (response) {
                         logger.info("A ", JSON.stringify(response.data));
-                        console.log("triplea ", response.data);
                         res.status(200).json(response.data);
                     })
                     .catch(function (error) {
-                        logger.info(error.response, "247");
-                        console.log(error.response.data.errors)
+                        logger.error(error.response.data.errors,"error create payment AAA")
                     });
             })
             .catch((ecr) => {
@@ -290,7 +277,7 @@ Client.init(process.env.COINBASE_TOKEN);
 const coinbasePayment = async (req, res) => {
     const { chikId, email, userId, quantity} = req.params;
     const promoCode = req.body.promoCode
-    console.log(req.body,"promocode")
+    logger.info(req.body,"promocode")
     if (!email) {
         return res.status(404).json({
             err: "USER NOT FOUND",
@@ -316,7 +303,7 @@ const coinbasePayment = async (req, res) => {
         }
         const nftAmount = parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100);
         logger.info("CHARGE DATA ", buyNft?.price);
-        console.log(
+        logger.info(
             parseFloat(buyNft?.price) * quantity * ((100 - promoDiv) / 100),
             "CHARGE DATA ",
             buyNft?.price
@@ -350,7 +337,6 @@ const coinbasePayment = async (req, res) => {
 
 
         logger.info("COINBASE CHARGE ", charge);
-        console.log("charge ", charge);
         res.send(charge);
     } catch (error) {
         logger.info(error);
@@ -460,14 +446,10 @@ const handleCoinbasePayment = async (req, res) => {
                 quantity: event.data.metadata.quantity,
             });
 
-            // const userInfo = await models.users.find({
-            //     _id: event.data.metadata.customer_id,
-            // });
-
-            console.log(event.data.id,"event id")
+            logger.info(event.data.id,"event id")
             const alreadySaved = await PresaleBoughtNft.findOne({paymentId:event.data.id})
             
-            console.log(alreadySaved,"alreadySaved")
+            logger.info(alreadySaved,"alreadySaved")
             if(alreadySaved == null){
                 addMyIncomeMetaMask(event.data.metadata.nftId, event.data.metadata.customer_id,createPresale._id)
 
@@ -523,7 +505,6 @@ const tripleAWebhook = async (req, res) => {
         payment_amount,
         payment_crypto_amount,
     } = req.body;
-    console.log("508 line", req.body);
 
     let timestamp, signature;
     for (let sig_part of sig.split(",")) {
@@ -553,8 +534,6 @@ const tripleAWebhook = async (req, res) => {
         logger.info("___________________________ WORKING HOOOK");
 
         if (status == "good") {
-            console.log(" TRIPLE A RESPONSE status good", req.body);
-
             const tripleaRecord = await TripleaPayment.create({
                 event,
                 type,
@@ -577,7 +556,7 @@ const tripleAWebhook = async (req, res) => {
 
             const alreadySaved = await PresaleBoughtNft.findOne({paymentId:webhook_data.order_id})
 
-            console.log(alreadySaved,"alreadySaved")
+            logger.info(alreadySaved,"alreadySaved")
 
             if(alreadySaved == null){
                 const createPresale = await PresaleBoughtNft.create({
@@ -591,7 +570,7 @@ const tripleAWebhook = async (req, res) => {
                     paymentMode: "TripleA",
                 });
 
-                console.log(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
+                logger.info(req.body.webhook_data.nftId,req.body.webhook_data.userId,createPresale._id,"add my data")
 
                 const findNFT = await Nft.presalenfts.findById(req.body.webhook_data.nftId);
                 if (findNFT) {
@@ -636,7 +615,7 @@ const makeLaunchpadPayment = async (req, res) => {
         const findFirst = await LaunchpadPayment.findOne({
             _id: id,
         });
-        console.log(findFirst);
+        logger.info(findFirst,"check the condition");
         if (findFirst?.paymentStatus == "Completed") {
             return res.status(400).json({
                 err: "Payment Already Updated!",
@@ -677,7 +656,6 @@ const makeLaunchpadPayment = async (req, res) => {
         });
     } catch (err) {
         logger.info(err);
-        console.log(err);
         res.status(500).json({
             err: "500: Internal Server Error.",
         });
@@ -698,7 +676,7 @@ const handleLaunchpadHook = async (req, res) => {
         if (event.type === "charge:pending") {
             // received order
             // user paid, but transaction not confirm on blockchain yet
-            console.log(" PENDING ", event.data.metadata);
+          logger.info(" PENDING ", event.data.metadata);
             if (event.data.metadata.payment_activity == "LAUNCHPAD") {
                 const findExists = await LaunchpadPayment.findOne({
                     paymentId: event.data.id,
@@ -727,7 +705,7 @@ const handleLaunchpadHook = async (req, res) => {
             // charge confirmed
             logger.info("-----charge confirmed", event.data);
             //save in presale bought nft added to user account
-            console.log("CONFIRMED ", event.data.metadata,event.data.metadata.payment_activity == "NFT_PURCHASE");
+            logger.info("CONFIRMED ", event.data.metadata,event.data.metadata.payment_activity == "NFT_PURCHASE");
             //create payment schema
             if (event.data.metadata.payment_activity == "LAUNCHPAD") {
                 const findExists = await LaunchpadPayment.findOne({
@@ -796,11 +774,11 @@ const handleLaunchpadHook = async (req, res) => {
             } else if (event.data.metadata.payment_activity == "NFT_PURCHASE") {
                 //create nft
 
-                console.log("in else if", event ,'786')
+                logger.info("in else if", event ,'786')
                 const findCoinbasePay = await CoinbasePayment.findOne({
                     uniqueId: event.data.metadata.uniqueId,
                 });
-                console.log(findCoinbasePay)
+                logger.info(findCoinbasePay,"coin base payment")
                 if (!findCoinbasePay) {
                     const CoinbasePay = await CoinbasePayment.create({
                         payId: event.id,
@@ -812,7 +790,7 @@ const handleLaunchpadHook = async (req, res) => {
                         quantity: event.data.metadata.quantity,
                         uniquId: event.data.metadata.uniqueId,
                     });
-                    console.log(CoinbasePay,802)
+                    logger.info(CoinbasePay,802)
                 } else {
                     const updateCoinbasePay = await CoinbasePayment.updateOne(
                         { uniqueId: event.data.metadata.uniqueId },
@@ -820,12 +798,12 @@ const handleLaunchpadHook = async (req, res) => {
                     );
                 }
                 
-                console.log(event.data.metadata.uniqueId,"payment id")
+                logger.info(event.data.metadata.uniqueId,"payment id")
                 const alreadySaved = await PresaleBoughtNft.findOne({paymentId:event.data.metadata.uniqueId})
 
-                console.log(alreadySaved,"is null")
+                logger.info(alreadySaved,"is null")
                 if(alreadySaved == null){
-                    console.log( event.data.metadata.nftId,
+                    logger.info( event.data.metadata.nftId,
                         event.data.metadata.userId,
                         ObjectId(event.data.metadata.nftId),
                         event.data.metadata.quantity,
@@ -842,22 +820,22 @@ const handleLaunchpadHook = async (req, res) => {
                         paymentMode: "Coinbase",
                     });
 
-                    console.log(createPresale,'create presale')
+                    logger.info(createPresale,'create presale')
     
                     const userInfo = await models.users.find({
                         _id: event.data.metadata.userId,
                     });
 
-                    console.log(userInfo)
+                    logger.info(userInfo)
 
-                    console.log(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id,"add to my reward")
+                    logger.info(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id,"add to my reward")
     
                     await addMyIncomeMetaMask(event.data.metadata.nftId,event.data.metadata.userId,createPresale._id).then((res)=>{
-                        console.log("status")
+                        logger.info("status")
                        
                     })
     
-                    console.log(event.data.metadata.userId,
+                    logger.info(event.data.metadata.userId,
                         event.data.metadata.uniqueId,
                         event.data.metadata.amount,
                         )
@@ -866,7 +844,7 @@ const handleLaunchpadHook = async (req, res) => {
                         event.data.metadata.uniqueId,
                         `You have completed the payment of ${event.data.metadata.amount} USD using Coinbase.`
                     );
-                    console.log(userInfo[0].email,
+                    logger.info(userInfo[0].email,
                         event.data.metadata.quantity,
                         event.data.metadata.amount,)
 
