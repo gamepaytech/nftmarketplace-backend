@@ -22,6 +22,7 @@ const {
   createPreSaleNFTInitiated,
   updateNFTSaleOnPaidStatus,
   getPriceTrail,
+  cancelSale
 } = require("../controller/nft.controller.js");
 const router = express.Router();
 const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
@@ -30,6 +31,7 @@ const { uploadToPinata } = require("../middleware/upload-pinata");
 
 router.route("/").get(getAll).post(create);
 // router.route("/:tokenId").get(getNFTByTokenId);
+router.route("/cancel-sale").post(authenticateUser, cancelSale);
 router.route("/presale-setting").get(getPresaleSetting);
 router.route("/searchNftsFilter").post(searchNftsFilter);
 router.route("/getAll").get(getNFTByUserId);
