@@ -8,9 +8,9 @@ const {getMyEntries}= require("../controller/luckyDrawController");
 const {saveLuckyDrawConfig}=require('../controller/luckyDrawConfigController');
 const {getTotalEntries}=require('../controller/luckyDrawController');
 
-router.post('/',cors(),saveLuckyDrawTickets);
-router.get('/',cors(),getMyEntries);
-router.get('/total-entries',cors(),getTotalEntries);
-router.post('/price-contest',cors(),saveLuckyDrawConfig);
+router.post('/',cors(), authenticateUser, saveLuckyDrawTickets);
+router.post('/user-entries',cors(), authenticateUser, getMyEntries);
+router.post('/total-entries',cors(), authenticateUser, getTotalEntries);
+router.post('/price-contest',cors(), authenticateUser, saveLuckyDrawConfig);
 
 module.exports = router;
