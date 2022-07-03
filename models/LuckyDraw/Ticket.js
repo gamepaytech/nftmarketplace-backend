@@ -10,6 +10,7 @@ const TicketSchema = new mongoose.Schema({
         walletAddress: {
             type:String
         },
+        ticketCount: Number,
         createdBy: {
             type:String
         }
