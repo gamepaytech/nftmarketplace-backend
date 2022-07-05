@@ -81,7 +81,8 @@ const create = async (req, res) => {
         others,
         breedCount,
         saleId: result.events.saleCreated.returnValues.itemId,
-        ownerAddress: result.from
+        ownerAddress: result.from,
+        mintingAddress: result.from
       };
       logger.info(createObj);
       const data = await Nfts.nftDetails.create(createObj);
@@ -425,6 +426,22 @@ const cancelSale = async (req, res) =>{
     );
     res.status(200).json({msg:"Delisted fom sale!"})
   } catch (error) {
+    res.status(500).json({msg:"Internal error occured!"})
+  }
+}
+
+const changePrice = async (req, res) =>{
+  try {
+    const {nftId,result} = req.body
+    await Nfts.nftDetails.findByIdAndUpdate(
+      { _id: ObjectId(nftId) },
+      {
+        price: result.events.ListingEdited.returnValues.price,
+      }
+    );
+    res.status(200).json({msg:"Delisted fom sale!"})
+  } catch (error) {
+    console.log(error)
     res.status(500).json({msg:"Internal error occured!"})
   }
 }
@@ -1182,5 +1199,6 @@ module.exports = {
   updateNFTSaleOnPaidStatus,
   updatePreSaleNFTDetails,
   cancelSale,
-  getNftByWalletAddress
+  getNftByWalletAddress,
+  changePrice
 };
