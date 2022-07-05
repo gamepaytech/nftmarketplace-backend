@@ -51,6 +51,7 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.json());
+app.use(bodyParser.json({limit: "50mb" }));
 app.use(cors());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.static("./public"));
@@ -78,5 +79,5 @@ app.use("/luckydraw", luckyDrawRouter);
  
 //  Listening
 app.listen(PORT, () => {
-    console.log(` App successfully started on port : ${PORT}`);
+    console.log(` App successfully started on port 1: ${PORT}`);
 });
