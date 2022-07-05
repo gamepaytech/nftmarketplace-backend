@@ -61,13 +61,6 @@ const NftSchema = new mongoose.Schema(
             type: String,
             ref: 'User',
         },
-        nftTotalSupply: {
-          type:Number
-        },
-        itemSold: {
-          type:Number,
-          default: 0
-        }
     },
     { timestamps: true }
 )
