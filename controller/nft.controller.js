@@ -417,8 +417,8 @@ const getNftByUserId = async (req, res) => {
         let page = req.params.page;
         let pageSize = req.params.pageSize;
         let total = 0;
-        total =  await PresaleBoughtNft.find({ owner: userId }).count()
-        const findNfts = await PresaleBoughtNft.find({ owner: userId }).sort({ createdAt:-1 }).populate({
+        total =  await PresaleBoughtNft.find({ metamaskKey: userId }).count()
+        const findNfts = await PresaleBoughtNft.find({ metamaskKey: userId }).sort({ createdAt:-1 }).populate({
             path: "nft"
         }).limit(pageSize).skip(pageSize * page);
         if (!findNfts) {
