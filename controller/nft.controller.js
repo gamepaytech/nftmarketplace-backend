@@ -44,7 +44,6 @@ const create = async (req, res) => {
       chikCount,
       others,
       breedCount,
-      nftTotalSupply,
       result,
     } = req.body;
 
@@ -81,8 +80,8 @@ const create = async (req, res) => {
         chikCount,
         others,
         breedCount,
-        nftTotalSupply,
         saleId: result.events.saleCreated.returnValues.itemId,
+        ownerAddress: result.from
       };
       logger.info(createObj);
       const data = await Nfts.nftDetails.create(createObj);
@@ -321,7 +320,7 @@ const mintNFT = async (req, res) => {
 // };
 
 const buyNft = async (req, res) => {
-  const { amountSpent, quantity, nftId } = req.body;
+  const { amountSpent, quantity, nftId ,result} = req.body;
   const preSaleData = await Nfts.nftDetails.findById({ _id: ObjectId(nftId) });
 
   // if (Number(preSaleData.nftTotalSupply - quantity)) {
@@ -379,6 +378,7 @@ const buyNft = async (req, res) => {
     saleId: preSaleData.saleId,
   });
 
+
   logger.info("PreSaleBoughtData");
   //User which put nft on sell
   if (preSaleData.boughtId) {
@@ -390,9 +390,9 @@ const buyNft = async (req, res) => {
   await Nfts.nftDetails.findByIdAndUpdate(
     { _id: ObjectId(nftId) },
     {
-      itemSold: 1,
-      nftTotalSupply: 0,
       active: false,
+     ownerAddress:result.from,
+     ownerId:ObjectId(req.user.userId)
     }
   );
   res.status(201).json({
@@ -413,6 +413,7 @@ const buyNft = async (req, res) => {
 //         newOwner: newOwner,
 //     });
 // };
+
 const cancelSale = async (req, res) =>{
   try {
     const {nftId} = req.body
@@ -476,13 +477,12 @@ const sellNft = async (req, res) => {
     await Nfts.nftDetails.findByIdAndUpdate(
       { _id: ObjectId(nftId) },
       {
-        itemSold: 0,
-        nftTotalSupply: 1, // Ajaypal singh TODO
         price:result.events.saleCreated.returnValues.price,
         boughtId: ObjectId(boughtId),
-        owner: req.user.username,
+        owner: req.user.username, 
         ownerId: req.user.userId,
         saleId:result.events.saleCreated.returnValues.itemId,
+        ownerAddress: result.from,
         active: true,
       }
     );
@@ -631,18 +631,19 @@ const getNftByUserId = async (req, res) => {
     let page = req.params.page;
     let pageSize = req.params.pageSize;
     let total = 0;
-    total = await PresaleBoughtNft.find({
-      $and: [{ nftIdOwned: ObjectId(userId) }, { active: true }],
+    total = await Nfts.nftDetails.find({
+      $and: [{ ownerId: ObjectId(userId) }, { active: true }],
     }).count();
-    const findNfts = await PresaleBoughtNft.find({
-      $and: [{ nftIdOwned: ObjectId(userId) }, { active: true }],
+    const findNfts = await Nfts.nftDetails.find({
+      $and: [{ ownerId: ObjectId(userId) }],
     })
       .sort({ createdAt: -1 })
-      .populate({
-        path: "nft",
-      })
+      // .populate({
+      //   path: "nft",
+      // })
       .limit(pageSize)
       .skip(pageSize * page);
+      console.log(findNfts,"fhjkh")
     if (!findNfts) {
       return res.status(404).json({
         error: "Error! No nft found",
@@ -654,6 +655,45 @@ const getNftByUserId = async (req, res) => {
     });
   } catch (err) {
     logger.info(err);
+    console.log(err)
+    res.status(500).json({
+      err: "Internal Server Error!",
+    });
+  }
+};
+
+const getNftByWalletAddress = async (req, res) => {
+  try {
+    const { walletAddress } = req.body;
+    console.log(walletAddress,"hksdhf")
+    let page = req.params.page;
+    let pageSize = req.params.pageSize;
+    let total = 0;
+    total = await Nfts.nftDetails.find({
+      $and: [{ ownerAddress: walletAddress }],
+    }).count();
+    const findNfts = await Nfts.nftDetails.find({
+      $and: [{ ownerAddress: walletAddress.toLowerCase() }],
+    })
+      .sort({ createdAt: -1 })
+      // .populate({
+      //   path: "nft",
+      // })
+      .limit(pageSize)
+      .skip(pageSize * page);
+      console.log(findNfts,"fhjkh")
+    if (!findNfts) {
+      return res.status(404).json({
+        error: "Error! No nft found",
+      });
+    }
+    res.status(200).json({
+      allNft: findNfts,
+      total: total,
+    });
+  } catch (err) {
+    logger.info(err);
+    console.log(err)
     res.status(500).json({
       err: "Internal Server Error!",
     });
@@ -1141,5 +1181,6 @@ module.exports = {
   createPreSaleNFTInitiated,
   updateNFTSaleOnPaidStatus,
   updatePreSaleNFTDetails,
-  cancelSale
+  cancelSale,
+  getNftByWalletAddress
 };
