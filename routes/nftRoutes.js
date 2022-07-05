@@ -22,7 +22,8 @@ const {
   createPreSaleNFTInitiated,
   updateNFTSaleOnPaidStatus,
   getPriceTrail,
-  cancelSale
+  cancelSale,
+  getNftByWalletAddress
 } = require("../controller/nft.controller.js");
 const router = express.Router();
 const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
@@ -50,6 +51,7 @@ router.route("/update-item-sold").put(updateTotalSupply);
 router.route("/add-user-presaleNft").post(userBoughtNft);
 router.route("/add-user-presaleNft-metamask").post(userBoughtNftMetamask);
 router.route("/get-by-userId/:page/:pageSize").post(getNftByUserId);
+router.route("/get-by-walletAddress/:page/:pageSize").post(getNftByWalletAddress);
 router
   .route("/upload-pinata")
   .post(authenticateUser, uploadToPinata);

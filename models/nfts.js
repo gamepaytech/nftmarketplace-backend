@@ -32,15 +32,7 @@ let nftSchema = new mongoose.Schema(
         breedCount: {
             type: Number,
         },
-        itemSold: {
-            type: Number,
-            default: 0
-        },
-        nftTotalSupply: {
-            type: Number,
-        },
         mintHash: String,
-        tokenId: Number,
         mintedBy: {
             type: String,
             ref: 'User',
@@ -93,11 +85,15 @@ let nftSchema = new mongoose.Schema(
             type:mongoose.Schema.ObjectId,
             ref:"User"
         },
+        ownerAddress: {
+            type: String,
+            required : true
+        },
         saleId:{
             type:Number,
             required:true
         },
-        tokenId:{
+        tokenId :{
             type:Number,
             required:true
         },
