@@ -81,7 +81,8 @@ const create = async (req, res) => {
         others,
         breedCount,
         saleId: result.events.saleCreated.returnValues.itemId,
-        ownerAddress: result.from
+        ownerAddress: result.from,
+        mintingAddress: result.from
       };
       logger.info(createObj);
       const data = await Nfts.nftDetails.create(createObj);
@@ -429,6 +430,22 @@ const cancelSale = async (req, res) =>{
   }
 }
 
+const changePrice = async (req, res) =>{
+  try {
+    const {nftId,result} = req.body
+    await Nfts.nftDetails.findByIdAndUpdate(
+      { _id: ObjectId(nftId) },
+      {
+        price: result.events.ListingEdited.returnValues.price,
+      }
+    );
+    res.status(200).json({msg:"Delisted fom sale!"})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({msg:"Internal error occured!"})
+  }
+}
+
 const sellNft = async (req, res) => {
   const { nftId, result, boughtId,dolorPrice } = req.body;
   // const {
@@ -516,14 +533,14 @@ const ownedNft = async (req, res) => {
 
 const getPriceTrail = async (req, res) => {
   const { nftId } = req.body;
-  let priceData = [];
+  let trailDetails = [];
   const boughtData = await PresaleBoughtNft.find({
     nft: ObjectId(nftId),
   });
   !!boughtData &&
     boughtData.map((data) => {
-      const { amountSpent, quantity } = data;
-      priceData.push(amountSpent / quantity);
+      const { amountSpent, quantity, createdAt } = data;
+      trailDetails.push({ price: amountSpent / quantity, date: createdAt });
     });
   const sale = await Nfts.nftDetails.find({
     $and: [{ _id: ObjectId(nftId) }, { active: true }],
@@ -531,12 +548,12 @@ const getPriceTrail = async (req, res) => {
 
   !!sale &&
     sale.map((data) => {
-      priceData.push(data.price);
+      trailDetails.push({ price: data.price, date: new Date() });
     });
 
   res.status(201).json({
     msg: "It was successfull",
-    priceData,
+    trailDetails,
   });
 };
 
@@ -1182,5 +1199,6 @@ module.exports = {
   updateNFTSaleOnPaidStatus,
   updatePreSaleNFTDetails,
   cancelSale,
-  getNftByWalletAddress
+  getNftByWalletAddress,
+  changePrice
 };

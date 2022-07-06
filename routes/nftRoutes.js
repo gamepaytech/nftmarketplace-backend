@@ -23,7 +23,8 @@ const {
   updateNFTSaleOnPaidStatus,
   getPriceTrail,
   cancelSale,
-  getNftByWalletAddress
+  getNftByWalletAddress,
+  changePrice
 } = require("../controller/nft.controller.js");
 const router = express.Router();
 const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
@@ -33,6 +34,7 @@ const { uploadToPinata } = require("../middleware/upload-pinata");
 router.route("/").get(getAll).post(create);
 // router.route("/:tokenId").get(getNFTByTokenId);
 router.route("/cancel-sale").post(authenticateUser, cancelSale);
+router.route("/change-sale-price").post(authenticateUser, changePrice);
 router.route("/presale-setting").get(getPresaleSetting);
 router.route("/searchNftsFilter").post(searchNftsFilter);
 router.route("/getAll").get(getNFTByUserId);
@@ -61,6 +63,6 @@ router
 router
   .route("/update-nftsale-on-paidStatus")
   .post(authenticateUser, updateNFTSaleOnPaidStatus);
-router.route("/priceTrail").get(getPriceTrail);
+router.route("/priceTrail").post(getPriceTrail);
 
 module.exports = router;
