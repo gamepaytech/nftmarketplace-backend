@@ -63,6 +63,6 @@ router
 router
   .route("/update-nftsale-on-paidStatus")
   .post(authenticateUser, updateNFTSaleOnPaidStatus);
-router.route("/priceTrail").get(getPriceTrail);
+router.route("/priceTrail").post(getPriceTrail);
 
 module.exports = router;

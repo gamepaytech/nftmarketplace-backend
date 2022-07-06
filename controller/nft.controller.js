@@ -533,14 +533,14 @@ const ownedNft = async (req, res) => {
 
 const getPriceTrail = async (req, res) => {
   const { nftId } = req.body;
-  let priceData = [];
+  let trailDetails = [];
   const boughtData = await PresaleBoughtNft.find({
     nft: ObjectId(nftId),
   });
   !!boughtData &&
     boughtData.map((data) => {
-      const { amountSpent, quantity } = data;
-      priceData.push(amountSpent / quantity);
+      const { amountSpent, quantity, createdAt } = data;
+      trailDetails.push({ price: amountSpent / quantity, date: createdAt });
     });
   const sale = await Nfts.nftDetails.find({
     $and: [{ _id: ObjectId(nftId) }, { active: true }],
@@ -548,12 +548,12 @@ const getPriceTrail = async (req, res) => {
 
   !!sale &&
     sale.map((data) => {
-      priceData.push(data.price);
+      trailDetails.push({ price: data.price, date: new Date() });
     });
 
   res.status(201).json({
     msg: "It was successfull",
-    priceData,
+    trailDetails,
   });
 };
 
