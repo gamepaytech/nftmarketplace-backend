@@ -143,7 +143,7 @@
           "value": "0x555FFe037B3a1812D990781a888Acd412b72e99C"
         },
         {
-          "name": "RPC",
+          "name": "POLYGON_RPC",
           "value": "https://speedy-nodes-nyc.moralis.io/362fc40c1ab324c15e79d4da/bsc/testnet"
         },
         {

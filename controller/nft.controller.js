@@ -55,7 +55,7 @@ const create = async (req, res) => {
       return;
     }
 
-    var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
+    var web3 = new Web3(new Web3.providers.HttpProvider(process.env.POLYGON_RPC));
     const latest = await web3.eth.getBlockNumber();
     if (result.blockNumber + 30 > latest) {
       const createObj = {
@@ -487,7 +487,7 @@ const sellNft = async (req, res) => {
   //   saleId,
   // };
 
-  var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
+  var web3 = new Web3(new Web3.providers.HttpProvider(process.env.POLYGON_RPC));
   const latest = await web3.eth.getBlockNumber();
 
   if (result.blockNumber + 30 > latest) {
@@ -559,9 +559,9 @@ const getPriceTrail = async (req, res) => {
 
 const userBoughtNftMetamask = async (req, res) => {
   const { nftId, address, promoApplied, quantity, txHash } = req.body;
-  logger.info(process.env.RPC, "rpc");
+  logger.info(process.env.POLYGON_RPC, "POLYGON_RPC");
 
-  var web3 = new Web3(new Web3.providers.HttpProvider(process.env.RPC));
+  var web3 = new Web3(new Web3.providers.HttpProvider(process.env.POLYGON_RPC));
 
   const tx = await web3.eth.getTransactionReceipt(txHash);
   const latest = await web3.eth.getBlockNumber();
