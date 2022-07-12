@@ -28,7 +28,7 @@ const updateClaimed = async (req, res) => {
         }
 
         const claimAmount = (totalRewards - totalClaimed)
-        const provider = new Provider(process.env.PRIVATE_KEY, process.env.RPC);
+        const provider = new Provider(process.env.PRIVATE_KEY, process.env.POLYGON_RPC);
         const web3 = new Web3(provider)
         const contract = new web3.eth.Contract(abi, address);
         const account = await web3.eth.accounts.wallet.add(
