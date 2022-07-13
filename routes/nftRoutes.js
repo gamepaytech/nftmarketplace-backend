@@ -26,10 +26,14 @@ const {
   getNftByWalletAddress,
   changePrice
 } = require("../controller/nft.controller.js");
+const os = require('os')
+const multer = require("multer");
+
+const upload = multer({ dest:  os.tmpdir()})
 const router = express.Router();
 const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
 const imageUpload = require("../middleware/image-upload");
-const { uploadToPinata } = require("../middleware/upload-pinata");
+const { uploadToPinata } = require("../controller/pinataUpload");
 
 router.route("/").get(getAll).post(create);
 // router.route("/:tokenId").get(getNFTByTokenId);
@@ -56,7 +60,7 @@ router.route("/get-by-userId/:page/:pageSize").post(getNftByUserId);
 router.route("/get-by-walletAddress/:page/:pageSize").post(getNftByWalletAddress);
 router
   .route("/upload-pinata")
-  .post(authenticateUser, uploadToPinata);
+  .post(authenticateUser,upload.single("image"), uploadToPinata);
 router
   .route("/create-presalenft-initiated")
   .post(authenticateUser, createPreSaleNFTInitiated);
