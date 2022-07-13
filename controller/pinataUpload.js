@@ -24,9 +24,8 @@ const uploadToPinata = async (req, res) => {
     let result;
     try {
       result = await pinata.pinFileToIPFS(readableStreamForFile, options);
-      console.log(result)
     } catch (e) {
-        console.log(e)
+      return res.status(500).send(e);
     }
     data.image = process.env.PINATA_GATEWAY + result.IpfsHash;
     data.attributes = JSON.parse(data.attributes)
