@@ -1,5 +1,6 @@
 const pinataSDK = require("@pinata/sdk");
 const fs = require("fs");
+const logger = require('../logger')
 
 const uploadToPinata = async (req, res) => {
   const pinata = pinataSDK(
@@ -23,6 +24,7 @@ const uploadToPinata = async (req, res) => {
     try {
       result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     } catch (e) {
+      logger.error(e,"error")
       return res.status(500).send(e);
     }
     data.image = process.env.PINATA_GATEWAY + result.IpfsHash;
@@ -31,10 +33,12 @@ const uploadToPinata = async (req, res) => {
     try {
       result = await pinata.pinJSONToIPFS(data, options);
     } catch (e) {
+      logger.error(e,"error")
       return res.status(500).send(e);
     }
     res.status(200).send(process.env.PINATA_GATEWAY + result.IpfsHash);
   } catch (err) {
+    logger.error(err,"error")
     return res.status(500).send(err);
   }
 
