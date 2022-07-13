@@ -8,8 +8,6 @@ const uploadToPinata = async (req, res) => {
   );
   const data = req.body;
   const file = req.file;
-  console.log(file)
-  console.log(data)
   try {
     const P = file.path;
     let readableStreamForFile = fs.createReadStream(P);
