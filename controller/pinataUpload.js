@@ -34,11 +34,10 @@ const uploadToPinata = async (req, res) => {
     try {
       result = await pinata.pinJSONToIPFS(data, options);
     } catch (e) {
-        console.log(e)
+      return res.status(500).send(e);
     }
     res.status(200).send(process.env.PINATA_GATEWAY + result.IpfsHash);
   } catch (err) {
-     console.log(err)
     return res.status(500).send(err);
   }
 
