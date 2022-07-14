@@ -1,17 +1,36 @@
 const pinataSDK = require("@pinata/sdk");
 const fs = require("fs");
 const logger = require('../logger')
+const {GetObjectCommand, S3Client} = require('@aws-sdk/client-s3')
+
+const s3Client = new S3Client({
+  apiVersion: '2006-03-01',
+  region: process.env.PINATA_S3_REGION,
+  credentials: {
+      accessKeyId: process.env.LOG_S3_ACCESS_KEY,
+      secretAccessKey: process.env.LOG_S3_SECRET_ACCESS_KEY,
+  }
+})
+
 
 const uploadToPinata = async (req, res) => {
   const pinata = pinataSDK(
     process.env.PINATA_API_KEY,
     process.env.PINATA_SECRET_API_KEY
   );
+
   const data = req.body;
   const file = req.file;
+
   try {
-    const P = file.path;
-    let readableStreamForFile = fs.createReadStream(P);
+    const fileObject = await s3Client
+    .send(new GetObjectCommand({
+      Bucket: process.env.PINATA_S3_BUCCKET_NAME,
+      Key: file.key
+    }))
+
+    const readableStreamForFile = fileObject.Body
+
     const options = {
       pinataMetadata: {
         name: `${data.name}.img`,
@@ -20,7 +39,7 @@ const uploadToPinata = async (req, res) => {
         cidVersion: 0,
       },
     };
-    let result;
+    var result;
     try {
       result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     } catch (e) {
