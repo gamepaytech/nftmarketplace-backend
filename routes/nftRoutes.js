@@ -57,7 +57,7 @@ router.route("/get-by-userId/:page/:pageSize").post(getNftByUserId);
 router.route("/get-by-walletAddress/:page/:pageSize").post(getNftByWalletAddress);
 router
   .route("/upload-pinata")
-  .post(authenticateUser,upload.single("image"), uploadToPinata);
+  .post(upload.single("image"), uploadToPinata);
 router
   .route("/create-presalenft-initiated")
   .post(authenticateUser, createPreSaleNFTInitiated);
