@@ -55,9 +55,9 @@ router.route("/add-user-presaleNft").post(userBoughtNft);
 router.route("/add-user-presaleNft-metamask").post(userBoughtNftMetamask);
 router.route("/get-by-userId/:page/:pageSize").post(getNftByUserId);
 router.route("/get-by-walletAddress/:page/:pageSize").post(getNftByWalletAddress);
-router
-  .route("/upload-pinata")
-  .post(upload.single("image"), uploadToPinata);
+// router
+//   .route("/upload-pinata")
+//   .post(upload.single("image"), uploadToPinata);
 router
   .route("/create-presalenft-initiated")
   .post(authenticateUser, createPreSaleNFTInitiated);
@@ -65,5 +65,9 @@ router
   .route("/update-nftsale-on-paidStatus")
   .post(authenticateUser, updateNFTSaleOnPaidStatus);
 router.route("/priceTrail").post(getPriceTrail);
+
+router.post('/upload-pinata', upload.single('image'), function(req, res, next) {
+  res.send('Successfully uploaded ' + req.file.originalname + ' file!')
+});
 
 module.exports = router;
