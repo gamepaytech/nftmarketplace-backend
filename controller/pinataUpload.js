@@ -1,5 +1,4 @@
 const pinataSDK = require("@pinata/sdk");
-const fs = require("fs");
 const logger = require('../logger')
 const {GetObjectCommand, S3Client} = require('@aws-sdk/client-s3')
 
@@ -39,7 +38,7 @@ const uploadToPinata = async (req, res) => {
         cidVersion: 0,
       },
     };
-    var result;
+    let result;
     try {
       result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     } catch (e) {
