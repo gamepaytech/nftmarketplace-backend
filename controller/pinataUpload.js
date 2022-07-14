@@ -13,6 +13,7 @@ const s3Client = new S3Client({
 
 
 const uploadToPinata = async (req, res) => {
+  try {
   const pinata = pinataSDK(
     process.env.PINATA_API_KEY,
     process.env.PINATA_SECRET_API_KEY
@@ -21,7 +22,6 @@ const uploadToPinata = async (req, res) => {
   const data = req.body;
   const file = req.file;
 
-  try {
     const fileObject = await s3Client
     .send(new GetObjectCommand({
       Bucket: process.env.PINATA_S3_BUCCKET_NAME,
