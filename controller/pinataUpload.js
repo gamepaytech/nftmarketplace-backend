@@ -24,7 +24,7 @@ const uploadToPinata = async (req, res) => {
     try {
       result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     } catch (e) {
-      logger.error(e,"error")
+      logger.error(e,"error pin file to ipfs")
       return res.status(500).send(e);
     }
     data.image = process.env.PINATA_GATEWAY + result.IpfsHash;
@@ -33,7 +33,7 @@ const uploadToPinata = async (req, res) => {
     try {
       result = await pinata.pinJSONToIPFS(data, options);
     } catch (e) {
-      logger.error(e,"error")
+      logger.error(e,"error pin json to ipfs")
       return res.status(500).send(e);
     }
     res.status(200).send(process.env.PINATA_GATEWAY + result.IpfsHash);
