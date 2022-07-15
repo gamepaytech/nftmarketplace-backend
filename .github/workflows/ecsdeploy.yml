@@ -10,13 +10,13 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel -
 jobs:
-  jobs:
-  deploy:
+   build:
+    runs-on: ubuntu-latest 
     steps:
-      - name: Trigger AWS CodePipeline
-        uses: zulhfreelancer/aws-codepipeline-action@vX.X.X
-        with:
-          aws-region: "ap-southeast-1"
-          aws-access-key: ${{ secrets.AWS_PIPELINE_ACCESS_KEY }}
-          aws-secret-key: ${{ secrets.AWS_PIPELINE_SECRET_KEY }}
-          pipeline-name: "nftmarketplace-backend-pipeline"
+       - name: Trigger AWS CodePipeline
+         uses: zulhfreelancer/aws-codepipeline-action@v1.0.7
+         with:
+           aws-region: "ap-southeast-1"
+           aws-access-key: ${{ secrets.AWS_PIPELINE_ACCESS_KEY }}
+           aws-secret-key: ${{ secrets.AWS_PIPELINE_SECRET_KEY }}
+           pipeline-name: "nftmarketplace-backend-pipeline"
