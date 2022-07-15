@@ -54,12 +54,12 @@ const create = async (req, res) => {
       res.status(400).json({ msg: "Please provide the nft type" });
       return;
     }
+    const userInfo = await models.users.findOne({ metamaskKey: result.events.Minted.returnValues.minter });
 
     var web3 = new Web3(new Web3.providers.HttpProvider(process.env.POLYGON_RPC));
     const latest = await web3.eth.getBlockNumber();
     if (result.blockNumber + 30 > latest) {
       const createObj = {
-        // jsonHash,
         name,
         nftType,
         description,
@@ -70,7 +70,7 @@ const create = async (req, res) => {
         category,
         royalty,
         cloudinaryUrl,
-        ownerId:owner,
+        ownerId:userInfo._id,
         uploadedBy,
         price: result.events.saleCreated.returnValues.price,
         nftClass,
@@ -81,8 +81,8 @@ const create = async (req, res) => {
         others,
         breedCount,
         saleId: result.events.saleCreated.returnValues.itemId,
-        ownerAddress: result.from,
-        mintingAddress: result.from
+        ownerAddress: result.events.Minted.returnValues.minter,
+        mintingAddress: result.events.Minted.returnValues.minter
       };
       logger.info(createObj);
       const data = await Nfts.nftDetails.create(createObj);
@@ -392,7 +392,7 @@ const buyNft = async (req, res) => {
     { _id: ObjectId(nftId) },
     {
       active: false,
-     ownerAddress:result.from,
+     ownerAddress:result.events.ItemBought.returnValues.buyer,
      ownerId:ObjectId(req.user.userId)
     }
   );
@@ -496,10 +496,7 @@ const sellNft = async (req, res) => {
       {
         price:result.events.saleCreated.returnValues.price,
         boughtId: ObjectId(boughtId),
-        owner: req.user.username, 
-        ownerId: req.user.userId,
         saleId:result.events.saleCreated.returnValues.itemId,
-        ownerAddress: result.from,
         active: true,
       }
     );
@@ -690,7 +687,7 @@ const getNftByWalletAddress = async (req, res) => {
       $and: [{ ownerAddress: walletAddress }],
     }).count();
     const findNfts = await Nfts.nftDetails.find({
-      $and: [{ ownerAddress: walletAddress.toLowerCase() }],
+      $and: [{ ownerAddress: walletAddress }],
     })
       .sort({ createdAt: -1 })
       // .populate({
