@@ -5,12 +5,14 @@ const {
 } = require('./createTokenPayload')
 const sendVerificationEmail = require('./sendVerificationEmail')
 const sendResetPassswordEmail = require('./sendResetPassswordEmail')
+const sendWelcomeEmail = require('./sendWelcomeEmail')
 const createHash = require('./createHash')
 const { getSystemMessage,  
     getSystemMessageByLang
 } = require('./getSystemMessage')
 const getSystemConfig = require('./getSystemConfiguration');
-
+const getFeatureControl = require('./getFeatureControl');
+const sendGridApi = require('./sendGrid');
 module.exports = {
     createJWT,
     isTokenValid,
@@ -19,8 +21,11 @@ module.exports = {
     createWalletAddressPayload,
     sendResetPassswordEmail,
     sendVerificationEmail,
+    sendWelcomeEmail,
     createHash,
     getSystemMessage,
     getSystemMessageByLang,
-    getSystemConfig
+    getSystemConfig,
+    getFeatureControl,
+    sendGridApi
 }

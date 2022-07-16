@@ -53,6 +53,12 @@ let NftSchema = new mongoose.Schema(
         chain: {
             type: Number,
         },
+        hp: {
+            type: String,
+        },
+        attack: {
+            type: String,
+        },
         price: {
             type: Number,
         },
@@ -65,7 +71,11 @@ let NftSchema = new mongoose.Schema(
         },
         tier_type: {
             type: String,
-            default:"hatch0"
+            default:"1"
+        },
+        active: {
+            type: Boolean,
+            default:true
         },
         presale_status: {
             type: String,
@@ -73,6 +83,7 @@ let NftSchema = new mongoose.Schema(
         },
         presale_start_date: {
             type: String,
+            default: new Date().toISOString()
         },
         owner: {
             type: String,

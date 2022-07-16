@@ -49,6 +49,8 @@ const userSchema = new mongoose.Schema(
         activity: {
             type: [],
         },
+        role: { type: Array },
+        country: { type: String, default: 'xxxxx' },
     },
     { timestamps: true }
 )

@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: release
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  #push:
+  #  branches: [ main ]
+  #pull_request:
+  #  branches: [ main ]  
+
+  # Allows you to run this workflow manually from the Actions tab 
+  workflow_dispatch:
+   
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel -
+jobs:
+  build:
+
+    runs-on: ubuntu-latest 
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - name: Install npm express
+      run: npm install express --save
+    - name: Install npm dependencies
+      run: npm install
+    - name: Run build task
+      run: npm run build --if-present
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@v2.1.5
+      env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_KEY }} 
+          REMOTE_HOST: 54.169.60.117
+          REMOTE_USER: ubuntu
+          TARGET: /home/ubuntu/nftmarketplace-backend
+    - name: Trigger jenkins job
+      uses: appleboy/jenkins-action@master
+      with:
+        url: http://13.214.154.186/
+        user: ${{ secrets.JENKINS_USER }}
+        token: ${{ secrets.JENKINS_TOKEN }}
+        job: "marketplace-backend-app-deploy"

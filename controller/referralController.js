@@ -8,10 +8,47 @@ const { getReferralCode } = require("../utils/referralUtils");
 
 const createReferral = async (req, res) => {
     try {
-        const { userId, myShare, friendShare, note, isDefault } = req.body;
+        const { userId, myShare, friendShare, note, isDefault, referralCode } = req.body;
         if(userId && myShare && friendShare){
             logger.info("Begin  of creating of referral for user :: " + userId);
-            const referralCode = await getReferralCode(); // to revisit the logic as referral code in Users collection is a single field 
+            let referCode;
+            if(!!referralCode && referralCode.length === 8){
+                logger.info("Referral code generated from for user :: " + referralCode);
+                referCode = referralCode;
+            }else{
+                logger.info("Auto generating Referral code for user ");
+                const referralInfo = await getReferralCode();
+                referCode = referralInfo.code;
+            }
+
+            // check if referral code exists
+            const referralIdsForUser = await referralModel.referralDetails.find({
+                referralCode:  referCode
+            });
+
+            if(referralIdsForUser.length !== 0){
+                logger.info("Referral code already exists");
+                if(!!referralCode){
+                    logger.info("Referral code note created it already exists");
+                    return res.status(500).json({
+                        err: 'Referral Code already exists'
+                    });
+                }else{
+                    let generateRefCode = true;
+                    while(generateRefCode){
+                        logger.info("Regenarating referral code using getReferralCode method");
+                        const refInfo = await getReferralCode();
+                        const refIds = await referralModel.referralDetails.find({
+                            referralCode:  refInfo.code
+                        });
+                        if(refIds.length === 0){
+                            referCode = refInfo.code;
+                            generateRefCode = false;
+                        }   
+                    }
+                }
+            }
+            
             if(isDefault){
                 await referralModel.referralDetails.updateMany(
                     { userId: userId},
@@ -20,7 +57,7 @@ const createReferral = async (req, res) => {
             }
             const referral = await referralModel.referralDetails.create({
                 userId: userId,
-                referralCode:  referralCode.code,
+                referralCode:  referCode,
                 myShare: myShare,
                 friendShare: friendShare,
                 note: note,
@@ -108,18 +145,18 @@ const setDefaultReferralByUser = async (req, res) => {
 const getReferralsByUserId = async (req, res) => {
     try {
         const userId = req.body.userId;
-        let page = req.query.page;
-        let pageSize = req.query.pageSize;
+        let page = req.params.page;
+        let pageSize = req.params.pageSize;
         let total = await referralModel.referralDetails.find({ $and: [{ userId: userId }, { status:'active'} ] }).count({});
         if (userId) {
             const getData = await referralModel.referralDetails.find(
                 { $and: [{ userId: userId }, { status:'active'} ] },
-            ).populate({ path: 'myFreindReferral' }).limit(pageSize)
+            ).sort([['isDefault', -1], ['createdDate', -1]]).populate({ path: 'myFreindReferral' }).limit(pageSize)
             .skip(pageSize * page);
             if (getData) {
                 res.status(200).json({
                     data: getData,
-                    total:total,
+                    total:total,    
                     page:page,
                     perPage:pageSize,
                     status: 200,

@@ -41,11 +41,8 @@ let myReferralIncome = new mongoose.Schema({
         default: '',
         required: true,
     },
-    createdDate: {
-        type: Date,
-        default: Date.now(),
-    },
-})
+},{ timestamps: true,
+    strictPopulate:false })
 
 let myreferralDetails = new mongoose.Schema({
     userId: {
@@ -97,7 +94,9 @@ let appsetting = new mongoose.Schema({
         default: 5
     },
     presale:{type: Boolean},
-    launchpad:{type: Boolean}
+    launchpad:{type: Boolean},
+    popup:{type: Boolean},
+    popupAlertText:{type: String}
 })
 
 module.exports = {
