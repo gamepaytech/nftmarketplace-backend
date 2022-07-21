@@ -1157,10 +1157,10 @@ const getPercent = async function (req, res) {
 }
 
 const setactivity = async function (req, res) {
-    const { activity, timestamp } = req.body
+    const { activity } = req.body
     await models.users.updateOne(
         { _id: req.body.userId },
-        { $push: { activity: { activity: activity, timestamp: timestamp } } },
+        { $push: { activity: { activity: activity, timestamp: new Date() } } },
         { new: true, upsert: true }
     )
     const sysMsg = await getSystemMessage('GPAY_00050_DONE')
