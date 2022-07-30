@@ -37,6 +37,6 @@ const gameSchema = mongoose.Schema(
 },
 { timestamps: true }
 );
-module.exports = mongoose.model("game", gameSchema);
+module.exports = mongoose.model("submitgames", gameSchema);
 
 
