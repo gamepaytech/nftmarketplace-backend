@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const { game } = require('../controller/submit-game/submitgameController');
+const { game } = require('../controller/gamepay-listing/gameController');
 
 router.post('/',game);
 
