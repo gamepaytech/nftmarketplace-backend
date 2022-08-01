@@ -2,7 +2,6 @@ const { Console } = require('winston/lib/winston/transports');
 const submitgame = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
-   console.log(req.body)
     try{
          emailId = req.body.emailid;
          webVersion = req.body.webversion;
@@ -12,6 +11,7 @@ const game = async(req,res)=>{
          gameContent = req.body.gamecontent;
          emailAddress = req.body.emailaddress;
          address = req.body.address;
+         designation = req.body.designation;
          gameName = req.body.gamename;
          statusGame = req.body.statusgame;
          gameLogo = req.body.gamelogo;
@@ -21,7 +21,7 @@ const game = async(req,res)=>{
          gameWebsite = req.body.gamewebsite;
          gameTrailer = req.body.gametrailer;
          gameDescription = req.body.gamedescription;
-         gameDetails = req.body.gamedetails;
+         gamePrice = req.body.gameprice;
          tokenEarnings = req.body.tokenearnings;
          gameGenre = req.body.gamegenre;
          platFormsGame = req.body.platformsgame;
@@ -88,6 +88,9 @@ const game = async(req,res)=>{
          if (!address) {
             return res.send("Organization Address is required ")
          }
+         if (!designation) {
+            return res.send("Designation is required ")
+         }
          if (!gameName) {
             return res.send("GameName is required ")
          }
@@ -106,7 +109,7 @@ const game = async(req,res)=>{
          if (!gameDescription) {
             return res.send("GameDescription name is required ")
          }
-         if (!gameDetails) {
+         if (!gamePrice) {
             return res.send("GameDetails is required ")
          }
          if (!tokenEarnings) {
@@ -146,6 +149,7 @@ const game = async(req,res)=>{
                gameContent :  gameContent,
                emailAddress : emailAddress,
                address : address,
+               designation : designation,
                gameName : gameName,
                statusGame : statusGame,
                gameLogo : gameLogo,
@@ -155,7 +159,7 @@ const game = async(req,res)=>{
                gameWebsite : gameWebsite,
                gameTrailer : gameTrailer,
                gameDescription : gameDescription,
-               gameDetails : gameDetails,
+               gamePrice : gamePrice,
                tokenEarnings : tokenEarnings,
                gameGenre : gameGenre,
                platFormsGame : platFormsGame,
@@ -183,6 +187,7 @@ const game = async(req,res)=>{
                   gameContent :  gameContent,
                   emailAddress : emailAddress,
                   address : address,
+                  designation : designation,
                   gameName : gameName,
                   statusGame : statusGame,
                   gameLogo : gameLogo,
@@ -192,7 +197,7 @@ const game = async(req,res)=>{
                   gameWebsite : gameWebsite,
                   gameTrailer : gameTrailer,
                   gameDescription : gameDescription,
-                  gameDetails : gameDetails,
+                  gamePrice : gamePrice,
                   tokenEarnings : tokenEarnings,
                   gameGenre : gameGenre,
                   platFormsGame : platFormsGame,
@@ -213,7 +218,7 @@ const game = async(req,res)=>{
 
             }
             catch (error) {
-               console.log(error)
+               console.log(error);
             res.status(500).json({err:"Internal Server Error"})
              }
             };
