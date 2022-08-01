@@ -57,6 +57,14 @@ const game = async(req,res)=>{
          if (!thumbnail) {
             return res.send("GameThumbnail image url is not valid ")
          }
+         const website =  url.test(gameWebsite);
+         if (!website) {
+            return res.send("CoinMarketCap url is not valid ")
+         }
+         const trailer =  url.test(gameTrailer);
+         if (!trailer) {
+            return res.send("CoinMarketCap url is not valid ")
+         }
          const coin =  url.test(coinMarketCapUrl);
          if (!coin) {
             return res.send("CoinMarketCap url is not valid ")
@@ -94,14 +102,8 @@ const game = async(req,res)=>{
          if (!statusGame) {
             return res.send("StatusGame is required ")
          }
-         if (!gameWebsite) {
-            return res.send("GameWebsite is required ")
-         }
          if (!gameLaunchDate) {
             return res.send("GameLaunch date is required ")
-         }
-         if (!gameTrailer) {
-            return res.send("GameTrailer is required ")
          }
          if (!gameDescription) {
             return res.send("GameDescription name is required ")
