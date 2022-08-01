@@ -27,7 +27,7 @@ const {
   changePrice
 } = require("../controller/nft.controller.js");
 
-const upload = require('../middleware/multerS3Upload')
+const {upload} = require('../middleware/multerS3Upload')
 const router = express.Router();
 const { authenticateUser ,authenticateAdmin} = require("../middleware/authentication");
 const { uploadToPinata } = require("../controller/pinataUpload");
