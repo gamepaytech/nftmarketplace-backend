@@ -79,9 +79,6 @@ const game = async(req,res)=>{
          if (!relatedGame) {
             return res.send("RelatedGame name  is required ")
          }
-         if (!gameContent) {
-            return res.send("GameContent is required ")
-         }
          if (!userName) {
             return res.send("UserName is required ")
          }
