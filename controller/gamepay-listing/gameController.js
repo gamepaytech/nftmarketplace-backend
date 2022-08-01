@@ -59,11 +59,11 @@ const game = async(req,res)=>{
          }
          const website =  url.test(gameWebsite);
          if (!website) {
-            return res.send("CoinMarketCap url is not valid ")
+            return res.send("GameWebsite url is not valid ")
          }
          const trailer =  url.test(gameTrailer);
          if (!trailer) {
-            return res.send("CoinMarketCap url is not valid ")
+            return res.send("GameTrailer url is not valid ")
          }
          const coin =  url.test(coinMarketCapUrl);
          if (!coin) {
