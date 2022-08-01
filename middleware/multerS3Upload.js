@@ -24,4 +24,21 @@ const s3 = new aws.S3()
   })
 })
 
-module.exports = upload
+const uploadGamePayListing = multer({
+  storage: multerS3({
+    s3: s3,
+    acl: 'public-read',
+    bucket: process.env.GAMEPAY_LISTING_S3_BUCCKET_NAME,
+    metadata: function (req, file, cb) {
+      cb(null, {fieldName: file.fieldname});
+    },
+    key: function (req, file, cb) {
+      var newFileName = Date.now() + "-" + file.originalname;
+      var fullPath = process.env.GAMEPAY_LISTING_S3_FOLDER_NAME + "/" + newFileName;
+      cb(null, fullPath)
+    }
+  })
+})
+
+
+module.exports = {upload,uploadGamePayListing}
