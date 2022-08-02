@@ -1,4 +1,3 @@
-const { Console } = require('winston/lib/winston/transports');
 const submitgame = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
@@ -177,7 +176,7 @@ const game = async(req,res)=>{
                await game.save()  
                return  res.send(game)
          }else if (webVersion==="web 2.0") {
-               const game1 = new submitgame({
+               const web2game = new submitgame({
                   emailId : emailId,
                   webVersion : webVersion,
                   userName : userName,
@@ -211,12 +210,13 @@ const game = async(req,res)=>{
                   policyTwo : policyTwo,
                   policyThree : policyThree  
             })
-               await game1.save()  
+               await web2game.save()  
                return  res.send(game1)
             }
 
             }
             catch (error) {
+               logger.error(error);
             res.status(500).json({err:"Internal Server Error"})
              }
             };
