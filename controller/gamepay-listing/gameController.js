@@ -108,7 +108,7 @@ const game = async(req,res)=>{
             return res.send("GameDescription name is required ")
          }
          if (!gamePrice) {
-            return res.send("GameDetails is required ")
+            return res.send("GamePrice is required ")
          }
          if (!tokenEarnings) {
             return res.send("TokenEarnings is required ")
