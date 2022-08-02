@@ -1,8 +1,7 @@
-const { Console } = require('winston/lib/winston/transports');
+const logger = require('../../logger');
 const submitgame = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
-   console.log(req.body)
     try{
          emailId = req.body.emailid;
          webVersion = req.body.webversion;
@@ -12,6 +11,7 @@ const game = async(req,res)=>{
          gameContent = req.body.gamecontent;
          emailAddress = req.body.emailaddress;
          address = req.body.address;
+         designation = req.body.designation;
          gameName = req.body.gamename;
          statusGame = req.body.statusgame;
          gameLogo = req.body.gamelogo;
@@ -21,7 +21,7 @@ const game = async(req,res)=>{
          gameWebsite = req.body.gamewebsite;
          gameTrailer = req.body.gametrailer;
          gameDescription = req.body.gamedescription;
-         gameDetails = req.body.gamedetails;
+         gamePrice = req.body.gameprice;
          tokenEarnings = req.body.tokenearnings;
          gameGenre = req.body.gamegenre;
          platFormsGame = req.body.platformsgame;
@@ -57,6 +57,14 @@ const game = async(req,res)=>{
          if (!thumbnail) {
             return res.send("GameThumbnail image url is not valid ")
          }
+         const website =  url.test(gameWebsite);
+         if (!website) {
+            return res.send("GameWebsite url is not valid ")
+         }
+         const trailer =  url.test(gameTrailer);
+         if (!trailer) {
+            return res.send("GameTrailer url is not valid ")
+         }
          const coin =  url.test(coinMarketCapUrl);
          if (!coin) {
             return res.send("CoinMarketCap url is not valid ")
@@ -79,14 +87,14 @@ const game = async(req,res)=>{
          if (!relatedGame) {
             return res.send("RelatedGame name  is required ")
          }
-         if (!gameContent) {
-            return res.send("GameContent is required ")
-         }
          if (!userName) {
             return res.send("UserName is required ")
          }
          if (!address) {
             return res.send("Organization Address is required ")
+         }
+         if (!designation) {
+            return res.send("Designation is required ")
          }
          if (!gameName) {
             return res.send("GameName is required ")
@@ -94,20 +102,14 @@ const game = async(req,res)=>{
          if (!statusGame) {
             return res.send("StatusGame is required ")
          }
-         if (!gameWebsite) {
-            return res.send("GameWebsite is required ")
-         }
          if (!gameLaunchDate) {
             return res.send("GameLaunch date is required ")
-         }
-         if (!gameTrailer) {
-            return res.send("GameTrailer is required ")
          }
          if (!gameDescription) {
             return res.send("GameDescription name is required ")
          }
-         if (!gameDetails) {
-            return res.send("GameDetails is required ")
+         if (!gamePrice) {
+            return res.send("GamePrice is required ")
          }
          if (!tokenEarnings) {
             return res.send("TokenEarnings is required ")
@@ -146,6 +148,7 @@ const game = async(req,res)=>{
                gameContent :  gameContent,
                emailAddress : emailAddress,
                address : address,
+               designation : designation,
                gameName : gameName,
                statusGame : statusGame,
                gameLogo : gameLogo,
@@ -155,7 +158,7 @@ const game = async(req,res)=>{
                gameWebsite : gameWebsite,
                gameTrailer : gameTrailer,
                gameDescription : gameDescription,
-               gameDetails : gameDetails,
+               gamePrice : gamePrice,
                tokenEarnings : tokenEarnings,
                gameGenre : gameGenre,
                platFormsGame : platFormsGame,
@@ -174,7 +177,7 @@ const game = async(req,res)=>{
                await game.save()  
                return  res.send(game)
          }else if (webVersion==="web 2.0") {
-               const game1 = new submitgame({
+               const web2game = new submitgame({
                   emailId : emailId,
                   webVersion : webVersion,
                   userName : userName,
@@ -183,6 +186,7 @@ const game = async(req,res)=>{
                   gameContent :  gameContent,
                   emailAddress : emailAddress,
                   address : address,
+                  designation : designation,
                   gameName : gameName,
                   statusGame : statusGame,
                   gameLogo : gameLogo,
@@ -192,7 +196,7 @@ const game = async(req,res)=>{
                   gameWebsite : gameWebsite,
                   gameTrailer : gameTrailer,
                   gameDescription : gameDescription,
-                  gameDetails : gameDetails,
+                  gamePrice : gamePrice,
                   tokenEarnings : tokenEarnings,
                   gameGenre : gameGenre,
                   platFormsGame : platFormsGame,
@@ -207,13 +211,13 @@ const game = async(req,res)=>{
                   policyTwo : policyTwo,
                   policyThree : policyThree  
             })
-               await game1.save()  
+               await web2game.save()  
                return  res.send(game1)
             }
 
             }
             catch (error) {
-               console.log(error)
+               logger.error(error);
             res.status(500).json({err:"Internal Server Error"})
              }
             };
