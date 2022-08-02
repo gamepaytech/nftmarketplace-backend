@@ -1,3 +1,4 @@
+const logger = require('../../logger');
 const submitgame = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
