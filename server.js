@@ -29,6 +29,7 @@ const systemRouter = require("./routes/systemRoute");
 const luckyDrawRouter = require("./routes/luckyDrawRoute");
 const gamepayListingRouter = require("./routes/listingRoute");
 const gameRouter = require("./routes/gameRoutes");
+const reviewsRouter = require("./routes/reviewsRoute")
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
@@ -78,6 +79,8 @@ app.use("/system",systemRouter);
 app.use("/luckydraw", luckyDrawRouter);
 app.use("/gamepay-listing", gamepayListingRouter);
 app.use("/game",gameRouter);
+app.use("/submit",reviewsRouter)
+app.use("/reviews",reviewsRouter)
 
 // app.use('/nftPresale',nftPresaleRouter)
  
