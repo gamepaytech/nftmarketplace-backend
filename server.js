@@ -27,9 +27,9 @@ const kyc = require('./routes/kycRoute');
 const vestingRouter = require('./routes/vestingRoute');
 const systemRouter = require("./routes/systemRoute");
 const luckyDrawRouter = require("./routes/luckyDrawRoute");
-const gamepayListingRouter = require("./routes/listingRoute");
-const gameRouter = require("./routes/gameRoutes");
-const reviewsRouter = require("./routes/reviewsRoute")
+const gamepayListingRouter = require("./routes/gamepay-listing/listingRoute");
+const gameRouter = require("./routes/gamepay-listing/gameRoutes");
+const reviewsRouter = require("./routes/gamepay-listing/reviewsRoute")
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
@@ -78,9 +78,8 @@ app.use("/vesting",vestingRouter);
 app.use("/system",systemRouter);
 app.use("/luckydraw", luckyDrawRouter);
 app.use("/gamepay-listing", gamepayListingRouter);
-app.use("/game",gameRouter);
-app.use("/submit",reviewsRouter)
-app.use("/reviews",reviewsRouter)
+app.use("/gamepay-listing/game", gameRouter);
+app.use("/gamepay-listing/review", reviewsRouter)
 
 // app.use('/nftPresale',nftPresaleRouter)
  
