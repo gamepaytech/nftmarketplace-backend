@@ -18,7 +18,7 @@ const addGames = async(req,res)=>{
          earn = req.body.earn;
          upfront = req.body.upfront;
          rating = req.body.rating;
-         description = req.body.designation;
+         description = req.body.description;
          blockchain=req.body.blockchain;
          genre=req.body.genre;
 
