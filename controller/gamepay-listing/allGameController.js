@@ -3,10 +3,10 @@ const uploadgame = require('../../models/gamepay-listing/allgames');
 
 const addGames = async(req,res)=>{
     try{
-        const keys = ["gameName", "platforms", "gameLogoUrl", "url","token", "earn","upfront","rating","description","blockchain","genre"];
+        const keys = ["gameName", "platforms","type", "gameLogoUrl", "url","token", "earn","upfront","rating","description","blockchain","genre"];
         for (i in keys) {
           if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
-            res.status(400).json({ status: "error", msg: keys[i] + " are required" });
+            return res.status(400).json({ status: "error", msg: keys[i] + " is required" });
           }
         }
          gameName = req.body.gameName;
@@ -45,24 +45,22 @@ const addGames = async(req,res)=>{
             }
             catch (error) {
                logger.error(error);
-                res.status(500).json({err:"Internal Server Error"})
+               return  res.json({ status: 500, msg: error.toString() });
              }
             };
             
-const getGameListings = async (req, res) => {
+const getGameListingsByType = async (req, res) => {
     try {
         const type = req.body.type;
         if (type != null) {
             const data = await uploadgame.find({ type: type });
-            res.status(200).json({ data: data });
+            return res.status(200).json({ data: data });
         } else {
-            res.status(400).json({ msg: "type is Required" });
+            return res.status(400).json({ msg: "type is Required" });
         }
     } catch (err) {
         logger.info(err);
-        res.status(500).json({
-            err: "Internal server error!",
-        });
+        return  res.json({ status: 500, msg: err.toString() });
     }
 };
-module.exports = { addGames,getGameListings }
+module.exports = { addGames,getGameListingsByType }
