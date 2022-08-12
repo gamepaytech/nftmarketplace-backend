@@ -31,6 +31,9 @@ const gamepayListingRouter = require("./routes/gamepay-listing/listingRoute");
 const gameRouter = require("./routes/gamepay-listing/gameRoutes");
 const reviewsRouter = require("./routes/gamepay-listing/reviewsRoute")
 const gameNftRouter = require("./routes/gamepay-listing/gameNftRoutes")
+const gamepayListingRouter = require("./routes/listingRoute");
+const gameRouter = require("./routes/gameRoutes");
+const allgameRouter= require('./routes/allGameRoute');
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
 
 // Database connection
@@ -83,6 +86,8 @@ app.use("/gamepay-listing/game", gameRouter);
 app.use("/gamepay-listing/review", reviewsRouter)
 app.use("/gamepay-listing/getGameList", gameNftRouter)
 app.use("/gamepay-listing/", gameNftRouter)
+app.use("/game",gameRouter);
+app.use("/gamepay-listing/allgame", allgameRouter)
 
 // app.use('/nftPresale',nftPresaleRouter)
  
