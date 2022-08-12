@@ -5,7 +5,7 @@ const games = require('../../models/gamepay-listing/game');
 
 const getGameReview = async(req,res)=>{
   try{
-    let keys = ["gameId"];
+    const keys = ["gameId"];
     for (i in keys) {
       if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
         res.json({ status: 400, msg: keys[i] + " are required" });
@@ -14,7 +14,6 @@ const getGameReview = async(req,res)=>{
     }
 
     const gameList = await games.findById({_id:req.body.gameId});
-
     if(gameList){
       const reviews = await userReview.find()
       .sort({ createdAt : -1})
@@ -30,7 +29,8 @@ const getGameReview = async(req,res)=>{
     }
   }
   catch(err){
-    res.status(500).json({err:"Internal Server Error"})
+    logger.error(err)
+    res.status(500).json(err)
   }
 };
 
@@ -87,10 +87,8 @@ const addGameReview = async (req, res) => {
       data: data,
     });
   } catch (error) {
-    console.log(error)
-    res.status(500).json({
-      err: "Internal Server Error",
-    });
+    logger.error(err)
+    res.status(500).json(err)
   }
 };
 
