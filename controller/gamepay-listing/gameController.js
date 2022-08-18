@@ -1,5 +1,5 @@
 const logger = require('../../logger');
-const submitgame = require('../../models/gamepay-listing/game');
+const games = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
     try{
@@ -138,8 +138,15 @@ const game = async(req,res)=>{
          if (!policyThree) {
             return res.send("Policy is required ")
          }
+         const name = await games.findOne({gameName:gameName});
+         if(name){
+           return res.json({ 
+             status: 400, 
+             msg: "Game Name already exists" 
+           });
+         }
         if (webVersion==="web 3.0") {
-            const game = new submitgame({
+            const game = new games({
                emailId : emailId,
                webVersion : webVersion,
                userName : userName,
@@ -177,7 +184,7 @@ const game = async(req,res)=>{
                await game.save()  
                return  res.send(game)
          }else if (webVersion==="web 2.0") {
-               const web2game = new submitgame({
+               const web2game = new games({
                   emailId : emailId,
                   webVersion : webVersion,
                   userName : userName,
@@ -212,13 +219,13 @@ const game = async(req,res)=>{
                   policyThree : policyThree  
             })
                await web2game.save()  
-               return  res.send(game1)
+               return  res.send(web2game)
             }
 
             }
             catch (error) {
                logger.error(error);
-            res.status(500).json({err:"Internal Server Error"})
+            res.status(500).json(err)
              }
             };
 module.exports = { game }
