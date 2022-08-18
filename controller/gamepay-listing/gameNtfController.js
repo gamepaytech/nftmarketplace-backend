@@ -2,7 +2,6 @@ const logger = require('../../logger');
 const gameNft = require('../../models/gamepay-listing/game_nft');
 const games = require('../../models/gamepay-listing/game');
 
-
 const  getGameList = async(req,res)=>{
     try{  
       const keys = ["gameId"];
@@ -31,6 +30,7 @@ const  getGameList = async(req,res)=>{
     }
   };
 
+
 const getGameDetail = async(req,res)=>{
     try{
       const check = /^[0-9a-fA-F]{24}$/;
@@ -47,12 +47,15 @@ const getGameDetail = async(req,res)=>{
                data : data,
                msg: "Game details successfully"
               });      
-    }
-    catch(err){
-        logger.error(err)
-        res.status(500).json(err)
-    }
-}
+
+          }
+          catch(err){
+          logger.error(err)
+          res.status(500).json(err)
+       }
+   };
+
+  
 
 
 module.exports={getGameList,getGameDetail}

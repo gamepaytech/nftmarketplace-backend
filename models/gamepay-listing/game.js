@@ -10,7 +10,7 @@ const gameSchema = mongoose.Schema(
   emailAddress:{type: String},
   address:{type: String, required: true},
   designation:{type:String,requried:true},
-  gameName:{type: String, required: true},
+  gameName:{type: String, unique:true},
   statusGame:{type: String, required: true},
   gameLogo:{type: String, required: true},
   gameMedia:{type: String, required: true},
@@ -38,6 +38,6 @@ const gameSchema = mongoose.Schema(
 },
 { timestamps: true }
 );
-module.exports = mongoose.model("games", gameSchema);
+module.exports = mongoose.model("game", gameSchema);
 
 
