@@ -21,13 +21,12 @@ const getGamepayListings = async (req, res) => {
 const getTweetListByUsername = async (req, res) => {
   try {
     const username = req.body.username;
+    let tweetList = [];
     if (typeof username === "string" && username.trim().length === 0) {
       res.status(400).json({ msg: "username is Required" });
     } else {
       await fetch(
-        "https://api.twitter.com/2/users/by?usernames=" +
-          username +
-          "&user.fields=created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,url,username,verified,withheld&expansions=pinned_tweet_id&tweet.fields=attachments,author_id,context_annotations,created_at,entities,geo,id,in_reply_to_user_id,lang,possibly_sensitive,public_metrics,referenced_tweets,source,text,withheld",
+        "https://api.twitter.com/2/tweets/search/recent?query=from:"+username+"&expansions=author_id,attachments.media_keys&user.fields=created_at,description,id,location,name,pinned_tweet_id,profile_image_url,protected,url,username,verified,withheld&media.fields=duration_ms,height,media_key,preview_image_url,public_metrics,type,url,width,alt_text&tweet.fields=attachments,author_id,created_at,id,lang,public_metrics,source,text,withheld",
         {
           method: "GET",
           headers: {
@@ -38,7 +37,17 @@ const getTweetListByUsername = async (req, res) => {
       )
         .then((response) => response.json())
         .then((data) => {
-          res.status(200).json({ data: data });
+          if(data.data){
+            tweetList = data.data;
+            tweetList.forEach(element => {
+              element.username = data.includes.users[0].username
+              element.profile_image_url = data.includes.users[0].profile_image_url
+              element.url = data.includes.users[0].url
+              element.name = data.includes.users[0].name
+              element.viewPost = "https://twitter.com/"+data.includes.users[0].username+"/status/"+element.id
+            });
+          }
+          res.status(200).json({ data: tweetList });
         })
         .catch(function (err) {
           res.status(500).json({
@@ -47,6 +56,7 @@ const getTweetListByUsername = async (req, res) => {
         });
     }
   } catch (err) {
+    console.log(err)
     logger.info(err);
     res.status(500).json({
       err: "Internal server error!",
