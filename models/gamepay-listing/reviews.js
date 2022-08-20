@@ -18,19 +18,19 @@ const reviewSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    gamePlay: {
+    funToPlay: {
       type: Number,
       required: true,
     },
-    complexity: {
+    abilityToEarn: {
       type: Number,
       required: true,
     },
-    earningPotential: {
+    affordability: {
       type: Number,
       required: true,
     },
-    costEffective: {
+    easyToLearn: {
       type: Number,
       required: true,
     },
