@@ -56,7 +56,6 @@ const getTweetListByUsername = async (req, res) => {
         });
     }
   } catch (err) {
-    console.log(err)
     logger.info(err);
     res.status(500).json({
       err: "Internal server error!",
@@ -64,6 +63,59 @@ const getTweetListByUsername = async (req, res) => {
   }
 };
 
+const getRedditListByUsername = async (req, res) => {
+  try {
+    const username = req.body.username;
+    let redditList = [];
+    if (typeof username === "string" && username.trim().length === 0) {
+      res.status(400).json({ msg: "username is Required" });
+    } else {
+      getRedditUserInfo = await fetch(
+        "https://www.reddit.com/r/" + username + "/about.json"
+      );
+      let redditUserInfo = await getRedditUserInfo.json();
+      if (redditUserInfo.data.title) {
+        await fetch("https://www.reddit.com/r/"+username+".json?limit=10")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.data) {
+              redditList = data.data;
+              redditList.children.forEach(element => {
+                element.data.userProfileImg = getUrl(redditUserInfo.data.community_icon)
+                element.data.banner_background_image = getUrl(redditUserInfo.data.banner_background_image)
+              });
+            }
+            res.status(200).json({ data: redditList });
+          })
+          .catch(function (err) {
+            res.status(500).json({
+              message: err,
+            });
+          });
+      } else {
+        res.status(200).json({
+          message: "user Not Found",
+          data: [],
+        });
+      }
+    }
+  } catch (err) {
+    logger.info(err);
+    res.status(500).json({
+      err: "Internal server error!",
+    });
+  }
+};
+
+const getUrl = (imgUrl) => {
+  let img = imgUrl || '';
+  let encoded = img.replace('amp;s', 's')
+  let doubleEncoded = encoded.replace('amp;', '')
+  let tripleEncoded1 = doubleEncoded.replace('amp;', '')
+  let tripleEncoded = tripleEncoded1.replace('amp;', '')
+  return tripleEncoded
+}
+
 module.exports = {
-    getGamepayListings,getTweetListByUsername
+    getGamepayListings,getTweetListByUsername,getRedditListByUsername
 }
