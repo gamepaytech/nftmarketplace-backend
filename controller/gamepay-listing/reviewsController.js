@@ -41,10 +41,10 @@ const addGameReview = async (req, res) => {
       "gameId",
       "comment",
       "rating",
-      "gamePlay",
-      "complexity",
-      "earningPotential",
-      "costEffective",
+      "funToPlay",
+      "abilityToEarn",
+      "affordability",
+      "easyToLearn",
     ];
     for (i in keys) {
       if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
@@ -74,10 +74,10 @@ const addGameReview = async (req, res) => {
       gameId: req.body.gameId,
       comment: req.body.comment,
       rating: req.body.rating,
-      gamePlay: req.body.gamePlay,
-      complexity: req.body.complexity,
-      earningPotential: req.body.earningPotential,
-      costEffective: req.body.costEffective,
+      funToPlay: req.body.funToPlay,
+      abilityToEarn: req.body.abilityToEarn,
+      affordability: req.body.affordability,
+      easyToLearn: req.body.easyToLearn,
     });
 
     const data = await addReview.save();
