@@ -1,5 +1,5 @@
 const logger = require('../../logger');
-const games = require('../../models/gamepay-listing/game');
+const submitgame = require('../../models/gamepay-listing/game');
 
 const game = async(req,res)=>{
     try{
@@ -13,29 +13,29 @@ const game = async(req,res)=>{
          address = req.body.address;
          designation = req.body.designation;
          gameName = req.body.gamename;
-         statusGame = req.body.statusgame;
-         gameLogo = req.body.gamelogo;
-         gameMedia = req.body.gamemedia;
-         gameThumbnail = req.body.gamethumbnail;
-         gameLaunchDate = req.body. gamelaunchdate;
-         gameWebsite = req.body.gamewebsite;
-         gameTrailer = req.body.gametrailer;
-         gameDescription = req.body.gamedescription;
-         gamePrice = req.body.gameprice;
+         gameStatus = req.body.gamestatus;
+         logo = req.body.logo;
+         media = req.body.media;
+         thumbnail = req.body.thumbnail;
+         launchDate = req.body.launchdate;
+         website = req.body.website;
+         trailer = req.body.trailer;
+         description = req.body.description;
+         price = req.body.price;
          tokenEarnings = req.body.tokenearnings;
-         gameGenre = req.body.gamegenre;
-         platFormsGame = req.body.platformsgame;
+         genre = req.body.genre;
+         platforms = req.body.platforms;
          blockChains = req.body.blockchains;
-         tokenContracts = req.body.tokencontracts;
+         tokenContract = req.body.tokencontract;
          coinGeckoUrl = req.body.coingeckourl;
          coinMarketCapUrl = req.body.coinmarketcapurl;
-         subredditUrl = req.body.subredditurl;
-         twitter = req.body.twitter;
+         redditUrl = req.body.redditurl;
+         twitterUrl = req.body.twitterurl;
          partnersAuthorised = req.body.partnersauthorised;
          twitchUrl = req.body.twitchurl;
-         policyOne = req.body.policyone;
-         policyTwo = req.body.policytwo;
-         policyThree = req.body.policythree;
+         tnCOne = req.body.tnCOne;
+         tnCTwo = req.body.tnCTwo;
+         tnCThree = req.body.tnCThree;
          const emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         
          const check = emailRegexp.test(emailId)
@@ -44,25 +44,25 @@ const game = async(req,res)=>{
          }
          
          const url =  /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-         const image = /(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg))/i;
-         const logo =  image.test(gameLogo);
-         if (!logo) {
+         const image = /(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg|webp))/i;
+         const logovalidation =  image.test(logo);
+         if (!logovalidation) {
             return res.send("GameLogo image url is not valid ")
          }
-         const media =  image.test(gameMedia);
-         if (!media) {
+         const mediavalidation =  image.test(media);
+         if (!mediavalidation) {
             return res.send("GameMedia image url is not valid ")
          }
-         const thumbnail =  image.test(gameThumbnail);
-         if (!thumbnail) {
-            return res.send("GameThumbnail image url is not valid ")
+         const thumbnailvalidation =  image.test(thumbnail);
+         if (!thumbnailvalidation) {
+            return res.send("GameThumbnail  url is not valid ")
          }
-         const website =  url.test(gameWebsite);
-         if (!website) {
+         const websitevalidation =  url.test(website);
+         if (!websitevalidation) {
             return res.send("GameWebsite url is not valid ")
          }
-         const trailer =  url.test(gameTrailer);
-         if (!trailer) {
+         const trailervalidation =  url.test(trailer);
+         if (!trailervalidation) {
             return res.send("GameTrailer url is not valid ")
          }
          const coin =  url.test(coinMarketCapUrl);
@@ -73,7 +73,7 @@ const game = async(req,res)=>{
          if (!coingecko) {
             return res.send("CoinGecko url is not valid ")
          }
-         const subreddit =  url.test(subredditUrl);
+         const subreddit =  url.test(redditUrl);
          if (!subreddit) {
             return res.send("Subreddit url is not valid ")
          }   
@@ -99,54 +99,47 @@ const game = async(req,res)=>{
          if (!gameName) {
             return res.send("GameName is required ")
          }
-         if (!statusGame) {
+         if (!gameStatus) {
             return res.send("StatusGame is required ")
          }
-         if (!gameLaunchDate) {
+         if (!launchDate) {
             return res.send("GameLaunch date is required ")
          }
-         if (!gameDescription) {
+         if (!description) {
             return res.send("GameDescription name is required ")
          }
-         if (!gamePrice) {
+         if (!price) {
             return res.send("GamePrice is required ")
          }
          if (!tokenEarnings) {
             return res.send("TokenEarnings is required ")
          }
-         if (!gameGenre) {
+         if (!genre) {
             return res.send("GameGenre is required ")
          }
-         if (!platFormsGame) {
+         if (!platforms) {
             return res.send("Supported Platforms game is required ")
          }
-         if (!tokenContracts) {
+         if (!tokenContract) {
             return res.send("TokenContracts is required ")
          }
-         if (!twitter) {
+         if (!twitterUrl) {
             return res.send("TwitterHandle is required ")
          }
          if (!partnersAuthorised) {
             return res.send("Partners Authorised is required ")
          }
-         if (!policyOne) {
-            return res.send("Policy is required ")
+         if (!tnCOne) {
+            return res.send("Policy 1 is required ")
          }
-         if (!policyTwo) {
-            return res.send("Policy is required ")
+         if (!tnCTwo) {
+            return res.send("Policy 2 is required ")
          }
-         if (!policyThree) {
+         if (!tnCThree) {
             return res.send("Policy is required ")
-         }
-         const name = await games.findOne({gameName:gameName});
-         if(name){
-           return res.json({ 
-             status: 400, 
-             msg: "Game Name already exists" 
-           });
          }
         if (webVersion==="web 3.0") {
-            const game = new games({
+            const game = new submitgame({
                emailId : emailId,
                webVersion : webVersion,
                userName : userName,
@@ -157,75 +150,81 @@ const game = async(req,res)=>{
                address : address,
                designation : designation,
                gameName : gameName,
-               statusGame : statusGame,
-               gameLogo : gameLogo,
-               gameMedia : gameMedia,
-               gameThumbnail : gameThumbnail,
-               gameLaunchDate : gameLaunchDate,
-               gameWebsite : gameWebsite,
-               gameTrailer : gameTrailer,
-               gameDescription : gameDescription,
-               gamePrice : gamePrice,
+               gameStatus : gameStatus,
+               logo : logo,
+               media : media,
+               thumbnail : thumbnail,
+               launchDate : launchDate,
+               website : website,
+               trailer : trailer,
+               description : description,
+               price : price,
                tokenEarnings : tokenEarnings,
-               gameGenre : gameGenre,
-               platFormsGame : platFormsGame,
+               genre : genre,
+               platforms: platforms,
                blockChains : blockChains,
-               tokenContracts : tokenContracts,
+               tokenContract : tokenContract,
                coinGeckoUrl : coinGeckoUrl,
                coinMarketCapUrl : coinMarketCapUrl,
-               subredditUrl : subredditUrl,
-               twitter : twitter,
+               redditUrl : redditUrl,
+               redditName: redditUrl.slice(25).replace(/\/+$/, ''),
+               twitterUrl : twitterUrl,
+               twitterName:twitterUrl.slice(20),
                partnersAuthorised : partnersAuthorised,
                twitchUrl : twitchUrl,
-               policyOne : policyOne,
-               policyTwo : policyTwo,
-               policyThree : policyThree
+               tnCOne : tnCOne,
+               tnCTwo : tnCTwo,
+               tnCThree : tnCThree
         })
                await game.save()  
                return  res.send(game)
          }else if (webVersion==="web 2.0") {
-               const web2game = new games({
-                  emailId : emailId,
-                  webVersion : webVersion,
-                  userName : userName,
-                  gameStudioName : gameStudioName,
-                  relatedGame : relatedGame,
-                  gameContent :  gameContent,
-                  emailAddress : emailAddress,
-                  address : address,
-                  designation : designation,
-                  gameName : gameName,
-                  statusGame : statusGame,
-                  gameLogo : gameLogo,
-                  gameMedia : gameMedia,
-                  gameThumbnail : gameThumbnail,
-                  gameLaunchDate : gameLaunchDate,
-                  gameWebsite : gameWebsite,
-                  gameTrailer : gameTrailer,
-                  gameDescription : gameDescription,
-                  gamePrice : gamePrice,
-                  tokenEarnings : tokenEarnings,
-                  gameGenre : gameGenre,
-                  platFormsGame : platFormsGame,
-                  tokenContracts : tokenContracts,
-                  coinGeckoUrl : coinGeckoUrl,
-                  coinMarketCapUrl : coinMarketCapUrl,
-                  subredditUrl : subredditUrl,
-                  twitter : twitter,
-                  partnersAuthorised : partnersAuthorised,
-                  twitchUrl : twitchUrl,
-                  policyOne : policyOne,
-                  policyTwo : policyTwo,
-                  policyThree : policyThree  
+               const web2game = new submitgame({
+                  emailId: emailId,
+                  webVersion: webVersion,
+                  userName: userName,
+                  gameStudioName: gameStudioName,
+                  relatedGame: relatedGame,
+                  gameContent: gameContent,
+                  emailAddress: emailAddress,
+                  address: address,
+                  designation: designation,
+                  gameName: gameName,
+                  gameStatus: gameStatus,
+                  logo: logo,
+                  media: media,
+                  thumbnail: thumbnail,
+                  launchDate: launchDate,
+                  website: website,
+                  trailer: trailer,
+                  description: description,
+                  price: price,
+                  tokenEarnings: tokenEarnings,
+                  genre: genre,
+                  platforms: platforms,
+                  blockChains: blockChains,
+                  tokenContract: tokenContract,
+                  coinGeckoUrl: coinGeckoUrl,
+                  coinMarketCapUrl: coinMarketCapUrl,
+                  redditUrl: redditUrl,
+                  redditName: redditUrl.slice(25).replace(/\/+$/, ''),
+                  twitterUrl : twitterUrl,
+                  twitterName:twitterUrl.slice(20),
+                  partnersAuthorised: partnersAuthorised,
+                  twitchUrl: twitchUrl,
+                  tnCOne: tnCOne,
+                  tnCTwo: tnCTwo,
+                  tnCThree: tnCThree
             })
                await web2game.save()  
-               return  res.send(web2game)
+               return  res.send(game1)
             }
 
             }
             catch (error) {
+               console.log(error);
                logger.error(error);
-            res.status(500).json(err)
+            res.status(500).json({err:"Internal Server Error"})
              }
             };
 module.exports = { game }

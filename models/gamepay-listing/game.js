@@ -1,43 +1,46 @@
 const mongoose = require("mongoose")
 const gameSchema = mongoose.Schema(
   {
-  emailId:{ type: String, required: true},
+  emailId:{ type: String, required: true, unique:true},
   webVersion:{type: String, required: true},
   userName:{type: String, required: true},
   gameStudioName:{type: String, required: true},
   relatedGame:{type: String, required: true},
-  gameContent:{type: Boolean},
+  gameContent:{type: Boolean,default:"false"},
   emailAddress:{type: String},
   address:{type: String, required: true},
-  designation:{type:String,requried:true},
-  gameName:{type: String, unique:true},
-  statusGame:{type: String, required: true},
-  gameLogo:{type: String, required: true},
-  gameMedia:{type: String, required: true},
-  gameThumbnail:{type: String, required: true},
-  gameLaunchDate:{type: String, required: true},
-  gameWebsite:{type: String, required: true},
-  gameTrailer:{type: String, required: true},
-  gameDescription:{type: String, required: true},
-  gamePrice:{type: Number, required: true},
-  tokenEarnings:{type: Number, required: true},
-  gameGenre:{type: String, required: true},
-  platFormsGame:{type: String, required: true},
-  blockChains:{type: String},
-  tokenContracts:{type: String, required: true},
+  designation:{type:String,required:true},
+  gameName:{type: String, required: true, unique:true},
+  gameStatus:{type: String, required: true},
+  logo:{type: String, required: true},
+  media:{type: Array},
+  thumbnail:{type: String, required: true},
+  launchDate:{type: String, required: true},
+  website:{type: String, required: true},
+  trailer:{type: String, required: true},
+  description:{type: String, required: true},
+  price:{type: String, required: true},
+  tokenEarnings:{type: String, required: true},
+  genre:{type: Array},
+  platforms:{type: String, required: true},
+  blockChains:{type: Array},
+  tokenContract:{type: String, required: true},
   coinGeckoUrl:{type: String, required: true},
   coinMarketCapUrl:{type: String, required: true},
-  subredditUrl:{type: String, required: true},
-  twitter:{ type: String, required: true},
-  partnersAuthorised:{type: String, required: true},
-  twitchUrl:{type: String, required: true},
-  policyOne:{type: String, required: true},
-  policyTwo:{type: String, required: true},
-  policyThree:{type: String, required: true}
+  redditUrl:{type: String, required: true},
+  redditName:{type: String},
+  twitterUrl:{ type: String, required: true},
+  twitterName:{ type: String},
+  partnerAuthorised:{type: String},
+  twitchUrl:{type: String, default:"https://www.twitch.tv/thesandboxgame"},
+  tnCOne:{type: Boolean, required: true},//TnC refers to TERMS AND CONDITIONS
+  tnCTwo:{type: Boolean, required: true},
+  tnCThree:{type: Boolean, required: true},
+  approvalStatus:{type: String,default:"pending"}
 
 },
 { timestamps: true }
 );
-module.exports = mongoose.model("game", gameSchema);
+module.exports = mongoose.model("games", gameSchema);
 
 
