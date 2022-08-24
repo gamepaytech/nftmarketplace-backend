@@ -44,6 +44,8 @@ const create = async (req, res) => {
       chikCount,
       others,
       breedCount,
+      hp,
+      attack,
       result,
     } = req.body;
 
@@ -80,6 +82,8 @@ const create = async (req, res) => {
         chikCount,
         others,
         breedCount,
+        hp,
+        attack,
         saleId: result.events.saleCreated.returnValues.itemId,
         ownerAddress: result.events.Minted.returnValues.minter,
         mintingAddress: result.events.Minted.returnValues.minter
