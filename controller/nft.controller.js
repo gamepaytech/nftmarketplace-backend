@@ -268,9 +268,11 @@ const getNftById = async (req, res) => {
     const data =
       req.body.type === "inventory"
         ? await Nfts.nftDetails.findOne({ _id: nftId })
-        : await Nfts.nftDetails.findOne({
-            $and: [{ _id: nftId }, { active: true }],
-          });
+        : await Nfts.nftDetails
+            .findOne({
+              $and: [{ _id: nftId }, { active: true }],
+            })
+            .populate({ path: "boughtDetails" });
     res.send({
       data: data,
       msg: "Successfull",
