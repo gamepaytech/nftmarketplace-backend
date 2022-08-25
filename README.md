@@ -2,7 +2,7 @@
 
 npm install
 
-node server.js
+npm start
 
 ##Dependencies
 Refer .env.sample for the local setup
