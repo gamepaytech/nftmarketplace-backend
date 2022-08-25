@@ -1,5 +1,7 @@
 const logger = require('../../logger');
 const uploadgame = require('../../models/gamepay-listing/allgames');
+const games = require('../../models/gamepay-listing/game');
+
 
 const addGames = async(req,res)=>{
     try{
@@ -55,6 +57,7 @@ const getGameListingsByType = async (req, res) => {
         if (type != null) {
             const data = await uploadgame.find({ type: type });
             return res.status(200).json({ data: data });
+
         } else {
             return res.status(400).json({ msg: "type is Required" });
         }
@@ -63,4 +66,16 @@ const getGameListingsByType = async (req, res) => {
         return  res.json({ status: 500, msg: err.toString() });
     }
 };
-module.exports = { addGames,getGameListingsByType }
+const getAllGameListings = async (req, res) => {
+    try {
+            const data = await games.find({});
+            return res.status(200).json({ data: data });
+    } catch (err) {
+        console.log(err);
+        logger.info(err);
+        res.status(500).json({
+            err: "Internal server error!",
+        });
+    }
+};
+module.exports = { addGames,getGameListingsByType,getAllGameListings }
