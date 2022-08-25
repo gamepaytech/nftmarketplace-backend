@@ -105,6 +105,16 @@ let nftSchema = new mongoose.Schema(
     { timestamps: true }
 )
 
+nftSchema.virtual('boughtDetails', {
+    ref: 'PresaleBoughtNft', //The Model to use
+    localField: '_id', //Find in Model, where localField 
+    foreignField: 'nft', // is equal to foreignField
+});
+// Set Object and Json property to true. Default is set to false
+nftSchema.set('toObject', { virtuals: true });
+nftSchema.set('toJSON', { virtuals: true });
+
+
 let nftSetting = new mongoose.Schema({
     event_start: {
         type: Boolean,
