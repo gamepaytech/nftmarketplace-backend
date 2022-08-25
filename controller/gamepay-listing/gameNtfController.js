@@ -42,7 +42,7 @@ const getGameDetail = async(req,res)=>{
           });
         }
 
-        const data = await games.findById(req.params.gameId)
+        const data = await games.findById(req.params.gameId).populate('reviews')
         return res.status(200).json({
                data : data,
                msg: "Game details successfully"
