@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const reviewSchema = new mongoose.Schema(
+const gameReviewSchema = new mongoose.Schema(
   {
     userId: {
       type: String,
@@ -37,4 +37,14 @@ const reviewSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-module.exports = mongoose.model("games_reviews", reviewSchema);
+
+gameReviewSchema.virtual('userDetail', {
+  ref: 'users', //The Model to use
+  localField: 'userId', //Find in Model, where localField 
+  foreignField: '_id', // is equal to foreignField
+});
+// Set Object and Json property to true. Default is set to false
+gameReviewSchema.set('toObject', { virtuals: true });
+gameReviewSchema.set('toJSON', { virtuals: true });
+
+module.exports = mongoose.model("games_reviews", gameReviewSchema);
