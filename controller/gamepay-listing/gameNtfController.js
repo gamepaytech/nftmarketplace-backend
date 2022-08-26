@@ -92,7 +92,6 @@ const getGameDetail = async(req,res)=>{
       })
      }
     }catch(err){
-      console.log(err)
       logger.error(err)
       res.status(500).json(err)
     }

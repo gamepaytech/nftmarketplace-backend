@@ -18,14 +18,6 @@ const addFeedback = async (req, res) => {
           return;
         }
       }
-      
-        //  const image = /(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg))/i;
-        //  const check =  image.test(addData.imageupload); 
-        //     if (!check) {
-        //     return res.send("Image url is not valid ")
-        //     }
-     
-  
           const data = await addData.save();
           return res.status(201).json({
           status: "200",
@@ -33,7 +25,6 @@ const addFeedback = async (req, res) => {
           data: data,
          });
          }catch (error) {
-              console.log(error)
               logger.error(error)
               res.status(500).json(error)
       }
