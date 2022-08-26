@@ -136,7 +136,7 @@ const game = async(req,res)=>{
             return res.send("Policy 2 is required ")
          }
          if (!tnCThree) {
-            return res.send("Policy is required ")
+            return res.send("Policy 3 is required ")
          }
         if (webVersion==="web 3.0") {
             const game = new submitgame({

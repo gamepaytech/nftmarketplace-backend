@@ -1,9 +1,12 @@
 const express = require('express');
+const cors = require('cors')
 
 const router = express.Router();
-const { getGameList , getGameDetail} = require('../../controller/gamepay-listing/gameNtfController');
+const { getGameList , getGameDetail,getAllGameDetails,getApprovalStatus} = require('../../controller/gamepay-listing/gameNtfController');
 
-router.get('/',getGameList);
-router.get('/getGameDetail/:gameId',getGameDetail);
+router.get('/gameList', cors(),getGameList);
+router.get('/getGameDetail/:gameId', cors(),getGameDetail);
+router.get('/allgames', cors(),getAllGameDetails);
+router.put('/admin', cors(),getApprovalStatus);
 
 module.exports = router;
