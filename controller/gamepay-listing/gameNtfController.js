@@ -71,7 +71,7 @@ const getGameDetail = async(req,res)=>{
         }
    };
 
-  const getApprovalStatus = async(req,res)=>{
+  const approvalStatus = async(req,res)=>{
     try{
       if(req.body.approvalStatus==="approved"){
          const data = await games.findById(req.body.id)
@@ -98,5 +98,5 @@ const getGameDetail = async(req,res)=>{
   }
   
 
-module.exports={getGameList,getGameDetail,getAllGameDetails,getApprovalStatus}
+module.exports={getGameList,getGameDetail,getAllGameDetails,approvalStatus}
 
