@@ -15,9 +15,14 @@ const getGameReview = async(req,res)=>{
 
     const gameList = await games.findById({_id:req.body.gameId});
     if(gameList){
-      const reviews = await userReview.find()
-      .sort({ createdAt : -1})
-      .limit(5);
+      const reviews = await userReview
+        .find({gameId:req.body.gameId})
+        .populate({
+          path: "userDetail",
+          select: { username: 1, profilePic: 1 },
+        })
+        .sort({ createdAt: -1 })
+        .limit(5);
      return res.status(200).json({
          data : reviews,
          msg: "Success"

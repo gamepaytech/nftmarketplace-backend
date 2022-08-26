@@ -43,7 +43,7 @@ const getGameDetail = async(req,res)=>{
           });
         }
 
-        const data = await games.findById(req.params.gameId)
+        const data = await games.findById(req.params.gameId).populate('reviews')
         return res.status(200).json({
                data : data,
                msg: "Game details successfully"
@@ -56,47 +56,8 @@ const getGameDetail = async(req,res)=>{
        }
    };
 
-
-   const getAllGameDetails = async(req,res)=>{
-     try{
-         const data = await games.find()
-         return res.status(200).json({
-               data : data,
-               msg: "Game details successfully"
-              });      
-          }
-           catch(err){
-           logger.error(err)
-           res.status(500).json(err)
-        }
-   };
-
-  const approvalStatus = async(req,res)=>{
-    try{
-      if(req.body.approvalStatus==="approved"){
-         const data = await games.findById(req.body.id)
-          data.approvalStatus = req.body.approvalStatus;
-          await data.save()
-        return res.status(200).json({
-          data : data,
-          msg : "Approved Success"
-        })
-      }else if(req.body.approvalStatus==="rejected"){
-        const data = await games.findById(req.body.id)
-        data.approvalStatus = req.body.approvalStatus;
-        await data.save()
-        await sendRejectEmail({emailId:data.emailId})
-           return res.status(200).json({
-           data : data,
-           msg : "Rejected Success"
-      })
-     }
-    }catch(err){
-      logger.error(err)
-      res.status(500).json(err)
-    }
-  }
   
 
 module.exports={getGameList,getGameDetail,getAllGameDetails,approvalStatus}
+
 
