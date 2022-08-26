@@ -222,7 +222,6 @@ const game = async(req,res)=>{
 
             }
             catch (error) {
-               console.log(error);
                logger.error(error);
             res.status(500).json({err:"Internal Server Error"})
              }
