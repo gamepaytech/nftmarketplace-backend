@@ -89,7 +89,7 @@ app.use("/gamepay-listing", gamepayListingRouter);
 app.use("/gamepay-listing/game", gameRouter);
 app.use("/gamepay-listing/review", reviewsRouter)
 app.use("/gamepay-listing", gameNftRouter)
-app.use("/gamepay-listing/getFeedback", feedbackRouter)
+app.use("/gamepay-listing", feedbackRouter)
 app.use("/gamepay-listing/allgame", allgameRouter)
 
 
