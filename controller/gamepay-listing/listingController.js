@@ -21,7 +21,6 @@ const getGamepayListings = async (req, res) => {
 const getGamepayListingByFilter = async (req, res) => {
   try {
       const type = req.body.type;
-      console.log(type);
       if(type != null){
           const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}});
           res.status(200).json({ data: data });
