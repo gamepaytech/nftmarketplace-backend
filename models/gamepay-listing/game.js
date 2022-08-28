@@ -15,6 +15,7 @@ const gameSchema = mongoose.Schema(
     logo: { type: String, required: true },
     media: { type: Array },
     thumbnail: { type: String, required: true },
+    thumbnailWithFrame: { type: String, default: "" },
     launchDate: { type: String, required: true },
     website: { type: String, required: true },
     trailer: { type: String, required: true },

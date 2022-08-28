@@ -25,8 +25,28 @@ const getGamepayListingByFilter = async (req, res) => {
           const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}});
           res.status(200).json({ data: data });
       }else{
-          res.status(400).json({ msg: "type is Required"});
+          const data = await games.find();
+          res.status(200).json({ data: data }); 
       }
+  } catch (err) {
+      logger.info(err);
+      res.status(500).json({
+          err: "Internal server error!",
+      });
+  }
+};
+
+const getGamepayListingAllGames = async (req, res) => {
+  try {
+    const mostProfitable = await games.find({ type:{$elemMatch:{"$in":['mostprofitable'], "$exists":true}}});
+    const mostRated = await games.find({ type:{$elemMatch:{"$in":['mostrated'], "$exists":true}}});
+    const newTrending = await games.find({ type:{$elemMatch:{"$in":['new','trending'], "$exists":true}}});
+    res.status(200).json({ 
+      status:200,
+      mostProfitable:mostProfitable,
+      mostRated:mostRated,
+      newTrending:newTrending
+     });
   } catch (err) {
       logger.info(err);
       res.status(500).json({
@@ -136,5 +156,5 @@ const getUrl = (imgUrl) => {
 
 
 module.exports = {
-    getGamepayListings,getTweetListByUsername,getRedditListByUsername,getGamepayListingByFilter
+    getGamepayListings,getTweetListByUsername,getRedditListByUsername,getGamepayListingByFilter,getGamepayListingAllGames
 }
