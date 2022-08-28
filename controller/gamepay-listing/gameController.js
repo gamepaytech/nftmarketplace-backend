@@ -136,7 +136,7 @@ const game = async(req,res)=>{
             return res.send("Policy 2 is required ")
          }
          if (!tnCThree) {
-            return res.send("Policy is required ")
+            return res.send("Policy 3 is required ")
          }
         if (webVersion==="web 3.0") {
             const game = new submitgame({
@@ -222,7 +222,6 @@ const game = async(req,res)=>{
 
             }
             catch (error) {
-               console.log(error);
                logger.error(error);
             res.status(500).json({err:"Internal Server Error"})
              }
