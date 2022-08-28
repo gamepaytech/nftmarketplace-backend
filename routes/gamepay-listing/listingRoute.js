@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 
 const router = express.Router();
-const { getGamepayListings, getTweetListByUsername, getRedditListByUsername } = require('../../controller/gamepay-listing/listingController');
+const { getGamepayListings, getTweetListByUsername, getRedditListByUsername, getGamepayListingByFilter } = require('../../controller/gamepay-listing/listingController');
 const { uploadGamePayListing } = require('../../middleware/multerS3Upload');
 
 router.post('/',cors(),getGamepayListings);
+router.post('/filter-list',cors(),getGamepayListingByFilter);
 router.post('/get-tweet-list',cors(),getTweetListByUsername);
 router.post('/get-reddit-list',cors(),getRedditListByUsername);
 

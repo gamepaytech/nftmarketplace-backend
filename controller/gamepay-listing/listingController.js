@@ -1,6 +1,6 @@
 const logger = require('../../logger');
 const gamepayListing = require('../../models/gamepay-listing/listing')
-
+const games = require('../../models/gamepay-listing/game');
 const getGamepayListings = async (req, res) => {
     try {
         const type = req.body.type;
@@ -16,6 +16,24 @@ const getGamepayListings = async (req, res) => {
             err: "Internal server error!",
         });
     }
+};
+
+const getGamepayListingByFilter = async (req, res) => {
+  try {
+      const type = req.body.type;
+      console.log(type);
+      if(type != null){
+          const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}});
+          res.status(200).json({ data: data });
+      }else{
+          res.status(400).json({ msg: "type is Required"});
+      }
+  } catch (err) {
+      logger.info(err);
+      res.status(500).json({
+          err: "Internal server error!",
+      });
+  }
 };
 
 const getTweetListByUsername = async (req, res) => {
@@ -116,6 +134,8 @@ const getUrl = (imgUrl) => {
   return tripleEncoded
 }
 
+
+
 module.exports = {
-    getGamepayListings,getTweetListByUsername,getRedditListByUsername
+    getGamepayListings,getTweetListByUsername,getRedditListByUsername,getGamepayListingByFilter
 }

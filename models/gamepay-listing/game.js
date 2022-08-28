@@ -39,6 +39,7 @@ const gameSchema = mongoose.Schema(
     tnCOne: { type: Boolean, required: true }, //TnC refers to TERMS AND CONDITIONS
     tnCTwo: { type: Boolean, required: true },
     tnCThree: { type: Boolean, required: true },
+    type:{type:Array},
     approvalStatus: { type: String, default: "pending" },
   },
   { timestamps: true }
