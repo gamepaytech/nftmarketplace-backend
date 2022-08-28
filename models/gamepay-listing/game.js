@@ -15,6 +15,7 @@ const gameSchema = mongoose.Schema(
     logo: { type: String, required: true },
     media: { type: Array },
     thumbnail: { type: String, required: true },
+    thumbnailWithFrame: { type: String, default: "" },
     launchDate: { type: String, required: true },
     website: { type: String, required: true },
     trailer: { type: String, required: true },
@@ -39,6 +40,7 @@ const gameSchema = mongoose.Schema(
     tnCOne: { type: Boolean, required: true }, //TnC refers to TERMS AND CONDITIONS
     tnCTwo: { type: Boolean, required: true },
     tnCThree: { type: Boolean, required: true },
+    type:{type:Array},
     approvalStatus: { type: String, default: "pending" },
   },
   { timestamps: true }

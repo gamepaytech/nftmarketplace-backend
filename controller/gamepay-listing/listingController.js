@@ -1,6 +1,6 @@
 const logger = require('../../logger');
 const gamepayListing = require('../../models/gamepay-listing/listing')
-
+const games = require('../../models/gamepay-listing/game');
 const getGamepayListings = async (req, res) => {
     try {
         const type = req.body.type;
@@ -16,6 +16,43 @@ const getGamepayListings = async (req, res) => {
             err: "Internal server error!",
         });
     }
+};
+
+const getGamepayListingByFilter = async (req, res) => {
+  try {
+      const type = req.body.type;
+      if(type != null){
+          const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}});
+          res.status(200).json({ data: data });
+      }else{
+          const data = await games.find();
+          res.status(200).json({ data: data }); 
+      }
+  } catch (err) {
+      logger.info(err);
+      res.status(500).json({
+          err: "Internal server error!",
+      });
+  }
+};
+
+const getGamepayListingAllGames = async (req, res) => {
+  try {
+    const mostProfitable = await games.find({ type:{$elemMatch:{"$in":['mostprofitable'], "$exists":true}}});
+    const mostRated = await games.find({ type:{$elemMatch:{"$in":['mostrated'], "$exists":true}}});
+    const newTrending = await games.find({ type:{$elemMatch:{"$in":['new','trending'], "$exists":true}}});
+    res.status(200).json({ 
+      status:200,
+      mostProfitable:mostProfitable,
+      mostRated:mostRated,
+      newTrending:newTrending
+     });
+  } catch (err) {
+      logger.info(err);
+      res.status(500).json({
+          err: "Internal server error!",
+      });
+  }
 };
 
 const getTweetListByUsername = async (req, res) => {
@@ -116,6 +153,8 @@ const getUrl = (imgUrl) => {
   return tripleEncoded
 }
 
+
+
 module.exports = {
-    getGamepayListings,getTweetListByUsername,getRedditListByUsername
+    getGamepayListings,getTweetListByUsername,getRedditListByUsername,getGamepayListingByFilter,getGamepayListingAllGames
 }
