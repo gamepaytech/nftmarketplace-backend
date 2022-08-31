@@ -652,10 +652,10 @@ const getNftByUserId = async (req, res) => {
     let pageSize = req.params.pageSize;
     let total = 0;
     total = await PresaleBoughtNft.find({
-      $and: [{ nftIdOwned: ObjectId(userId) }, { active: true }],
+      $and: [{ owner: ObjectId(userId) }]
     }).count();
     const findNfts = await PresaleBoughtNft.find({
-      $and: [{ nftIdOwned: ObjectId(userId) }, { active: true }],
+      $and: [{ owner: ObjectId(userId) }]
     })
       .sort({ createdAt: -1 })
       // .populate({
