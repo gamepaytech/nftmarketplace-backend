@@ -20,7 +20,6 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
     },
     nft: {
       type: mongoose.Schema.ObjectId,
-      ref: "nftDetails",
       required: true,
     },
     amountSpent: {
@@ -53,5 +52,17 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
   },
   { timestamps: true, strictPopulate: false }
 );
+
+
+PresaleBoughtNftSchema.virtual('nfts', {
+  ref: 'nftDetails',
+  localField: 'nft',
+  foreignField: '_id',
+  justOne: true // set true for one-to-one relationship
+})
+
+// Set Object and Json property to true. Default is set to false
+PresaleBoughtNftSchema.set('toObject', { virtuals: true });
+PresaleBoughtNftSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model("PresaleBoughtNft", PresaleBoughtNftSchema);
