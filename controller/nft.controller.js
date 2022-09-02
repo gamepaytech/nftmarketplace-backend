@@ -658,12 +658,9 @@ const getNftByUserId = async (req, res) => {
       $and: [{ owner: ObjectId(userId) }]
     })
       .sort({ createdAt: -1 })
-      // .populate({
-      //   path: "nft",
-      // })
+      .populate('nfts')
       .limit(pageSize)
       .skip(pageSize * page);
-      console.log(findNfts,"fhjkh")
     if (!findNfts) {
       return res.status(404).json({
         error: "Error! No nft found",
@@ -674,8 +671,8 @@ const getNftByUserId = async (req, res) => {
       total: total,
     });
   } catch (err) {
-    logger.info(err);
     console.log(err)
+    logger.info(err);
     res.status(500).json({
       err: "Internal Server Error!",
     });
