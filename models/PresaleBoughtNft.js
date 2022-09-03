@@ -55,7 +55,7 @@ const PresaleBoughtNftSchema = new mongoose.Schema(
 
 
 PresaleBoughtNftSchema.virtual('nfts', {
-  ref: 'nftDetails',
+  ref: 'presalenfts',
   localField: 'nft',
   foreignField: '_id',
   justOne: true // set true for one-to-one relationship
