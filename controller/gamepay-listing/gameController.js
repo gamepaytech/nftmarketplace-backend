@@ -69,18 +69,10 @@ const game = async(req,res)=>{
          if (!coin) {
             return res.send("CoinMarketCap url is not valid ")
          }
-         const coingecko =  url.test(coinGeckoUrl);
-         if (!coingecko) {
-            return res.send("CoinGecko url is not valid ")
-         }
          const subreddit =  url.test(redditUrl);
          if (!subreddit) {
             return res.send("Subreddit url is not valid ")
          }   
-         const twitch =  url.test(twitchUrl);
-         if (!twitch) {
-            return res.send("Twitch url is not valid ")
-         }
          if (!gameStudioName) {
             return res.send("GameStudio name is required ")
          }
