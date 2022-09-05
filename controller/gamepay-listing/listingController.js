@@ -36,6 +36,25 @@ const getGamepayListingByFilter = async (req, res) => {
   }
 };
 
+const getAllGameBySearch = async (req, res) => {
+  try {
+      const search = req.body.search;
+      if(search != null && search != ''){
+          const data = await games.find({gameName: { $regex: search, $options: "i" }});
+          res.status(200).json({ data: data });
+      }else{
+          const data = await games.find();
+          res.status(200).json({ data: data }); 
+      }
+  } catch (err) {
+      console.log(err);
+      logger.info(err);
+      res.status(500).json({
+          err: "Internal server error!",
+      });
+  }
+};
+
 const getGamepayListingAllGames = async (req, res) => {
   try {
     const mostProfitable = await games.find({ type:{$elemMatch:{"$in":['mostprofitable'], "$exists":true}}});
@@ -156,5 +175,10 @@ const getUrl = (imgUrl) => {
 
 
 module.exports = {
-    getGamepayListings,getTweetListByUsername,getRedditListByUsername,getGamepayListingByFilter,getGamepayListingAllGames
-}
+  getGamepayListings,
+  getTweetListByUsername,
+  getRedditListByUsername,
+  getGamepayListingByFilter,
+  getAllGameBySearch,
+  getGamepayListingAllGames,
+};
