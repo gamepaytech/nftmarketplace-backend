@@ -40,7 +40,7 @@ const getGamepayListingByFilter = async (req, res) => {
             total:total,
             page:page,
             pageSize:pageSize, 
-            msg: "Sucessfully" }); 
+            msg: "Data Fetched Sucessfully" }); 
       }
   } catch (err) {
       logger.info(err);
