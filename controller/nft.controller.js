@@ -543,7 +543,7 @@ const getPriceTrail = async (req, res) => {
   !!boughtData &&
     boughtData.map((data) => {
       const { amountSpent, quantity, createdAt } = data;
-      trailDetails.push({ price: amountSpent / quantity, date: createdAt });
+      trailDetails.push({ date: parseInt(Date.parse(createdAt)),  price: parseFloat(amountSpent / quantity) });
     });
   const sale = await Nfts.nftDetails.find({
     $and: [{ _id: ObjectId(nftId) }, { active: true }],
@@ -551,7 +551,7 @@ const getPriceTrail = async (req, res) => {
 
   !!sale &&
     sale.map((data) => {
-      trailDetails.push({ price: data.price, date: new Date() });
+      trailDetails.push({ date: parseInt(new Date() / 1000) , price: parseFloat(data.price)});
     });
 
   res.status(201).json({
