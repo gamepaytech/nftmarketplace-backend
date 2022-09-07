@@ -36,6 +36,7 @@ const game = async(req,res)=>{
          tnCOne = req.body.tnCOne;
          tnCTwo = req.body.tnCTwo;
          tnCThree = req.body.tnCThree;
+         gameMetrics=req.body.gameMetrics;
          const emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         
          const check = emailRegexp.test(emailId)
@@ -166,7 +167,8 @@ const game = async(req,res)=>{
                twitchUrl : twitchUrl,
                tnCOne : tnCOne,
                tnCTwo : tnCTwo,
-               tnCThree : tnCThree
+               tnCThree : tnCThree,
+               gameMetrics:gameMetrics,
         })
                await game.save()  
                return  res.send(game)
@@ -206,7 +208,9 @@ const game = async(req,res)=>{
                   twitchUrl: twitchUrl,
                   tnCOne: tnCOne,
                   tnCTwo: tnCTwo,
-                  tnCThree: tnCThree
+                  tnCThree: tnCThree,
+                  gameMetrics:gameMetrics
+
             })
                await web2game.save()  
                return  res.send(game1)
@@ -214,6 +218,7 @@ const game = async(req,res)=>{
 
             }
             catch (error) {
+               console.log(error);
                logger.error(error);
             res.status(500).json({err:"Internal Server Error"})
              }
