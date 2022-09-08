@@ -5,7 +5,7 @@ const sendRejectEmail = async ({
 }) => {
   return sendEmail({
     to: emailId,
-        subject: "Gamepay- Your Application is Rejected",
+        subject: "Gamepay - Your Application is Rejected",
     html: `
     <!DOCTYPE html>
     <html lang="en">

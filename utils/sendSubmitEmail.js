@@ -5,7 +5,7 @@ const sendSubmitEmail = async ({
 }) => {
   return sendEmail({
     to: emailId,
-    subject: "Gamepay- Your Application is Sucessfully Submitted",
+    subject: "Gamepay - Your Application is Sucessfully Submitted",
     html: `
     <!DOCTYPE html>
     <html lang="en">
