@@ -21,17 +21,18 @@ const getGamepayListings = async (req, res) => {
 const getGamepayListingByFilter = async (req, res) => {
   try {
       const page = req.params.page;
-      const pageSize = req.params.pageSize;
+      const pageSize = req.params.pageSize; 
       const total = await games.find().count({});
       const type = req.body.type;
+      const typeTotal = await games.find({type:req.body.type}).count({});
       if(type != null){
           const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}}).limit(pageSize).skip(pageSize * page);
           res.status(200).json({ 
             data:data,
-            total:total,
+            total:typeTotal,
             page:page,
             pageSize:pageSize, 
-            msg : "Game Type Suceesfully"
+            msg : "Game Type Successfully"
            });
       }else{
           const data = await games.find().limit(pageSize).skip(pageSize * page);
@@ -40,9 +41,10 @@ const getGamepayListingByFilter = async (req, res) => {
             total:total,
             page:page,
             pageSize:pageSize, 
-            msg: "Data Fetched Sucessfully" }); 
+            msg: "Data Fetched Successfully" }); 
       }
   } catch (err) {
+    console.log(err)
       logger.info(err);
       res.status(500).json({
           err: "Internal server error!",

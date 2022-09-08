@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 const userReviewSchema = new mongoose.Schema(
   {
@@ -13,6 +14,7 @@ const userReviewSchema = new mongoose.Schema(
     reviewId: {
       type:String,
       required: true,
+      ref : 'games_reviews'
     },
     isReviewHelpful: {
       type:Boolean

@@ -1,5 +1,6 @@
 const logger = require('../../logger');
 const submitgame = require('../../models/gamepay-listing/game');
+const sendSubmitEmail = require('../../utils/sendSubmitEmail');
 
 const game = async(req,res)=>{
     try{
@@ -168,8 +169,9 @@ const game = async(req,res)=>{
                tnCTwo : tnCTwo,
                tnCThree : tnCThree
         })
-               await game.save()  
-               return  res.send(game)
+              const data = await game.save()  
+              await sendSubmitEmail({emailId:data.emailId,userName:data.userName})
+              return  res.send(data)
          }else if (webVersion==="web 2.0") {
                const web2game = new submitgame({
                   emailId: emailId,
@@ -208,8 +210,10 @@ const game = async(req,res)=>{
                   tnCTwo: tnCTwo,
                   tnCThree: tnCThree
             })
-               await web2game.save()  
-               return  res.send(game1)
+              const data = await web2game.save()  
+               await sendSubmitEmail({emailId:data.emailId})
+               return  res.send(data)
+              
             }
 
             }

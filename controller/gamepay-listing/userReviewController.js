@@ -1,5 +1,6 @@
 const logger = require('../../logger')
 const userReview = require('../../models/gamepay-listing/userReview')
+const review = require('../../models/gamepay-listing/reviews')
 
 const addUserReview = async (req, res) => {
     try {
@@ -31,4 +32,16 @@ const addUserReview = async (req, res) => {
       }
   };
   
-  module.exports = { addUserReview }
+  const getUserReview = async (req,res) =>{
+    try{
+      const data = await userReview.find().populate('reviewId')
+      return res.status(200).json({
+            data : data,
+            msg: "User details successfully"
+           });   
+    }catch (error) {
+              logger.error(error)
+              res.status(500).json(error)
+  }
+  }
+  module.exports = { addUserReview, getUserReview}
