@@ -1,11 +1,11 @@
 const sendEmail = require("./sendEmail");
 
-const sendRejectEmail = async ({
-  emailId, reason
+const sendSubmitEmail = async ({
+  emailId, userName
 }) => {
   return sendEmail({
     to: emailId,
-        subject: "Gamepay - Your Application is Rejected",
+    subject: "Gamepay - Your Application is Sucessfully Submitted",
     html: `
     <!DOCTYPE html>
     <html lang="en">
@@ -59,11 +59,10 @@ const sendRejectEmail = async ({
                                                  <td style="padding-left: 35px;padding-right:35px;padding-bottom: 40px;">
                                                     <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                        color:#5c5c5c;margin-top:10px;margin-bottom: 0px; line-height: 22px;">
-                                                             Thanks for your patience while we reviewed this proposal. Unfortunately, 
-                                                             the proposed game details are inappropriate for our standards. 
-                                                             Reason for rejection<strong>(${reason})</strong>.
-                                                             Kindly and  We encourage you to correct the error and submit the form again,
-                                                             we will be awaiting for collaborating with you soon.
+                                                             Dear ${userName},
+                                                             Thank you for submitting the game to Gamepay.
+                                                             We would like to inform you that we have received your completed information about your game. Our technical team is currently reviewing the details and reach out to you soon in the next 3-5 business working days. 
+                                                             Thank you again for taking the time to collaborate with Gamepay by filling out the form.
                                                     </p>
                                                  </td>
                                               </tr>
@@ -159,4 +158,4 @@ const sendRejectEmail = async ({
   });
 };
 
-module.exports = sendRejectEmail;
+module.exports = sendSubmitEmail;

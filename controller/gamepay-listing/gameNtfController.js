@@ -2,6 +2,7 @@ const logger = require('../../logger');
 const gameNft = require('../../models/gamepay-listing/game_nft');
 const games = require('../../models/gamepay-listing/game');
 const sendRejectEmail = require('../../utils/sendRejectEmail');
+const sendApprovalEmail = require('../../utils/sendApprovalEmail');
 
 const  getGameList = async(req,res)=>{
     try{  
@@ -77,21 +78,23 @@ const getGameDetail = async(req,res)=>{
          const data = await games.findById(req.body.id)
           data.approvalStatus = req.body.approvalStatus;
           await data.save()
+          await sendApprovalEmail({emailId:data.emailId})
         return res.status(200).json({
           data : data,
-          msg : "Approved Success"
+          msg : "Approved Successfully"
         })
       }else if(req.body.approvalStatus==="rejected"){
         const data = await games.findById(req.body.id)
         data.approvalStatus = req.body.approvalStatus;
         await data.save()
-        await sendRejectEmail({emailId:data.emailId})
+        await sendRejectEmail({emailId:data.emailId, reason: req.body.reason})
            return res.status(200).json({
            data : data,
-           msg : "Rejected Success"
+           msg : "Rejected Successfully"
       })
      }
     }catch(err){
+      console.log(err)
       logger.error(err)
       res.status(500).json(err)
     }
@@ -99,5 +102,3 @@ const getGameDetail = async(req,res)=>{
   
 
 module.exports={getGameList,getGameDetail,getAllGameDetails,approvalStatus}
-
-

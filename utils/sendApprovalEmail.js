@@ -1,11 +1,11 @@
 const sendEmail = require("./sendEmail");
 
-const sendRejectEmail = async ({
-  emailId, reason
+const sendApprovalEmail = async ({
+  emailId
 }) => {
   return sendEmail({
     to: emailId,
-        subject: "Gamepay - Your Application is Rejected",
+    subject: "Gamepay - Your Application is Sucessfully Approved",
     html: `
     <!DOCTYPE html>
     <html lang="en">
@@ -59,11 +59,12 @@ const sendRejectEmail = async ({
                                                  <td style="padding-left: 35px;padding-right:35px;padding-bottom: 40px;">
                                                     <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                        color:#5c5c5c;margin-top:10px;margin-bottom: 0px; line-height: 22px;">
-                                                             Thanks for your patience while we reviewed this proposal. Unfortunately, 
-                                                             the proposed game details are inappropriate for our standards. 
-                                                             Reason for rejection<strong>(${reason})</strong>.
-                                                             Kindly and  We encourage you to correct the error and submit the form again,
-                                                             we will be awaiting for collaborating with you soon.
+                                                              We are pleased to inform you that your game has been approved for listing on our platform.
+                                                              Our support team will schedule an e-meeting between us in the next 7 days. 
+                                                              If you agree with our standards, your game, NFTs,and tokens will be listed on our website to reach our gamers.
+                                                              We hope that there will be many exciting opportunities for your project in the future.
+                                                              We love to incorporate your game into our multi-chain gaming platform.
+                                                              Please let us know when you are available for a follow-up chat.
                                                     </p>
                                                  </td>
                                               </tr>
@@ -159,4 +160,4 @@ const sendRejectEmail = async ({
   });
 };
 
-module.exports = sendRejectEmail;
+module.exports = sendApprovalEmail;
