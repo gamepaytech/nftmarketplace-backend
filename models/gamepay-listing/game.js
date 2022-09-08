@@ -38,6 +38,7 @@ const gameSchema = mongoose.Schema(
     tnCTwo: { type: Boolean, required: true },
     tnCThree: { type: Boolean, required: true },
     type:{type:Array},
+    gameMetrics:{type:String},
     approvalStatus: { type: String, default: "pending" },
   },
   { timestamps: true }

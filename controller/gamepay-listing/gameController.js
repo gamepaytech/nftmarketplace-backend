@@ -37,6 +37,7 @@ const game = async(req,res)=>{
          tnCOne = req.body.tnCOne;
          tnCTwo = req.body.tnCTwo;
          tnCThree = req.body.tnCThree;
+         gameMetrics=req.body.gameMetrics;
          const emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         
          const check = emailRegexp.test(emailId)
@@ -167,7 +168,8 @@ const game = async(req,res)=>{
                twitchUrl : twitchUrl,
                tnCOne : tnCOne,
                tnCTwo : tnCTwo,
-               tnCThree : tnCThree
+               tnCThree : tnCThree,
+               gameMetrics:gameMetrics,
         })
               const data = await game.save()  
               await sendSubmitEmail({emailId:data.emailId,userName:data.userName})
@@ -208,7 +210,9 @@ const game = async(req,res)=>{
                   twitchUrl: twitchUrl,
                   tnCOne: tnCOne,
                   tnCTwo: tnCTwo,
-                  tnCThree: tnCThree
+                  tnCThree: tnCThree,
+                  gameMetrics:gameMetrics
+
             })
               const data = await web2game.save()  
                await sendSubmitEmail({emailId:data.emailId})
