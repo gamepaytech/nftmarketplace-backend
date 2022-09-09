@@ -2,30 +2,28 @@ const mongoose = require("mongoose");
 
 const gameResearchSchema = new mongoose.Schema(
   {
-    aid: {
+    article_id: {
       type: String,
       required: true,
     },
     article_title: {
-        type: String,
-        required: true,
-      },
-      subtitle: {
-        type: String,
-        required: true,
-      },
-      cover: {
-        type: String,
-        required: true,
-      },
-      publish_at: { type: String },
-      canonical_url: { type: String },
-      is_show_exclusive_research_access: { type: String },
-      tag: { type: String },
-      publisher_id: { type: String },
-      publisher: { type: Object },
-
-    
+      type: String,
+      required: true,
+    },
+    subtitle: {
+      type: String,
+      required: true,
+    },
+    cover_img: {
+      type: String,
+      required: true,
+    },
+    publish_date: { type: String },
+    is_show_exclusive_research_access: { type: String },
+    tag: { type: String },
+    publisher_id: { type: String },
+    publisher: { type: Object },
+    details: { type: Object ,default:{}},
   },
   { timestamps: true }
 );
