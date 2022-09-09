@@ -6,7 +6,7 @@ const gameResearchSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    article_title: {
+    title: {
       type: String,
       required: true,
     },
