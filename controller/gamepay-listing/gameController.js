@@ -215,9 +215,8 @@ const game = async(req,res)=>{
 
             })
               const data = await web2game.save()  
-               await sendSubmitEmail({emailId:data.emailId})
-               return  res.send(data)
-              
+               await sendSubmitEmail({emailId:data.emailId,userName:data.userName})
+               return  res.send(data)  
             }
 
             }
