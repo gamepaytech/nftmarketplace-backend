@@ -48,7 +48,6 @@ const game = async(req,res)=>{
          const url =  /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
          const image = /(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg|webp))/i;
          const logovalidation =  image.test(logo);
-         console.log(logo)
          if (!logovalidation) {
             return res.send("GameLogo image url is not valid ")
          }
