@@ -23,7 +23,7 @@ const gameSchema = mongoose.Schema(
     price: { type: String, required: true },
     tokenEarnings: { type: String, required: true },
     genre: { type: Array },
-    platforms: { type: String, required: true },
+    platforms: { type: Array, required: true },
     blockChains: { type: Array },
     tokenContract: { type: String, required: true },
     coinGeckoUrl: { type: String},
