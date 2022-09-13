@@ -1,6 +1,6 @@
 const logger = require('../../logger');
 // const submitgame = require('../../models/gamepay-listing/game');
-const submitgame = require('../../models/gamepay-listing/game');
+const submitgame = require('../../models/gamepay-listing/submitgame');
 const sendSubmitEmail = require('../../utils/sendSubmitEmail');
 
 const game = async(req,res)=>{

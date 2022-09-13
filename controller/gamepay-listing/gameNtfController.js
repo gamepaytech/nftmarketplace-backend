@@ -1,6 +1,7 @@
 const logger = require('../../logger');
 const gameNft = require('../../models/gamepay-listing/game_nft');
 const games = require('../../models/gamepay-listing/game');
+const submitgame = require('../../models/gamepay-listing/submitgame')
 const sendRejectEmail = require('../../utils/sendRejectEmail');
 const sendApprovalEmail = require('../../utils/sendApprovalEmail');
 
@@ -75,16 +76,57 @@ const getGameDetail = async(req,res)=>{
   const approvalStatus = async(req,res)=>{
     try{
       if(req.body.approvalStatus==="approved"){
-         const data = await games.findById(req.body.id)
+         const data = await submitgame.findById(req.body.id)
           data.approvalStatus = req.body.approvalStatus;
           await data.save()
+          const gameData = new games({
+            emailId : data.emailId,
+            webVersion : data.webVersion,
+            userName : data.userName,
+            gameStudioName : data.gameStudioName,
+            relatedGame : data.relatedGame,
+            gameContent :  data.gameContent,
+            emailAddress : data.emailAddress,
+            address : data.address,
+            designation : data.designation,
+            gameName : data.gameName,
+            gameStatus : data.gameStatus,
+            logo : data.logo,
+            media : data.media,
+            thumbnail : data.thumbnail,
+            launchDate : data.launchDate,
+            website : data.website,
+            trailer : data.trailer,
+            description : data.description,
+            price : data.price,
+            tokenEarnings : data.tokenEarnings,
+            genre : data.genre,
+            platforms: data.platforms,
+            blockChains : data.blockChains,
+            tokenContract : data.tokenContract,
+            coinGeckoUrl : data.coinGeckoUrl,
+            coinMarketCapUrl : data.coinMarketCapUrl,
+            redditUrl : data.redditUrl,
+            redditName: data.redditUrl.slice(25).replace(/\/+$/, ''),
+            twitterUrl : data.twitterUrl,
+            twitterName: data.twitterUrl.slice(20),
+            partnersAuthorised : data.partnersAuthorised,
+            twitchUrl : data.twitchUrl,
+            tnCOne : data.tnCOne,
+            tnCTwo : data.tnCTwo,
+            tnCThree : data.tnCThree,
+            gameMetrics: data.gameMetrics,
+            approvalStatus: data.approvalStatus,
+     })
+          await gameData.save()
           await sendApprovalEmail({emailId:data.emailId})
+          await submitgame.findByIdAndDelete(req.body.id);
         return res.status(200).json({
           data : data,
           msg : "Approved Successfully"
-        })
+        })  
       }else if(req.body.approvalStatus==="rejected"){
-        const data = await games.findById(req.body.id)
+        const data = await submitgame.findById(req.body.id)
         data.approvalStatus = req.body.approvalStatus;
         await data.save()
         await sendRejectEmail({emailId:data.emailId, reason: req.body.reason})
