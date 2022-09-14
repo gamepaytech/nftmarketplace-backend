@@ -1,5 +1,6 @@
 const { isTokenValid } = require('../utils')
 const Token = require('../models/Token')
+const User = require('../models/User')
 const logger = require('../logger')
 
 const authenticateUser = async (req, res, next) => {
@@ -25,6 +26,25 @@ const authenticateUser = async (req, res, next) => {
         }
     } catch (error) {
         console.log(error)
+        res.status(500).send('Authentication Invalid')
+    }
+}
+
+const authenticateClientIdAndSecret = async (req, res, next) => {
+    try {
+        logger.info('AUTHENTICATING...');
+        const clientId = req.query.clientId || '';
+        const clientSecret = req.query.clientSecret || '';
+        if (clientId == '' && clientSecret == '') {
+            return res.status(401).json({ msg: 'Missed Client ID & Secret Key: No access Granted!' });
+        }
+        const user = await User.users.findOne({clientId:clientId, clientSecret:clientSecret})   
+        if(user){
+            return next()
+        } else{
+            return res.status(401).json({err:"100: Invalid Authorization: No access Granted!"});
+        }
+    } catch (error) {
         res.status(500).send('Authentication Invalid')
     }
 }
@@ -84,4 +104,4 @@ const authenticateSuperAdmin = async (req,res, next) => {
     }
 }
 
-module.exports = { authenticateUser, authenticateAdmin, authenticateSuperAdmin }
+module.exports = { authenticateUser,authenticateClientIdAndSecret, authenticateAdmin, authenticateSuperAdmin }
