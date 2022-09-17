@@ -38,8 +38,10 @@ const gameSchema = mongoose.Schema(
     tnCTwo: { type: Boolean, required: true },
     tnCThree: { type: Boolean, required: true },
     type:{type:Array},
-    gameMetrics:{type:String},
+    gameMetrics:{type:String,default:null},
     approvalStatus: { type: String, default: "pending" },
+    uploadSource : {type:String,default:null},
+    rejectionComments : {type:String,default:null}
   },
   { timestamps: true }
 );
