@@ -6,13 +6,11 @@ const sendVerificationEmail = async ({
     verificationToken,
     origin,
 }) => {
-    const verifyEmail = `${process.env.APP_FRONTEND_URL}/login/${verificationToken}/${email}`
+    const verifyEmail = `${process.env.APP_FRONTEND_URL}/EmailVerification/${verificationToken}/${email}`
 
     const message = `<p>Please confirm your email by clicking on the following link : 
     <a href="${verifyEmail}">Verify Email</a> </p>`
 
-    // console.log(`Verify Message : ${message}`)
-    // console.log(`Send Email function Start()`)
     return sendEmail({
         to: email,
         subject: 'Verification for Gamepay registration',
@@ -184,7 +182,6 @@ const sendVerificationEmail = async ({
         </html>
         `
     })
-    // console.log(`Send Email function Pending()`)
 }
 
 module.exports = sendVerificationEmail
