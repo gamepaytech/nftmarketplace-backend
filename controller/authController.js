@@ -1301,6 +1301,40 @@ const updatePercent = async function (req, res) {
     }
 }
 
+const resendVerificationEmail = async function (req, res) {
+    try {
+        const userInfo = await models.users.find({
+            isVerified: false,
+            createdAt: true,
+            
+        })
+        if (userInfo) {
+            const setting = await referralModel.appsetting.updateOne({
+                referralPercent: req.body.percent,
+            })
+            logger.info(setting, 'setting')
+            if(setting.modifiedCount === 0){
+                await referralModel.appsetting.create({referralPercent: req.body.percent,})
+                setting.modifiedCount = 1
+                logger.info('created settings')
+            }
+            if (setting.modifiedCount > 0) {
+                const newSetting = await referralModel.appsetting.find({})
+                const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
+                res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: newSetting })
+            } else {
+                const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
+                res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went Wrong' })
+            }
+        } else {
+            const sysMsg = await getSystemMessage('GPAY_00052_ACTION_NOT_PERMITTED')
+            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Action Not Permitted' })
+        }
+    } catch (error) {
+        res.status(400).json({ status: 400, msg: error.toString() })
+    }
+}
+
 module.exports = {
     register,
     test,
@@ -1325,5 +1359,6 @@ module.exports = {
     setactivity,
     getactivity,
     updateActivity,
-    checkWalletKeyBeforeRegister
+    checkWalletKeyBeforeRegister,
+    resendVerificationEmail
 }
