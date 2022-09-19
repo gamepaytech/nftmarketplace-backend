@@ -39,6 +39,8 @@ const game = async(req,res)=>{
       tnCTwo = req.body.tnCTwo;
       tnCThree = req.body.tnCThree;
       gameMetrics=req.body.gameMetrics;
+      uploadSource = req.body.uploadSource
+      rejectionComments = req.body.rejectionComments
          const emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         
          const check = emailRegexp.test(emailId)
@@ -225,6 +227,8 @@ const game = async(req,res)=>{
                tnCTwo : tnCTwo,
                tnCThree : tnCThree,
                gameMetrics:gameMetrics,
+               uploadSource:uploadSource,
+               rejectionComments:rejectionComments,
         })
               const data = await game.save()  
               await sendSubmitEmail({emailId:data.emailId,userName:data.userName})
@@ -266,7 +270,9 @@ const game = async(req,res)=>{
                   tnCOne: tnCOne,
                   tnCTwo: tnCTwo,
                   tnCThree: tnCThree,
-                  gameMetrics:gameMetrics
+                  gameMetrics:gameMetrics,
+                  uploadSource:uploadSource,
+                  rejectionComments:rejectionComments,
 
             })
               const data = await web2game.save()  
