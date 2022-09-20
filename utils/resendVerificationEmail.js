@@ -1,3 +1,4 @@
+const { getSystemMessage } = require('./getSystemMessage')
 const sendEmail = require('./sendEmail')
 
 const resendVerificationEmail = async ({
@@ -5,9 +6,8 @@ const resendVerificationEmail = async ({
     verificationToken
 }) => {
     const verifyEmail = `${process.env.APP_FRONTEND_URL}/EmailVerification/${verificationToken}/${email}`
-
-    const message = `<p>Please confirm your email by clicking on the following link : 
-    <a href="${verifyEmail}">Verify Email</a> </p>`
+    const sysMsg = await getSystemMessage('GPAY_00053_EMAIL_RESEND_MESSAGE');
+    const emailContent = sysMsg ? sysMsg.message : 'You may have experienced web server error in verifying your email to create Gamepay account. This is the first time such an error has occurred since we launched the website, and we are very sorry for the inconvenience.';
 
     return sendEmail({
         to: email,
@@ -63,10 +63,9 @@ const resendVerificationEmail = async ({
                                                         <h1 style="font-family:Arial, Helvetica, sans-serif;font-size:30px;font-weight:bold;
                                                     text-align:center;color:#00dcff;margin-top:0px;margin-bottom: 0;line-height: 22px;">Please confirm your email address </h1>
                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                          text-align:center;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;">To finalize the creation of your new Gamepay Account,<br/> Please follow the link below to confirm your email<br/> address.
+                                                          text-align:center;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"> ${emailContent} <br/> Please click on the below link to confirm your mail address.<br/>
                                                         </p>
                                                     </td>
-        
                                                 </tr>
                                                 <tr>
                                                     <td style="padding-top: 25px;padding-bottom: 50px;">

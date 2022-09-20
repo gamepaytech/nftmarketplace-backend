@@ -26,7 +26,7 @@ const {
     updatePresaleLaunchPad,
     updateActivity,
     checkWalletKeyBeforeRegister,
-    resendVerificationEmail
+    resendVerifyEmail
 } = require('../controller/authController')
 const { authenticateUser, authenticateAdmin, authenticateSuperAdmin } = require('../middleware/authentication')
 
@@ -53,7 +53,7 @@ router.post('/updatePresaleLaunchpad', cors(), authenticateAdmin, updatePresaleL
 router.post('/activity', cors(), setactivity)
 router.post('/getactivity/:page/:pageSize', cors(), getactivity)
 router.patch('/updateActivity', cors(), authenticateUser, updateActivity);
-router.post('/resend-verification-emails', cors(), authenticateAdmin, resendVerificationEmail)
+router.post('/resend-verification-emails', cors(), authenticateAdmin, resendVerifyEmail)
 
 
 module.exports = router

@@ -9,6 +9,7 @@ const {
     createTokenPayload,
     createJWT,
     sendVerificationEmail,
+    resendVerificationEmail,
     sendResetPassswordEmail,
     sendWelcomeEmail,
     createHash,
@@ -1301,36 +1302,34 @@ const updatePercent = async function (req, res) {
     }
 }
 
-const resendVerificationEmail = async function (req, res) {
+const resendVerifyEmail = async function (req, res) {
     try {
+        logger.info("Start of resend verification email");
+        const startDate = req.body.startDate;
+        const endDate = req.body.endDate;
+       
+        const from_date = new Date(startDate + "T00:00:00Z");
+        const to_date = new Date(endDate + "T23:59:59Z");
         const userInfo = await models.users.find({
             isVerified: false,
-            createdAt: true,
-            
+            createdAt: {"$gte": from_date, "$lte": to_date}
         })
-        if (userInfo) {
-            const setting = await referralModel.appsetting.updateOne({
-                referralPercent: req.body.percent,
-            })
-            logger.info(setting, 'setting')
-            if(setting.modifiedCount === 0){
-                await referralModel.appsetting.create({referralPercent: req.body.percent,})
-                setting.modifiedCount = 1
-                logger.info('created settings')
-            }
-            if (setting.modifiedCount > 0) {
-                const newSetting = await referralModel.appsetting.find({})
-                const sysMsg = await getSystemMessage('GPAY_00030_SUCCESS')
-                res.status(200).json({ status: 200, msg: sysMsg ? sysMsg.message : 'Success', data: newSetting })
-            } else {
-                const sysMsg = await getSystemMessage('GPAY_00027_SOMETHING_WRONG')
-                res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Something went Wrong' })
-            }
+        logger.info("Sending verification email for users :: " + userInfo.length);
+        if (userInfo.length > 0) {
+            userInfo.forEach(async user => {
+                await resendVerificationEmail({
+                    email: user.email,
+                    verificationToken: user.verificationToken
+                })
+            });     
+            logger.info("Successfully sent verification email for users :: " + userInfo.length);       
+            res.status(200).json({ status: 200, msg: 'Re-sending emails for verification completed.'})
         } else {
-            const sysMsg = await getSystemMessage('GPAY_00052_ACTION_NOT_PERMITTED')
-            res.status(400).json({ status: 400, msg: sysMsg ? sysMsg.message : 'Action Not Permitted' })
+            logger.info("No users found for re-sending email verfication");
+            res.status(204).json({ status: 204, msg: 'No users found for re-sending email verification.'})
         }
     } catch (error) {
+        logger.info("An error occured while re-sending email for verfication", error);
         res.status(400).json({ status: 400, msg: error.toString() })
     }
 }
@@ -1360,5 +1359,5 @@ module.exports = {
     getactivity,
     updateActivity,
     checkWalletKeyBeforeRegister,
-    resendVerificationEmail
+    resendVerifyEmail
 }
