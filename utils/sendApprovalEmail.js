@@ -104,29 +104,32 @@ const sendApprovalEmail = async ({
                                                     <tr>
                                                        <td style="padding-top: 0px; padding-bottom: 25px;">
                                                           <table align="center" valign="center" cellspacing="0" cellpadding="0" width="320">
-                                                             <tr>
-                                                                <td width="45">
-                                                                   <a href="https://www.reddit.com/r/gamepayCommunity/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/redit.png" alt="Redit"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://www.instagram.com/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://medium.com/chickeychik" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/medium.png" alt="tiktok"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://www.facebook.com/Chickeychikofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://discord.gg/chickeychik" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/discord.png" alt="youtube"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://twitter.com/OfficialChickey" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
-                                                                </td>
-                                                                <td width="45">
-                                                                   <a href="https://t.me/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
-                                                                </td>
-                                                             </tr>
+                                                            <tr>
+                                                               <td width="45">
+                                                                  <a href="https://www.reddit.com/r/gamepayCommunity/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/redit.png" alt="Redit"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://www.instagram.com/gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://www.pinterest.com/Gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/pintrest.png" alt="pintrest"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://www.facebook.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://vm.tiktok.com/TTPdkqefwv" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/tiktok.png" alt="tiktok"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://twitter.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://www.youtube.com/channel/UCN_LNU5EaXrrbzKKtDIKwiQ/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/youtube.png" alt="youtube"></a>
+                                                               </td>
+                                                               <td width="45">
+                                                                  <a href="https://t.me/gamepayofficialsg" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
+                                                               </td>
+                                                            </tr>
                                                           </table>
                                                        </td>
                                                     </tr>
