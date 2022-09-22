@@ -9,6 +9,7 @@ const {
     createTokenPayload,
     createJWT,
     sendVerificationEmail,
+    resendVerificationEmail,
     sendResetPassswordEmail,
     sendWelcomeEmail,
     createHash,
@@ -1301,6 +1302,38 @@ const updatePercent = async function (req, res) {
     }
 }
 
+const resendVerifyEmail = async function (req, res) {
+    try {
+        logger.info("Start of resend verification email");
+        const startDate = req.body.startDate;
+        const endDate = req.body.endDate;
+       
+        const from_date = new Date(startDate + "T00:00:00Z");
+        const to_date = new Date(endDate + "T23:59:59Z");
+        const userInfo = await models.users.find({
+            isVerified: false,
+            createdAt: {"$gte": from_date, "$lte": to_date}
+        })
+        logger.info("Sending verification email for users :: " + userInfo.length);
+        if (userInfo.length > 0) {
+            userInfo.forEach(async user => {
+                await resendVerificationEmail({
+                    email: user.email,
+                    verificationToken: user.verificationToken
+                })
+            });     
+            logger.info("Successfully sent verification email for users :: " + userInfo.length);       
+            res.status(200).json({ status: 200, msg: 'Re-sending emails for verification completed.'})
+        } else {
+            logger.info("No users found for re-sending email verfication");
+            res.status(204).json({ status: 204, msg: 'No users found for re-sending email verification.'})
+        }
+    } catch (error) {
+        logger.info("An error occured while re-sending email for verfication", error);
+        res.status(400).json({ status: 400, msg: error.toString() })
+    }
+}
+
 module.exports = {
     register,
     test,
@@ -1325,5 +1358,6 @@ module.exports = {
     setactivity,
     getactivity,
     updateActivity,
-    checkWalletKeyBeforeRegister
+    checkWalletKeyBeforeRegister,
+    resendVerifyEmail
 }

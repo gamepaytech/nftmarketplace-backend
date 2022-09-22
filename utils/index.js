@@ -4,6 +4,7 @@ const {
     createWalletAddressPayload,
 } = require('./createTokenPayload')
 const sendVerificationEmail = require('./sendVerificationEmail')
+const resendVerificationEmail = require('./resendVerificationEmail')
 const sendResetPassswordEmail = require('./sendResetPassswordEmail')
 const sendWelcomeEmail = require('./sendWelcomeEmail')
 const createHash = require('./createHash')
@@ -21,6 +22,7 @@ module.exports = {
     createWalletAddressPayload,
     sendResetPassswordEmail,
     sendVerificationEmail,
+    resendVerificationEmail,
     sendWelcomeEmail,
     createHash,
     getSystemMessage,

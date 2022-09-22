@@ -65,7 +65,7 @@ const sendWelcomeEmail = async ({
                                           </tr>
                                           <tr>
                                              <td style="padding-top:30px;padding-bottom:30px;">
-                                                <img style="display: block;" src="https://s3.ap-southeast-1.amazonaws.com/newsletter.gamepay.sg/may/welcome/chickey-images-db-2.jpg" alt="chickeys">
+                                                <img style="display:block;width:650px;" src="https://s3.ap-southeast-1.amazonaws.com/gamepay.sg/assets/images/welcome-email-image.jpg" alt="GamepayLogo">
                                              </td>
                                           </tr>
                                           <tr>
@@ -80,21 +80,30 @@ const sendWelcomeEmail = async ({
                                              <td style="padding-left: 35px;padding-right:35px;padding-bottom: 40px;">
                                                 <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                    color:#5c5c5c;margin-top:10px;margin-bottom: 0px; line-height: 22px;">
-                                                   At <strong>Gamepay,</strong> we help provide the infrastructure and tools for the gaming, fashion, art, and entertainment industries to transition 
-                                                   from Web 2.0 to Web 3.0.
+                                                   <strong>“We are the Uber-like on-demand solution for gamers to choose the most 
+                                                   profitable game with immersive gameplay”</strong>
+                                                </p>
+                                                <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
+                                                   color:#5c5c5c;margin-top:10px;margin-bottom: 0px; line-height: 22px;">
+                                                   We are introducing NFT Swapping in our platform, which can be beneficial for 
+                                                   players to easily switch from one game to another without having to leave or 
+                                                   move their wallet to another chain.
                                                 </p>
                                                 <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                    color:#5c5c5c;margin-top:20px;margin-bottom: 0px; line-height: 22px;">
-                                                   We are the P2E game creation platform, bringing Chickey Chik to the world. Our company is also the world's first fully open, customizable, and end-to-end NFT marketplace.
+                                                   We connect the Web 3.0 ecosystem of Games, NFTs, Tokens, and Communities 
+                                                   with Gamers, Guilds, and Gaming Companies enabling interoperability in the 
+                                                   Metaverse.
                                                 <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                    color:#5c5c5c;margin-top:20px;margin-bottom: 0px; line-height: 22px;">
-                                                   Our <strong>platform</strong> allows anyone to self-sustain and grow by monetizing, trading, and exchanging digital assets in the digital world and the new Metaverse.
-                                                </p>
+                                                   Our <strong>platform</strong> has multi-language compatibility, allows credit/debit card payment,
+                                                    an automated guild system, a functional marketplace, in-house DEX for liquidity,
+                                                     an ROI calculator for users, and so on.
+                                                   </p>
                                                 <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;text-align:center;
                                                    color:#5c5c5c;margin-top:20px;margin-bottom: 0px; line-height: 22px;">
-                                                   As a new member, we want to be sure that you are a part of 
-                                                   our growing community and have access to the latest 
-                                                   news and announcements. 
+                                                   As a new member, we want to be sure that you are a part of our growing 
+                                                   community and have access to the latest news and announcements.
                                                 </p>
                                              </td>
                                           </tr>
