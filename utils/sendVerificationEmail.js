@@ -147,7 +147,7 @@ const sendVerificationEmail = async ({
                                                         sans-serif; font-size:16px;color: #b6b6b6;text-decoration: none;">Terms of Use</a>
                                                                                 </td>
                                                                                 <td align="center">
-                                                                                    <a href="" target="_blank " style="font-family:Arial, Helvetica,
+                                                                                    <a href="https://gamepay.sg/PrivacyPolicy" target="_blank " style="font-family:Arial, Helvetica,
                                                         sans-serif; font-size:16px;color: #b6b6b6;text-decoration: none;">Privacy Policy</a>
                                                                                 </td>
                                                                             </tr>
