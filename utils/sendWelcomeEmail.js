@@ -148,24 +148,27 @@ const sendWelcomeEmail = async ({
                                                                <a href="https://www.reddit.com/r/gamepayCommunity/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/redit.png" alt="Redit"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://www.instagram.com/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
+                                                               <a href="https://www.instagram.com/gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://medium.com/chickeychik" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/medium.png" alt="tiktok"></a>
+                                                               <a href="https://www.pinterest.com/Gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/pintrest.png" alt="pintrest"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://www.facebook.com/Chickeychikofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
+                                                               <a href="https://www.facebook.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://discord.gg/chickeychik" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/discord.png" alt="youtube"></a>
+                                                               <a href="https://vm.tiktok.com/TTPdkqefwv" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/tiktok.png" alt="tiktok"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://twitter.com/OfficialChickey" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
+                                                               <a href="https://twitter.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
                                                             </td>
                                                             <td width="45">
-                                                               <a href="https://t.me/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
+                                                               <a href="https://www.youtube.com/channel/UCN_LNU5EaXrrbzKKtDIKwiQ/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/youtube.png" alt="youtube"></a>
                                                             </td>
-                                                         </tr>
+                                                            <td width="45">
+                                                               <a href="https://t.me/gamepayofficialsg" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
+                                                            </td>
+                                                   </tr>
                                                       </table>
                                                    </td>
                                                 </tr>
@@ -186,7 +189,7 @@ const sendWelcomeEmail = async ({
                      <table align="center" width="650" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" class="main-table">
                         <tr>
                            <td style="padding-top: 30px;padding-bottom: 30px;">
-                              <p style="font-family:Arial, Helvetica, sans-serif ;font-size:16px;font-weight:400;color:#5c5c5c;margin: 0; text-align: center;">@2022 Chickeychik, All rights reserved </p>
+                              <p style="font-family:Arial, Helvetica, sans-serif ;font-size:16px;font-weight:400;color:#5c5c5c;margin: 0; text-align: center;">@2022 Gamepay, All rights reserved </p>
                            </td>
                         </tr>
                      </table>

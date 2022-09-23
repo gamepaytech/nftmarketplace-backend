@@ -103,25 +103,25 @@ const sendVerificationEmail = async ({
                                                                                     <a href="https://www.reddit.com/r/gamepayCommunity/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/redit.png" alt="Redit"></a>
                                                                                 </td>
                                                                                 <td width="45">
-                                                                                    <a href="https://www.instagram.com/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
+                                                                                    <a href="https://www.instagram.com/gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/instagram.png" alt="Instagram"></a>
                                                                                 </td>
                                                                                 <td width="45">
-                                                                                    <a href="https://www.pinterest.com/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/pintrest.png" alt="pintrest"></a>
+                                                                                    <a href="https://www.pinterest.com/Gamepayofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/pintrest.png" alt="pintrest"></a>
                                                                                 </td>
                                                                                 <td width="45">
-                                                                                    <a href="https://www.facebook.com/Chickeychikofficial/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
+                                                                                    <a href="https://www.facebook.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/facebook.png" alt="facebook"></a>
                                                                                 </td>
                                                                                 <td width="45">
                                                                                     <a href="https://vm.tiktok.com/TTPdkqefwv" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/tiktok.png" alt="tiktok"></a>
                                                                                 </td>
                                                                                 <td width="45">
-                                                                                    <a href="https://twitter.com/OfficialChickey" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
+                                                                                    <a href="https://twitter.com/Gamepayofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/twitter.png" alt="twitter"></a>
                                                                                 </td>
                                                                                 <td width="45">
                                                                                     <a href="https://www.youtube.com/channel/UCN_LNU5EaXrrbzKKtDIKwiQ/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/youtube.png" alt="youtube"></a>
                                                                                 </td>
                                                                                 <td width="45">
-                                                                                    <a href="https://t.me/chickeychikofficial" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
+                                                                                    <a href="https://t.me/gamepayofficialsg" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/telegram.png" alt="telegram"></a>
                                                                                 </td>
                                                                             </tr>
                                                                         </table>
@@ -139,15 +139,15 @@ const sendVerificationEmail = async ({
                                                                         <table align="center" valign="center" style="width: 430px;padding-left: 25px; ">
                                                                             <tr>
                                                                                 <td align="center">
-                                                                                    <a href="https://www.chickeychik.com/" target="_blank" style="font-family:Arial, Helvetica,
+                                                                                    <a href="https://gamepay.sg/" target="_blank" style="font-family:Arial, Helvetica,
                                                         sans-serif; font-size:16px;color: #b6b6b6;text-decoration: none;">Visit Us</a>
                                                                                 </td>
                                                                                 <td align="center">
-                                                                                    <a href="https://www.chickeychik.com/terms-use.html" target="_blank" style="font-family:Arial, Helvetica,
+                                                                                    <a href="https://gamepay.sg/Teamsofus" target="_blank" style="font-family:Arial, Helvetica,
                                                         sans-serif; font-size:16px;color: #b6b6b6;text-decoration: none;">Terms of Use</a>
                                                                                 </td>
                                                                                 <td align="center">
-                                                                                    <a href="https://www.chickeychik.com/privacy-policy.html" target="_blank " style="font-family:Arial, Helvetica,
+                                                                                    <a href="https://gamepay.sg/PrivacyPolicy" target="_blank " style="font-family:Arial, Helvetica,
                                                         sans-serif; font-size:16px;color: #b6b6b6;text-decoration: none;">Privacy Policy</a>
                                                                                 </td>
                                                                             </tr>
