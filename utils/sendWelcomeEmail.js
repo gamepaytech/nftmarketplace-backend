@@ -144,7 +144,7 @@ const sendWelcomeEmail = async ({
                                                    <td style="padding-top: 0px; padding-bottom: 25px;">
                                                       <table align="center" valign="center" cellspacing="0" cellpadding="0" width="320">
                                                          <tr>
-                                                            <td width="45">S
+                                                            <td width="45">
                                                                <a href="https://www.reddit.com/r/gamepayCommunity/" target="_blank"><img style="display:block;" src="https://www.chickeychik.com/notification-mail/colorupdate/redit.png" alt="Redit"></a>
                                                             </td>
                                                             <td width="45">
