@@ -26,7 +26,7 @@ const getGamepayListingByFilter = async (req, res) => {
       const type = req.body.type;
       const typeTotal = await games.find({type:req.body.type}).count({});
       if(type != null){
-          const data = await games.find({ type:{$elemMatch:{"$in":type, "$exists":true}}}).limit(pageSize).skip(pageSize * page);
+          const data = await games.find({ $and: [ {type:{$elemMatch:{"$in":type, "$exists":true}}}, {approvalStatus : "approved"}]}).limit(pageSize).skip(pageSize * page);
           res.status(200).json({ 
             data:data,
             total:typeTotal,
@@ -35,7 +35,7 @@ const getGamepayListingByFilter = async (req, res) => {
             msg : "Game Type Successfully"
            });
       }else{
-          const data = await games.find().limit(pageSize).skip(pageSize * page);
+          const data = await games.find({approvalStatus : "approved"}).limit(pageSize).skip(pageSize * page);
           res.status(200).json({ 
             data: data,
             total:total,
@@ -55,12 +55,26 @@ const getGamepayListingByFilter = async (req, res) => {
 const getAllGameBySearch = async (req, res) => {
   try {
       const search = req.body.search;
+      const page = req.params.page;
+      const pageSize = req.params.pageSize;
+      const total = await games.find({approvalStatus : "approved"}).count({});
+      const filterTotal = await games.find({gameName: { $regex: search, $options: "i" }, approvalStatus : "approved"}).count({});
       if(search != null && search != ''){
-          const data = await games.find({gameName: { $regex: search, $options: "i" }});
-          res.status(200).json({ data: data });
+        const data = await games.find({gameName: { $regex: search, $options: "i" }, approvalStatus : "approved"}).limit(pageSize).skip(pageSize * page);
+        res.status(200).json({
+          data: data,
+          total: filterTotal,
+          page: page,
+          pageSize: pageSize
+         });
       }else{
-          const data = await games.find();
-          res.status(200).json({ data: data }); 
+        const data = await games.find({approvalStatus : "approved"}).limit(pageSize).skip(pageSize * page);
+        res.status(200).json({ 
+          data: data, 
+          total:total,
+          page:page,
+          pageSize:pageSize, 
+        }); 
       }
   } catch (err) {
       console.log(err);
@@ -73,9 +87,9 @@ const getAllGameBySearch = async (req, res) => {
 
 const getGamepayListingAllGames = async (req, res) => {
   try {
-    const mostProfitable = await games.find({ type:{$elemMatch:{"$in":['mostprofitable'], "$exists":true}}});
-    const mostRated = await games.find({ type:{$elemMatch:{"$in":['mostrated'], "$exists":true}}});
-    const newTrending = await games.find({ type:{$elemMatch:{"$in":['new','trending'], "$exists":true}}});
+    const mostProfitable = await games.find({$and: [ { type:{$elemMatch:{"$in":['mostprofitable'], "$exists":true}}}, {approvalStatus : "approved"}]});
+    const mostRated = await games.find({ $and: [ { type:{$elemMatch:{"$in":['mostrated'], "$exists":true}}}, {approvalStatus : "approved"}]});
+    const newTrending = await games.find({ $and: [ { type:{$elemMatch:{"$in":['new','trending'], "$exists":true}}}, {approvalStatus : "approved"}]});
     res.status(200).json({ 
       status:200,
       mostProfitable:mostProfitable,

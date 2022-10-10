@@ -8,7 +8,7 @@ const { uploadGamePayListing } = require('../../middleware/multerS3Upload');
 router.post('/',cors(),getGamepayListings);
 router.post('/filter-list/:page/:pageSize',cors(),getGamepayListingByFilter);
 router.post('/filter-list',cors(),getGamepayListingByFilter);
-router.post('/search',cors(),getAllGameBySearch);
+router.post('/search/:page/:pageSize',cors(),getAllGameBySearch);
 router.get('/all-games',cors(),getGamepayListingAllGames);
 router.post('/get-tweet-list',cors(),getTweetListByUsername);
 router.post('/get-reddit-list',cors(),getRedditListByUsername);
