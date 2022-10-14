@@ -32,7 +32,7 @@ const gameSchema = mongoose.Schema(
     redditName: { type: String },
     twitterUrl: { type: String, required: true },
     twitterName: { type: String },
-    partnerAuthorised: { type: String },
+    partnerAuthorised: { type: Boolean,default:null },
     twitchUrl: {type: String},
     tnCOne: { type: Boolean, required: true }, //TnC refers to TERMS AND CONDITIONS
     tnCTwo: { type: Boolean, required: true },

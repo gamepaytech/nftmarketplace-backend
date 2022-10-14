@@ -33,7 +33,7 @@ const game = async(req,res)=>{
       coinMarketCapUrl = req.body.coinMarketCapUrl;
       redditUrl = req.body.redditUrl;
       twitterUrl = req.body.twitterUrl;
-      partnersAuthorised = req.body.partnersAuthorised;
+      partnerAuthorised = req.body.partnerAuthorised;
       twitchUrl = req.body.twitchUrl;
       tnCOne = req.body.tnCOne;
       tnCTwo = req.body.tnCTwo;
@@ -169,7 +169,7 @@ const game = async(req,res)=>{
                error : "TwitterHandle is required"
               });
          }
-         if (!partnersAuthorised) {
+         if (!partnerAuthorised) {
             return res.status(400).json({
                error : "Partners Authorised is required"
               });
@@ -221,7 +221,7 @@ const game = async(req,res)=>{
                redditName: redditUrl.slice(25).replace(/\/+$/, ''),
                twitterUrl : twitterUrl,
                twitterName:twitterUrl.slice(20),
-               partnersAuthorised : partnersAuthorised,
+               partnerAuthorised : partnerAuthorised,
                twitchUrl : twitchUrl,
                tnCOne : tnCOne,
                tnCTwo : tnCTwo,
@@ -265,7 +265,7 @@ const game = async(req,res)=>{
                   redditName: redditUrl.slice(25).replace(/\/+$/, ''),
                   twitterUrl : twitterUrl,
                   twitterName:twitterUrl.slice(20),
-                  partnersAuthorised: partnersAuthorised,
+                  partnerAuthorised: partnerAuthorised,
                   twitchUrl: twitchUrl,
                   tnCOne: tnCOne,
                   tnCTwo: tnCTwo,
@@ -286,4 +286,54 @@ const game = async(req,res)=>{
             res.status(500).json({err:"Internal Server Error"})
              }
             };
-module.exports = { game }
+
+
+ 
+   const updateGame = async(req,res)=>{
+      try{   
+           const data = await submitgame.findById(req.body.id)
+           data["emailId"] = req.body.emailId
+           data["webVersion"] = req.body.webVersion
+           data["userName"] = req.body.userName
+           data["gameStudioName"] = req.body.gameStudioName
+           data["relatedGame"] = req.body.relatedGame
+           data["gameContent"] = req.body.gameContent
+           data["emailAddress"] = req.body.emailAddress
+           data["designation"] = req.body.designation
+           data["gameName"] = req.body.gameName
+           data["gameStatus"] = req.body.gameStatus
+           data["logo"] = req.body.logo
+           data["media"] = req.body.media
+           data["thumbnail"] = req.body.thumbnail
+           data["launchDate"] = req.body.launchDate
+           data["description"] = req.body.description
+           data["price"] = req.body.price
+           data["tokenEarnings"] = req.body.tokenEarnings
+           data["genre"] = req.body.genre
+           data["platforms"] = req.body.platforms
+           data["blockChains"] = req.body.blockChains
+           data["tokenContract"] = req.body.tokenContract
+           data["coinGeckoUrl"] = req.body.coinGeckoUrl
+           data["coinMarketCapUrl"] = req.body.coinMarketCapUrl
+           data["redditUrl"] = req.body.redditUrl
+           data["twitterUrl"] = req.body.twitterUrl
+           data["partnerAuthorised"] = req.body.partnerAuthorised
+           data["twitchUrl"] = req.body.twitchUrl
+           data["tnCOne"] = req.body.tnCOne
+           data["tnCTwo"] = req.body.tnCTwo
+           data["tnCThree"] = req.body.tnCThree
+           data["gameMetrics"] = req.body.gameMetrics
+           data["website"] = req.body.website
+           data["trailer"] = req.body.trailer
+           await data.save()
+          return res.status(200).json({
+            data : data,
+            msg : "Approved Successfully"
+          })  
+         }catch(err){
+        logger.error(err)
+        res.status(500).json(err)
+      }
+    }
+
+module.exports = { game,updateGame }
