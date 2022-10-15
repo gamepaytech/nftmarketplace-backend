@@ -1,7 +1,8 @@
 const logger = require('../../logger')
-const userReview = require('../../models/gamepay-listing/reviews')
+const gameReview = require('../../models/gamepay-listing/reviews')
 const user = require('../../models/User')
 const games = require('../../models/gamepay-listing/game');
+const userReview = require('../../models/gamepay-listing/userReview');
 
 const getGameReview = async(req,res)=>{
   try{
@@ -15,7 +16,7 @@ const getGameReview = async(req,res)=>{
 
     const gameList = await games.findById({_id:req.body.gameId});
     if(gameList){
-      const reviews = await userReview
+      const reviews = await gameReview
         .find({gameId:req.body.gameId})
         .populate({
           path: "userDetail",
@@ -74,7 +75,7 @@ const addGameReview = async (req, res) => {
       });
     }
 
-    const addReview = new userReview({
+    const addReview = new gameReview({
       userId: req.body.userId,
       gameId: req.body.gameId,
       comment: req.body.comment,
@@ -86,14 +87,25 @@ const addGameReview = async (req, res) => {
     });
 
     const data = await addReview.save();
+    if(data){
+      const review = new userReview({
+      reviewerId: req.body.userId,
+      gameId: req.body.gameId,
+      comment: req.body.comment,
+      reviewId: data._id,
+      opinions:[]
+      })
+      await review.save()
+    }
     return res.status(201).json({
       status: "200",
       msg: "Data saved successfully!",
       data: data,
     });
   } catch (error) {
-    logger.error(err)
-    res.status(500).json(err)
+    console.log(error);
+    logger.error(error)
+    res.status(500).json(error)
   }
 };
 
