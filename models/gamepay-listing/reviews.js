@@ -34,6 +34,14 @@ const gameReviewSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    opinions:[
+      {
+        userId:String, 
+        isReviewHelpful:Boolean,
+        _id:false
+      },
+      { timestamps: true }
+    ]
   },
   { timestamps: true }
 );

@@ -4,8 +4,8 @@ const user = require('../../models/User')
 const games = require('../../models/gamepay-listing/game');
 const userReview = require('../../models/gamepay-listing/userReview');
 
-const getGameReview = async(req,res)=>{
-  try{
+const getGameReview = async (req, res) => {
+  try {
     const keys = ["gameId"];
     for (i in keys) {
       if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
@@ -14,27 +14,40 @@ const getGameReview = async(req,res)=>{
       }
     }
 
-    const gameList = await games.findById({_id:req.body.gameId});
-    if(gameList){
+    const gameList = await games.findById({ _id: req.body.gameId });
+    if (gameList) {
       const reviews = await gameReview
-        .find({gameId:req.body.gameId})
+        .find({ gameId: req.body.gameId })
         .populate({
           path: "userDetail",
           select: { username: 1, profilePic: 1 },
         })
         .sort({ createdAt: -1 })
-        .limit(5);
-     return res.status(200).json({
-         data : reviews,
-         msg: "Success"
+        .limit(5)
+        .lean();
+      if(reviews.length>0){
+        reviews.forEach(review => {
+          let usefulCount = 0;
+          let notUsefulCount = 0;
+          if(review.opinions && review.opinions.length>0){
+            usefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful).length;
+            notUsefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful === false).length;
+          }
+          review.useful = usefulCount;
+          review.notUseful = notUsefulCount;
         });
-    }else{
+        return res.status(200).json({
+          data: reviews,
+          msg: "Success"
+        });
+      }
+    } else {
       return res.status(400).json({
         msg: "Game Not found"
-       });
+      });
     }
   }
-  catch(err){
+  catch (err) {
     logger.error(err)
     res.status(500).json(err)
   }
@@ -84,26 +97,26 @@ const addGameReview = async (req, res) => {
       abilityToEarn: req.body.abilityToEarn,
       affordability: req.body.affordability,
       easyToLearn: req.body.easyToLearn,
+      opinions:[]
     });
 
     const data = await addReview.save();
-    if(data){
-      const review = new userReview({
-      reviewerId: req.body.userId,
-      gameId: req.body.gameId,
-      comment: req.body.comment,
-      reviewId: data._id,
-      opinions:[]
-      })
-      await review.save()
-    }
+    // if(data){
+    //   const review = new userReview({
+    //   reviewerId: req.body.userId,
+    //   gameId: req.body.gameId,
+    //   comment: req.body.comment,
+    //   reviewId: data._id,
+    //   opinions:[]
+    //   })
+    //   await review.save()
+    // }
     return res.status(201).json({
       status: "200",
       msg: "Data saved successfully!",
       data: data,
     });
   } catch (error) {
-    console.log(error);
     logger.error(error)
     res.status(500).json(error)
   }
