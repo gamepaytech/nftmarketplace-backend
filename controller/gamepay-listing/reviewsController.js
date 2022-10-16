@@ -13,7 +13,6 @@ const getGameReview = async (req, res) => {
         return;
       }
     }
-
     const gameList = await games.findById({ _id: req.body.gameId });
     const userId = req.body.userId;
     if (gameList) {
@@ -26,20 +25,23 @@ const getGameReview = async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(5)
         .lean();
-      if(reviews.length>0){
+      if (reviews.length > 0) {
         reviews.forEach(review => {
           let usefulCount = 0;
           let notUsefulCount = 0;
-          if(review.opinions && review.opinions.length>0){
+          review.showOpinion = false;
+          if (!!userId) {
+          review.showOpinion = true;
+          }
+          if (review.opinions && review.opinions.length > 0) {
             usefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful).length;
             notUsefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful === false).length;
+            if (!!userId) {
+              review.showOpinion = review.opinions && (review.opinions.findIndex(opinion => opinion.userId === userId) === -1);
+            }
           }
           review.useful = usefulCount;
           review.notUseful = notUsefulCount;
-          review.showOpinion = false;
-          if(!!userId){
-            review.showOpinion = review.opinions.findIndex(opinion => opinion.userId === userId) !== -1;
-          }
         });
       }
       return res.status(200).json({
