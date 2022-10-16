@@ -30,14 +30,16 @@ const getGameReview = async (req, res) => {
           let usefulCount = 0;
           let notUsefulCount = 0;
           review.showOpinion = false;
+          const hasAddedReview = review.userId === userId;
           if (!!userId) {
-          review.showOpinion = true;
+            review.showOpinion = !hasAddedReview;
           }
           if (review.opinions && review.opinions.length > 0) {
             usefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful).length;
             notUsefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful === false).length;
             if (!!userId) {
-              review.showOpinion = review.opinions && (review.opinions.findIndex(opinion => opinion.userId === userId) === -1);
+              const hasAddedOpinion = review.opinions && (review.opinions.findIndex(opinion => opinion.userId === userId) !== -1);
+              review.showOpinion = !hasAddedOpinion && !hasAddedReview;
             }
           }
           review.useful = usefulCount;
