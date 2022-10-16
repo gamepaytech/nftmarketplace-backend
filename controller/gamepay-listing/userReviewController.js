@@ -12,15 +12,15 @@ const addUserOpinion = async (req, res) => {
     }
   }
   try {
-    const userData = await userReview.findOne({
+    const userData = await review.findOne({
       gameId: req.body.gameId,
-      reviewId: req.body.reviewId,
+      _id: req.body.reviewId,
     })
 
     if (userData) {
-      await userReview.updateOne(
+      await review.updateOne(
         {
-          reviewId: req.body.reviewId,
+          _id: req.body.reviewId,
           gameId: req.body.gameId
         },
         { $push: { opinions: { userId: req.body.userId, isReviewHelpful: req.body.isReviewHelpful } } },
@@ -42,7 +42,7 @@ const addUserOpinion = async (req, res) => {
   
 const getUserReview = async (req, res) => {
   try {
-    const data = await userReview.find().populate('reviewId')
+    const data = await review.find().populate('reviewId')
     return res.status(200).json({
       data: data,
       msg: "User details successfully"
