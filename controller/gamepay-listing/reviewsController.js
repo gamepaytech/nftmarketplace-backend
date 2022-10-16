@@ -15,6 +15,7 @@ const getGameReview = async (req, res) => {
     }
 
     const gameList = await games.findById({ _id: req.body.gameId });
+    const userId = req.body.userId;
     if (gameList) {
       const reviews = await gameReview
         .find({ gameId: req.body.gameId })
@@ -35,12 +36,16 @@ const getGameReview = async (req, res) => {
           }
           review.useful = usefulCount;
           review.notUseful = notUsefulCount;
-        });
-        return res.status(200).json({
-          data: reviews,
-          msg: "Success"
+          review.showOpinion = false;
+          if(!!userId){
+            review.showOpinion = review.opinions.findIndex(opinion => opinion.userId === userId) !== -1;
+          }
         });
       }
+      return res.status(200).json({
+        data: reviews,
+        msg: "Success"
+      });
     } else {
       return res.status(400).json({
         msg: "Game Not found"
@@ -101,16 +106,6 @@ const addGameReview = async (req, res) => {
     });
 
     const data = await addReview.save();
-    // if(data){
-    //   const review = new userReview({
-    //   reviewerId: req.body.userId,
-    //   gameId: req.body.gameId,
-    //   comment: req.body.comment,
-    //   reviewId: data._id,
-    //   opinions:[]
-    //   })
-    //   await review.save()
-    // }
     return res.status(201).json({
       status: "200",
       msg: "Data saved successfully!",
