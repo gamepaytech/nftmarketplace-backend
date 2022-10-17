@@ -1,10 +1,11 @@
 const logger = require('../../logger')
-const userReview = require('../../models/gamepay-listing/reviews')
+const gameReview = require('../../models/gamepay-listing/reviews')
 const user = require('../../models/User')
 const games = require('../../models/gamepay-listing/game');
+const userReview = require('../../models/gamepay-listing/userReview');
 
-const getGameReview = async(req,res)=>{
-  try{
+const getGameReview = async (req, res) => {
+  try {
     const keys = ["gameId"];
     for (i in keys) {
       if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
@@ -12,28 +13,98 @@ const getGameReview = async(req,res)=>{
         return;
       }
     }
-
-    const gameList = await games.findById({_id:req.body.gameId});
-    if(gameList){
-      const reviews = await userReview
-        .find({gameId:req.body.gameId})
+    const gameList = await games.findById({ _id: req.body.gameId });
+    const userId = req.body.userId;
+    if (gameList) {
+      const reviews = await gameReview
+        .find({ gameId: req.body.gameId })
         .populate({
           path: "userDetail",
           select: { username: 1, profilePic: 1 },
         })
         .sort({ createdAt: -1 })
-        .limit(5);
-     return res.status(200).json({
-         data : reviews,
-         msg: "Success"
+        .limit(5)
+        .lean();
+      if (reviews.length > 0) {
+        reviews.forEach(review => {
+          let usefulCount = 0;
+          let notUsefulCount = 0;
+          review.showOpinion = false;
+          const sumOfRating = review.rating + review.funToPlay + review.abilityToEarn + review.affordability + review.easyToLearn;
+          review.overallRating = sumOfRating > 0 ? sumOfRating/5 : 0 ;
+          const hasAddedReview = review.userId === userId;
+          if (!!userId) {
+            review.showOpinion = !hasAddedReview;
+          }
+          if (review.opinions && review.opinions.length > 0) {
+            usefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful).length;
+            notUsefulCount = review.opinions.filter(opinion => opinion.isReviewHelpful === false).length;
+            if (!!userId) {
+              const hasAddedOpinion = review.opinions && (review.opinions.findIndex(opinion => opinion.userId === userId) !== -1);
+              review.showOpinion = !hasAddedOpinion && !hasAddedReview;
+            }
+          }
+          review.useful = usefulCount;
+          review.notUseful = notUsefulCount;
         });
-    }else{
+      }
+      return res.status(200).json({
+        data: reviews,
+        msg: "Success"
+      });
+    } else {
       return res.status(400).json({
         msg: "Game Not found"
-       });
+      });
     }
   }
-  catch(err){
+  catch (err) {
+    logger.error(err)
+    res.status(500).json(err)
+  }
+};
+
+const overallRating = async (req, res) => {
+  try {
+    const keys = ["gameId"];
+    for (i in keys) {
+      if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+        res.json({ status: 400, msg: keys[i] + " are required" });
+        return;
+      }
+    }
+    const gameList = await gameReview.find({ gameId: req.body.gameId });
+    if (gameList.length > 0) {
+      const ratings = await gameReview
+        .aggregate([
+          { $match: { gameId: req.body.gameId } },
+          {
+            $group: {
+              _id: null,
+              rating: { $avg: "$rating" },
+              funToPlay: { $avg: "$funToPlay" },
+              abilityToEarn: { $avg: "$abilityToEarn" },
+              affordability: { $avg: "$affordability" },
+              easyToLearn: { $avg: "$easyToLearn" }
+            }
+          },
+          {
+            $addFields: {
+              overallRating: { $avg: ["$rating", "$funToPlay", "$abilityToEarn", "$affordability", "$easyToLearn"] }
+            }
+          }
+        ]);
+      return res.status(200).json({
+        data: ratings,
+        msg: "Success"
+      });
+    } else {
+      return res.status(400).json({
+        msg: "No reviews found for the game"
+      });
+    }
+  }
+  catch (err) {
     logger.error(err)
     res.status(500).json(err)
   }
@@ -74,7 +145,7 @@ const addGameReview = async (req, res) => {
       });
     }
 
-    const addReview = new userReview({
+    const addReview = new gameReview({
       userId: req.body.userId,
       gameId: req.body.gameId,
       comment: req.body.comment,
@@ -83,6 +154,7 @@ const addGameReview = async (req, res) => {
       abilityToEarn: req.body.abilityToEarn,
       affordability: req.body.affordability,
       easyToLearn: req.body.easyToLearn,
+      opinions:[]
     });
 
     const data = await addReview.save();
@@ -92,9 +164,9 @@ const addGameReview = async (req, res) => {
       data: data,
     });
   } catch (error) {
-    logger.error(err)
-    res.status(500).json(err)
+    logger.error(error)
+    res.status(500).json(error)
   }
 };
 
-module.exports = {  getGameReview, addGameReview }
+module.exports = {  getGameReview, addGameReview, overallRating}

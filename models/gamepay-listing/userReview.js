@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const userReviewSchema = new mongoose.Schema(
   {
-    userId: {
+    reviewerId: {
       type: String,
       required: true,
     },
@@ -16,11 +16,20 @@ const userReviewSchema = new mongoose.Schema(
       required: true,
       ref : 'games_reviews'
     },
-    isReviewHelpful: {
-      type:Boolean
-    }
+    comment: {
+      type: String,
+      required: true,
+    },
+    opinions:[
+      {
+        userId:String, 
+        isReviewHelpful:Boolean,
+        _id:false
+      },
+      { timestamps: true }
+
+    ]
   },
-  { timestamps: true }
 );
 
 module.exports = mongoose.model("userReview", userReviewSchema);
