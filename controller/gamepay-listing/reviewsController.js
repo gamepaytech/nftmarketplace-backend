@@ -87,6 +87,11 @@ const overallRating = async (req, res) => {
               affordability: { $avg: "$affordability" },
               easyToLearn: { $avg: "$easyToLearn" }
             }
+          },
+          {
+            $addFields: {
+              overallRating: { $avg: ["$rating", "$funToPlay", "$abilityToEarn", "$affordability", "$easyToLearn"] }
+            }
           }
         ]);
       return res.status(200).json({
