@@ -64,6 +64,47 @@ const getGameReview = async (req, res) => {
   }
 };
 
+const overallRating = async (req, res) => {
+  try {
+    const keys = ["gameId"];
+    for (i in keys) {
+      if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+        res.json({ status: 400, msg: keys[i] + " are required" });
+        return;
+      }
+    }
+    const gameList = await gameReview.find({ gameId: req.body.gameId });
+    if (gameList.length > 0) {
+      const ratings = await gameReview
+        .aggregate([
+          { $match: { gameId: req.body.gameId } },
+          {
+            $group: {
+              _id: null,
+              rating: { $avg: "$rating" },
+              funToPlay: { $avg: "$funToPlay" },
+              abilityToEarn: { $avg: "$abilityToEarn" },
+              affordability: { $avg: "$affordability" },
+              easyToLearn: { $avg: "$easyToLearn" }
+            }
+          }
+        ]);
+      return res.status(200).json({
+        data: ratings,
+        msg: "Success"
+      });
+    } else {
+      return res.status(400).json({
+        msg: "No reviews found for the game"
+      });
+    }
+  }
+  catch (err) {
+    logger.error(err)
+    res.status(500).json(err)
+  }
+};
+
 const addGameReview = async (req, res) => {
   try {
     let keys = [
@@ -123,4 +164,4 @@ const addGameReview = async (req, res) => {
   }
 };
 
-module.exports = {  getGameReview, addGameReview }
+module.exports = {  getGameReview, addGameReview, overallRating}
