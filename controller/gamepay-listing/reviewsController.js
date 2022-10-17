@@ -30,6 +30,7 @@ const getGameReview = async (req, res) => {
           let usefulCount = 0;
           let notUsefulCount = 0;
           review.showOpinion = false;
+          review.overallRating = review.rating + review.funToPlay + review.abilityToEarn + review.affordability + review.easyToLearn;
           const hasAddedReview = review.userId === userId;
           if (!!userId) {
             review.showOpinion = !hasAddedReview;
