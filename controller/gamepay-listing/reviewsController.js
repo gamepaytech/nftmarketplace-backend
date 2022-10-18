@@ -47,6 +47,7 @@ const getGameReview = async (req, res) => {
           review.useful = usefulCount;
           review.notUseful = notUsefulCount;
         });
+        reviews.sort( (r1,r2) => r2.overallRating - r1.overallRating)
       }
       return res.status(200).json({
         data: reviews,
@@ -99,7 +100,7 @@ const overallRating = async (req, res) => {
         msg: "Success"
       });
     } else {
-      return res.status(400).json({
+      return res.status(200).json({
         msg: "No reviews found for the game"
       });
     }
