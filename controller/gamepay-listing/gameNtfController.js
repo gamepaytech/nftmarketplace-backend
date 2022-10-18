@@ -1,5 +1,4 @@
 const logger = require('../../logger');
-const gameNft = require('../../models/gamepay-listing/game_nft');
 const games = require('../../models/gamepay-listing/game');
 const sendRejectEmail = require('../../utils/sendRejectEmail');
 const sendApprovalEmail = require('../../utils/sendApprovalEmail');
@@ -15,9 +14,8 @@ const  getGameList = async(req,res)=>{
       }
    const gameList = await games.findById(req.body.gameId);
        if(gameList){
-         const data = await  gameNft.find()
         return res.status(200).json({
-           data : data,
+           data : gameList,
            msg: "Game details fetched successfully"
           });
       }else{
