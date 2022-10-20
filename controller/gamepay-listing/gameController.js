@@ -33,7 +33,7 @@ const game = async(req,res)=>{
       coinMarketCapUrl = req.body.coinMarketCapUrl;
       redditUrl = req.body.redditUrl;
       twitterUrl = req.body.twitterUrl;
-      partnersAuthorised = req.body.partnersAuthorised;
+      partnerAuthorised = req.body.partnerAuthorised;
       twitchUrl = req.body.twitchUrl;
       tnCOne = req.body.tnCOne;
       tnCTwo = req.body.tnCTwo;
@@ -169,7 +169,7 @@ const game = async(req,res)=>{
                error : "TwitterHandle is required"
               });
          }
-         if (!partnersAuthorised) {
+         if (!partnerAuthorised) {
             return res.status(400).json({
                error : "Partners Authorised is required"
               });
@@ -221,7 +221,7 @@ const game = async(req,res)=>{
                redditName: redditUrl.slice(25).replace(/\/+$/, ''),
                twitterUrl : twitterUrl,
                twitterName:twitterUrl.slice(20),
-               partnersAuthorised : partnersAuthorised,
+               partnerAuthorised : partnerAuthorised,
                twitchUrl : twitchUrl,
                tnCOne : tnCOne,
                tnCTwo : tnCTwo,
@@ -265,7 +265,7 @@ const game = async(req,res)=>{
                   redditName: redditUrl.slice(25).replace(/\/+$/, ''),
                   twitterUrl : twitterUrl,
                   twitterName:twitterUrl.slice(20),
-                  partnersAuthorised: partnersAuthorised,
+                  partnerAuthorised: partnerAuthorised,
                   twitchUrl: twitchUrl,
                   tnCOne: tnCOne,
                   tnCTwo: tnCTwo,
@@ -286,4 +286,6 @@ const game = async(req,res)=>{
             res.status(500).json({err:"Internal Server Error"})
              }
             };
+
+
 module.exports = { game }

@@ -1,5 +1,4 @@
 const logger = require('../../logger');
-const gameNft = require('../../models/gamepay-listing/game_nft');
 const games = require('../../models/gamepay-listing/game');
 const sendRejectEmail = require('../../utils/sendRejectEmail');
 const sendApprovalEmail = require('../../utils/sendApprovalEmail');
@@ -15,9 +14,8 @@ const  getGameList = async(req,res)=>{
       }
    const gameList = await games.findById(req.body.gameId);
        if(gameList){
-         const data = await  gameNft.find()
         return res.status(200).json({
-           data : data,
+           data : gameList,
            msg: "Game details fetched successfully"
           });
       }else{
@@ -35,16 +33,15 @@ const  getGameList = async(req,res)=>{
 
 const getGameDetail = async(req,res)=>{
     try{
-      const check = /^[0-9a-fA-F]{24}$/;
-      const id = check.test(req.params.gameId)
-        if(!id){
+      const gameName = req.params.gameName.replace(/_/g, ' ')
+        if(!gameName){
           return res.status(400).json({
             status : 400,
             msg :"Invalid ObjectId "
           });
         }
 
-        const data = await games.findById(req.params.gameId).populate('reviews')
+        const data = await games.findOne({gameName:gameName}).populate('reviews')
         return res.status(200).json({
                data : data,
                msg: "Game details successfully"

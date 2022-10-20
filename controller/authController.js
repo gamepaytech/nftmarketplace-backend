@@ -10,6 +10,7 @@ const {
     createJWT,
     sendVerificationEmail,
     resendVerificationEmail,
+    sendVerificationEmailForUnVerified,
     sendResetPassswordEmail,
     sendWelcomeEmail,
     createHash,
@@ -1051,7 +1052,7 @@ const checkRegisterredWallet = async (req, res) => {
             return
         }
         const userInfo = await models.users.findOne({
-            metamaskKey: walletAddress[0],
+            metamaskKey: walletAddress[0]
         })
         logger.info(userInfo, walletAddress);
         if(!userInfo) {
@@ -1334,6 +1335,33 @@ const resendVerifyEmail = async function (req, res) {
     }
 }
 
+const sendVerifyEmail = async function (req, res) {
+    try {
+        logger.info("Start of send verification email for unverified users");
+        
+        const userInfo = await models.users.find({
+            isVerified: false
+        })
+        logger.info("Sending verification email for unverified users :: " + userInfo.length);
+        if (userInfo.length > 0) {
+            userInfo.forEach(async user => {
+                await sendVerificationEmailForUnVerified({
+                    email: user.email,
+                    verificationToken: user.verificationToken
+                })
+            });     
+            logger.info("Successfully sent verification email for unverified users :: " + userInfo.length);       
+            res.status(200).json({ status: 200, msg: 'Re-sending emails for unverified users completed.'})
+        } else {
+            logger.info("No users found for re-sending email verfication");
+            res.status(204).json({ status: 204, msg: 'No users found for re-sending email verification.'})
+        }
+    } catch (error) {
+        logger.info("An error occured while re-sending email for verfication", error);
+        res.status(400).json({ status: 400, msg: error.toString() })
+    }
+}
+
 module.exports = {
     register,
     test,
@@ -1359,5 +1387,6 @@ module.exports = {
     getactivity,
     updateActivity,
     checkWalletKeyBeforeRegister,
-    resendVerifyEmail
+    resendVerifyEmail,
+    sendVerifyEmail
 }

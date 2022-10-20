@@ -1,13 +1,15 @@
 const { getSystemMessage } = require('./getSystemMessage')
 const sendEmail = require('./sendEmail')
 
-const resendVerificationEmail = async ({
+const sendVerificationEmailForUnVerified = async ({
     email,
     verificationToken
 }) => {
     const verifyEmail = `${process.env.APP_FRONTEND_URL}/EmailVerification/${verificationToken}/${email}`
-    const sysMsg = await getSystemMessage('GPAY_00053_EMAIL_RESEND_MESSAGE');
-    const emailContent = sysMsg ? sysMsg.message : 'You may have experienced web server error in verifying your email to create Gamepay account. This is the first time such an error has occurred since we launched the website, and we are very sorry for the inconvenience.';
+    const sysMsg = await getSystemMessage('GPAY_00054_EMAIL_MESSAGE_UNVERIFIED_USERS');
+    const emailContent = sysMsg ? sysMsg.message : `We noticed that you have recently registered for a Gamepay account. You’re almost ready to get started. Please click on the link below to verify your account and enjoy exclusive gaming privileges with us. 
+
+    If you have done already, kindly ignore this email. `;
 
     return sendEmail({
         to: email,
@@ -61,9 +63,9 @@ const resendVerificationEmail = async ({
         
                                                     <td>
                                                         <h1 style="font-family:Arial, Helvetica, sans-serif;font-size:30px;font-weight:bold;
-                                                    text-align:center;color:#00dcff;margin-top:0px;margin-bottom: 0;line-height: 22px;">Please confirm your email address </h1>
+                                                    text-align:center;color:#00dcff;margin-top:0px;margin-bottom: 0;line-height: 22px;">Dear User </h1>
                                                         <p style="font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;
-                                                          text-align:center;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"> ${emailContent} <br/> Please click on the below link to confirm your mail address.<br/>
+                                                          text-align:center;color:#ffffff;margin-top:20px;margin-bottom: 0;line-height: 22px;"> ${emailContent} <br><br><br> Please click on the below link to confirm your mail address.<br>
                                                         </p>
                                                     </td>
                                                 </tr>
@@ -72,6 +74,7 @@ const resendVerificationEmail = async ({
                                                         <table align="center" valign="center">
                                                             <tr>
                                                                 <td style="background-color: #00dcff;border-radius:30px">
+                                                                    
                                                                     <a href="${verifyEmail}" style="font-family:Arial, Helvetica, sans-serif;border:solid 1px #00dcff;border-color:#00dcff; box-sizing:border-box;text-decoration:none;background-color:#00dcff;color:#141416;
                                                  font-size:16px;font-weight:400;margin:0;padding:10px 30px;display:inline-block;border-radius:30px" target="_blank">Confirm your email address</a>
                                                                 </td>
@@ -128,6 +131,7 @@ const resendVerificationEmail = async ({
                                                                             margin-top: 20px;">
                                                                     </td>
                                                                 </tr>
+                                                                
                                                             </table>
                                                         </tr>
                                                     </td>
@@ -158,4 +162,4 @@ const resendVerificationEmail = async ({
     })
 }
 
-module.exports = resendVerificationEmail
+module.exports = sendVerificationEmailForUnVerified
