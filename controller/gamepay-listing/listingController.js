@@ -22,6 +22,19 @@ const getGamepayListingByFilter = async (req, res) => {
   try {
       const page = req.params.page;
       const pageSize = req.params.pageSize; 
+      const search = req.query.search;
+
+      if(search !== ''){
+        const total = await games.find({gameName:{ $regex: search, $options: "i" }}).count({});
+        const data = await games.find({ gameName: { $regex: search, $options: "i" },  approvalStatus: "approved" }).limit(pageSize).skip(pageSize * page);
+        return res.status(200).json({ 
+          data:data,
+          total:total,
+          page:page,
+          pageSize:pageSize, 
+          msg : "Game List Successfully"
+         });
+      }
       const total = await games.find().count({});
       const type = req.body.type;
       const typeTotal = await games.find({type:req.body.type}).count({});

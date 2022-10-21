@@ -8,6 +8,19 @@ const getGameNFTList = async (req, res) => {
 
     const page = parseInt(req.params.page) === 0 ?  1: parseInt(req.params.page) || 1; //for next page pass 1 here
     const limit = parseInt(req.params.limit) || 10;
+    const search = req.query.search;
+    if (search !== '') {
+      const totalGameNFTDetailCount = await gameNFTDetailModule.find({name:{ $regex: search, $options: "i" }}).count({});
+      const gameNFTDetailList = await gameNFTDetailModule
+        .find({name:{ $regex: search, $options: "i" }})
+        .skip((page - 1) * limit)
+        .limit(limit);
+      return res.status(200).json({
+        total: totalGameNFTDetailCount,
+        data: gameNFTDetailList,
+        msg: "Game NFT List",
+      });
+    }
     const totalGameNFTDetailCount = await gameNFTDetailModule.count();
     const gameNFTDetailList = await gameNFTDetailModule.find().skip((page - 1) * limit).limit(limit);    
     return res.status(200).json({
