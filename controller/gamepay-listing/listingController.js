@@ -11,6 +11,7 @@ const getGamepayListings = async (req, res) => {
             res.status(400).json({ msg: "type is Required"});
         }
     } catch (err) {
+        console.log(err)
         logger.info(err);
         res.status(500).json({
             err: "Internal server error!",
@@ -20,11 +21,11 @@ const getGamepayListings = async (req, res) => {
 
 const getGamepayListingByFilter = async (req, res) => {
   try {
-      const page = req.params.page;
-      const pageSize = req.params.pageSize; 
+      const page = req.params.page || 1;
+      const pageSize = req.params.pageSize || 10; 
       const search = req.query.search;
 
-      if(search !== ''){
+      if(search !== '' && search !== undefined){
         const total = await games.find({gameName:{ $regex: search, $options: "i" }}).count({});
         const data = await games.find({ gameName: { $regex: search, $options: "i" },  approvalStatus: "approved" }).limit(pageSize).skip(pageSize * page);
         return res.status(200).json({ 
