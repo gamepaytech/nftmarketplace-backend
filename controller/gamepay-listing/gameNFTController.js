@@ -1,15 +1,15 @@
 const logger = require("../../logger");
-const gameNFTModule = require("../../models/gamepay-listing/gameNFT");
+const gameNFTListModule = require("../../models/gamepay-listing/gameNFT");
 const gameNFTDetailModule = require("../../models/gamepay-listing/gameNFTDetail");
+const gameTokenDetailModule = require("../../models/gamepay-listing/gameTokenDetail");
 const axios = require('axios');
 
 const getGameNFTList = async (req, res) => {
   try {
-
     const page = parseInt(req.params.page) === 0 ?  1: parseInt(req.params.page) || 1; //for next page pass 1 here
     const limit = parseInt(req.params.limit) || 10;
     const search = req.query.search;
-    if (search !== '') {
+    if (search !== '' && search !== undefined) {
       const totalGameNFTDetailCount = await gameNFTDetailModule.find({name:{ $regex: search, $options: "i" }}).count({});
       const gameNFTDetailList = await gameNFTDetailModule
         .find({name:{ $regex: search, $options: "i" }})
@@ -29,6 +29,7 @@ const getGameNFTList = async (req, res) => {
       msg: "Game NFT List",
     });
   } catch (err) {
+    console.log(err)
     logger.error(err);
     res.status(500).json(err);
   }
@@ -37,18 +38,18 @@ const getGameNFTList = async (req, res) => {
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
-const insertORUpdateGameNFTList = async (req, res) => {
+const insertORUpdateGameNFTDetails = async (req, res) => {
   try {
     let page = 1; //for next page pass 1 here
     const limit = 30;
-    const totalGameNFTCount = await gameNFTModule.count();
+    const totalGameNFTCount = await gameNFTListModule.count();
     const totalNFTLoop = totalGameNFTCount / limit;
     var start = new Date().getTime();
     var end = new Date().getTime();
     for (let i = 0; i < totalNFTLoop; i++) {
       console.log(page, "current page");
       start = new Date().getTime();
-      const gameNFTList = await gameNFTModule
+      const gameNFTList = await gameNFTListModule
         .find()
         .skip((page - 1) * limit)
         .limit(limit);
@@ -85,5 +86,79 @@ const insertORUpdateGameNFTList = async (req, res) => {
 };
 
 
+const updateGameNFTList = async (req, res) => {
+  try {
+    const limit = 250;
+    for (let i = 1; i < 100; i++) {
+      const data = await axios.get(
+        "https://api.coingecko.com/api/v3/nfts/list?per_page="+limit+"&page="+i
+      );
+      if(data.data.length == 0){
+        break;
+      }
+      for (let j = 0; j < data.data.length; j++) {
+        const element = data.data[j];
+        const gameNFTList = await gameNFTListModule.findOne({
+          contract_address: element.contract_address,
+        });
+        console.log(element.id);
+        if (gameNFTList) {
+          await gameNFTListModule.findByIdAndUpdate(
+            gameNFTList._id,
+            element
+          );
+        } else {
+          await gameNFTListModule.create(element);
+        }
+      }
+    }
+    return res.status(200).json({
+      msg: "Game NFT List Updated",
+    });
+  } catch (err) {
+    console.log(err)
+    logger.error(err);
+    res.status(500).json(err);
+  }
+};
 
-module.exports = { getGameNFTList,insertORUpdateGameNFTList };
+
+const updateGameTokenDetails = async (req, res) => {
+  try {
+    const limit = 250;
+    for (let i = 1; i < 100; i++) {
+      const data = await axios.get(
+        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page="+limit+"&page="+i+"&sparkline=false&price_change_percentage=1h%2C24h%2C7d"
+      );
+      if(data.data.length == 0){
+        break;
+      }
+      for (let j = 0; j < data.data.length; j++) {
+        const element = data.data[j];
+        const gameNFTList = await gameTokenDetailModule.findOne({
+          id: element.id,
+        });
+        console.log(element.id);
+        if (gameNFTList) {
+          await gameTokenDetailModule.findByIdAndUpdate(
+            gameNFTList._id,
+            element
+          );
+        } else {
+          await gameTokenDetailModule.create(element);
+        }
+      }
+    }
+    return res.status(200).json({
+      msg: "Game Token List Updated",
+    });
+  } catch (err) {
+    console.log(err)
+    logger.error(err);
+    res.status(500).json(err);
+  }
+};
+
+
+
+module.exports = { getGameNFTList,insertORUpdateGameNFTDetails,updateGameNFTList,updateGameTokenDetails };
