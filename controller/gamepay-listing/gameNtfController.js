@@ -41,7 +41,7 @@ const getGameDetail = async(req,res)=>{
           });
         }
 
-        const data = await games.findOne({gameName:gameName}).populate('reviews')
+        const data = await games.findOne({gameName:gameName}).populate('reviews').populate('tokenDetails')
         return res.status(200).json({
                data : data,
                msg: "Game details successfully"

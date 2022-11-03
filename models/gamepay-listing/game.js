@@ -41,7 +41,8 @@ const gameSchema = mongoose.Schema(
     gameMetrics:{type:String,default:null},
     approvalStatus: { type: String, default: "pending" },
     uploadSource : {type:String,default:null},
-    rejectionComments : {type:String,default:null}
+    rejectionComments : {type:String,default:null},
+    gameId : {type:String,default:''}
   },
   { timestamps: true }
 );
@@ -50,6 +51,13 @@ gameSchema.virtual('reviews', {
   ref: 'games_reviews', //The Model to use
   localField: '_id', //Find in Model, where localField 
   foreignField: 'gameId', // is equal to foreignField
+});
+
+gameSchema.virtual('tokenDetails', {
+  ref: 'games_token_details', //The Model to use
+  localField: 'gameId', //Find in Model, where localField 
+  foreignField: 'id', // is equal to foreignField
+  justOne: true
 });
 // Set Object and Json property to true. Default is set to false
 gameSchema.set('toObject', { virtuals: true });
