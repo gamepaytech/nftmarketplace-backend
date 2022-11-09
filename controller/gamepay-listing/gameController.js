@@ -29,6 +29,8 @@ const game = async(req,res)=>{
       platforms = req.body.platforms;
       blockChains = req.body.blockChains;
       tokenContract = req.body.tokenContract;
+      whitePaper = req.body. whitePaper;
+      tokenContractAddress = req.body. tokenContractAddress;
       coinGeckoUrl = req.body.coinGeckoUrl;
       coinMarketCapUrl = req.body.coinMarketCapUrl;
       redditUrl = req.body.redditUrl;
@@ -82,18 +84,18 @@ const game = async(req,res)=>{
                error : "GameTrailer url is not valid "
               });
          }
-         const coin =  url.test(coinMarketCapUrl);
-         if (!coin) {
-            return res.status(400).json({
-               error : "CoinMarketCap url is not valid"
-              });
-         }
-         const subreddit =  url.test(redditUrl);
-         if (!subreddit) {
-            return res.status(400).json({
-               error : "Subreddit url is not valid"
-              });
-         }   
+         // const coin =  url.test(coinMarketCapUrl);
+         // if (!coin) {
+         //    return res.status(400).json({
+         //       error : "CoinMarketCap url is not valid"
+         //      });
+         // }
+         // const subreddit =  url.test(redditUrl);
+         // if (!subreddit) {
+         //    return res.status(400).json({
+         //       error : "Subreddit url is not valid"
+         //      });
+         // }   
          if (!gameStudioName) {
             return res.status(400).json({
                error : "GameStudio name is required"
@@ -109,16 +111,16 @@ const game = async(req,res)=>{
                error : "UserName is required"
               });
          }
-         if (!address) {
-            return res.status(400).json({
-               error : "Organization Address is required"
-              });
-         }
-         if (!designation) {
-            return res.status(400).json({
-               error : "Designation is required"
-              });
-         }
+         // if (!address) {
+         //    return res.status(400).json({
+         //       error : "Organization Address is required"
+         //      });
+         // }
+         // if (!designation) {
+         //    return res.status(400).json({
+         //       error : "Designation is required"
+         //      });
+         // }
          if (!gameName) {
             return res.status(400).json({
                error : "GameName is required"
@@ -164,11 +166,11 @@ const game = async(req,res)=>{
                error : "TokenContracts is required "
               });
          }
-         if (!twitterUrl) {
-            return res.status(400).json({
-               error : "TwitterHandle is required"
-              });
-         }
+         // if (!twitterUrl) {
+         //    return res.status(400).json({
+         //       error : "TwitterHandle is required"
+         //      });
+         // }
          if (!partnerAuthorised) {
             return res.status(400).json({
                error : "Partners Authorised is required"
@@ -215,6 +217,8 @@ const game = async(req,res)=>{
                platforms: platforms,
                blockChains : blockChains,
                tokenContract : tokenContract,
+               whitePaper : whitePaper,
+               tokenContractAddress : tokenContractAddress,
                coinGeckoUrl : coinGeckoUrl,
                coinMarketCapUrl : coinMarketCapUrl,
                redditUrl : redditUrl,
@@ -259,6 +263,8 @@ const game = async(req,res)=>{
                   platforms: platforms,
                   blockChains: blockChains,
                   tokenContract: tokenContract,
+                  whitePaper : whitePaper,
+                  tokenContractAddress : tokenContractAddress,
                   coinGeckoUrl: coinGeckoUrl,
                   coinMarketCapUrl: coinMarketCapUrl,
                   redditUrl: redditUrl,
