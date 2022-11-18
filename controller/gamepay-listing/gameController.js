@@ -2,7 +2,7 @@ const logger = require('../../logger');
 // const submitgame = require('../../models/gamepay-listing/game');
 const submitgame = require('../../models/gamepay-listing/game');
 const sendSubmitEmail = require('../../utils/sendSubmitEmail');
-
+const games = require('../../models/gamepay-listing/game');
 const game = async(req,res)=>{
     try{
       emailId = req.body.emailId;
@@ -51,6 +51,21 @@ const game = async(req,res)=>{
                error : "Invalid email"
               });
          }
+          
+         const email = await games.findOne({emailId : req.body.emailId});
+         if (email) {
+            return res.status(400).json({
+               error : "Email  Already Taken"
+              });
+         }
+
+         const gamename = await games.findOne({ gameName : req.body.gameName});
+            if (gamename) {
+               return res.status(400).json({
+                  error : "Game Name Already Taken"
+                 });
+            }
+            
          
          const url =  /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
          const image = /(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg|webp|jfif))/i;
