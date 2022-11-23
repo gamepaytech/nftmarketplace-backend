@@ -37,7 +37,7 @@ const feedbackRouter = require("./routes/gamepay-listing/feedbackRoutes")
 const userReviewRouter = require("./routes/gamepay-listing/userReviewRoutes")
 const gameResearchRouter = require("./routes/gamepay-listing/gameResearch")
 const userSteamInfo = require("./routes/userSteamInfoRoute")
-
+const questsRouter = require("./routes/questsRoute");
 
 
 const allgameRouter= require('./routes/allGameRoute');
@@ -98,7 +98,7 @@ app.use("/gamepay-listing/allgame", allgameRouter)
 app.use("/gamepay-listing", userReviewRouter)
 app.use("/game-research", gameResearchRouter)
 app.use("/user-steam-info", userSteamInfo)
-
+app.use("/quests",questsRouter)
 
 
 // app.use('/nftPresale',nftPresaleRouter)
