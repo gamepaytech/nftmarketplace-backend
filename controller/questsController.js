@@ -5,7 +5,7 @@ const addQuest = async (req, res) => {
     try {
 
         const keys = ["questCategory", "gameName", "gameLogo", "questImage", "backgroundImage", "questTitle",
-            "questDesc", "questFrequency", "questFrequency", "questStartDate", "questEndDate", "questStatus", "actionUrl"];
+            "questDesc", "questFrequency", "eligiblePoints", "questStartDate", "questEndDate", "questStatus", "actionUrl"];
         for (i in keys) {
             if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
                 res.json({ status: 400, msg: keys[i] + " are required" });
@@ -14,13 +14,13 @@ const addQuest = async (req, res) => {
         }
         const {
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, questStartDate, questEndDate,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,
             questStatus, actionUrl
         } = req.body
 
         const addData = new Quest({
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, questStartDate, questEndDate,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,
             questStatus, actionUrl
         });
 
@@ -42,8 +42,8 @@ const getQuests = async (req, res) => {
     try {
         const page = req.params.page;
         const pageSize = req.params.pageSize;
-        const total = await addQuest.find().count({});
-        const data = await addQuest.find().limit(pageSize).sort({ createdAt: -1 }).skip(pageSize * page);
+        const total = await Quest.find().count({});
+        const data = await Quest.find().limit(pageSize).sort({ createdAt: -1 }).skip(pageSize * page);
         return res.status(200).json({
             data: data,
             total: total,
