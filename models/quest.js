@@ -29,7 +29,7 @@ const questsSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        gameLogo: {
+        questLogo: {
             type: String,
             required: true,
         },
