@@ -40,15 +40,12 @@ const addQuest = async (req, res) => {
 
 const getQuests = async (req, res) => {
     try {
-        const page = req.params.page;
-        const pageSize = req.params.pageSize;
+    
         const total = await Quest.find().count({});
-        const data = await Quest.find().limit(pageSize).sort({ createdAt: -1 }).skip(pageSize * page);
+        const data = await Quest.find();
         return res.status(200).json({
             data: data,
             total: total,
-            page: page,
-            pageSize: pageSize,
             msg: "Quests fetched successfully."
         });
     }
