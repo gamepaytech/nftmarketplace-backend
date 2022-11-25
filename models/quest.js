@@ -69,6 +69,10 @@ const questsSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        visibilityType: { // Paid or Free
+            type: String,
+            required: true
+        },
         actionUrl:{
             type: String,
             required: true

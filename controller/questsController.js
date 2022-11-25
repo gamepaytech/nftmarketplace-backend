@@ -14,13 +14,13 @@ const addQuest = async (req, res) => {
         }
         const {
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,visibilityType,
             questStatus, actionUrl
         } = req.body
 
         const addData = new Quest({
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,visibilityType,
             questStatus, actionUrl
         });
 
