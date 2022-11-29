@@ -1,4 +1,5 @@
-const Quest = require('../models/quest')
+const Quest = require('../models/Quest')
+const UserQuest = require('../models/UserQuest')
 const logger = require('../logger');
 
 const addQuest = async (req, res) => {
@@ -14,13 +15,13 @@ const addQuest = async (req, res) => {
         }
         const {
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,visibilityType,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate, visibilityType,
             questStatus, actionUrl
         } = req.body
 
         const addData = new Quest({
             questCategory, gameName, gameLogo, questImage, backgroundImage,
-            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate,visibilityType,
+            questTitle, questDesc, questFrequency, eligiblePoints, questStartDate, questEndDate, visibilityType,
             questStatus, actionUrl
         });
 
@@ -37,17 +38,99 @@ const addQuest = async (req, res) => {
     }
 };
 
+const addUserQuest = async (req, res) => {
+    try {
+
+        const keys = ["userId", "questId", "points"];
+        for (i in keys) {
+            if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
+                res.json({ status: 400, msg: keys[i] + " are required" });
+                return;
+            }
+        }
+        const {
+            userId, questId, points
+        } = req.body
+
+        const transactions = [
+            {
+                questId : questId
+            }
+        ]
+
+        const addQuest = new UserQuest({
+            userId,
+            totalGPY : points,
+            transactions : transactions
+        });
+
+        const data = await addQuest.save();
+        return res.status(201).json({
+            status: "200",
+            msg: "Quest added successfully.",
+            data: data,
+        });
+
+    } catch (error) {
+        logger.error(" Error occured - " + error)
+        res.status(500).json("Error occured while adding quest");
+    }
+};
+
 
 const getQuests = async (req, res) => {
     try {
-    
-        const total = await Quest.find().count({});
-        const data = await Quest.find();
+        const userId = req.body.userId;
+        // on button click , check if user is logged In
+        const total = await Quest.find({ questStatus: 'Active' }).count({});
+        const quests = await Quest.find({ questStatus: 'Active' });
+
+        // traverse through the quests and check if given user id has already claimed the Quest
+
+        // utility method - pass quest referralDetails, user details
+
+        // inisde utility method 
+
+        // step 1 : check if quest frequency is one-time and claimed - if yes, filter out the quest from shopwing to user
+        // step 2: check if latest quest frequency is daily and claimed - if claimed today , then filter out the quest from shopwing to user 
+        // step 3: check if latest quest frequency is weekly and claimed - if claimed within the current week , then filter out the quest from shopwing to user 
+        // step 4: check if latest quest frequency is monthly and claimed - if claimed within the current month , then filter out the quest from shopwing to user 
+
+        const userQuests = [];
+        quests.forEach(async (quest) => {
+            let removeQuest = false;
+            switch (quest.questFrequency) {
+                case "one-time":
+                    removeQuest = await checkIfOneTimeQuestIsClaimed(quest._id, userId);
+                    break;
+                case "daily":
+                    removeQuest = await checkIfDailyQuestIsClaimed(quest._id, userId);
+                    break;
+                case "weekly":
+                    console.log("It is a Tuesday.");
+                    break;
+                case "monthly":
+                    console.log("It is a Wednesday.");
+                    break;
+                default:
+                    console.log("No such day exists!");
+                    break;
+            }
+            if (!removeQuest) {
+                userQuests.push(quest);
+            }
+
+        })
+
+        // groupBy on the userQuests
+        
         return res.status(200).json({
-            data: data,
+            data: quests,
             total: total,
             msg: "Quests fetched successfully."
         });
+
+
     }
     catch (err) {
         logger.error(err)
@@ -55,4 +138,62 @@ const getQuests = async (req, res) => {
     }
 };
 
-module.exports = { addQuest, getQuests }
+async function checkIfOneTimeQuestIsClaimed(questId, userId) {
+    try {
+        // get questId from user_quests
+        const getQuest = await findLatestQuestByUserIdAndQuestId(userId, questId);
+
+        if (getQuest) {
+            return true;
+        }
+        return false;
+    }catch(error){
+        logger.error();
+        return false;
+    }
+};
+
+async function checkIfDailyQuestIsClaimed(questId, userId) {
+    try {
+        // get questId from user_quests
+        const getQuest = await UserQuest.aggregate(
+            { "userId": userId },
+            { $unwind: "$transactions" },
+            { $match: { "transactions.questId": questId } },
+            { $match: { "transactions.updatedAt": { $eq : new Date()} } },
+            { $sort: { "transactions.updatedAt": -1 } },
+            { $limit: 1 },
+            function (err, result) {
+                console.log(result);
+            }
+        );
+
+        if (getQuest) {
+            // get the timestamp of the latest claimed quest and check if the Date(updatedAt) < today's Date
+
+            // if Date(updatedAt) === today's Date{
+            //    return true
+            // }
+            return true;
+        }
+        return false;
+    }catch(error){
+        logger.error();
+        return false;
+    }
+};
+
+module.exports = { addQuest, getQuests, addUserQuest }
+
+async function findLatestQuestByUserIdAndQuestId(userId, questId) {
+    return await UserQuest.aggregate(
+        { "userId": userId },
+        { $unwind: "$transactions" },
+        { $match: { "transactions.questId": questId } },
+        { $sort: { "transactions.createdAt": -1 } },
+        { $limit: 1 },
+        function (err, result) {
+            console.log(result);
+        }
+    );
+}
