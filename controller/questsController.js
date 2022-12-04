@@ -304,7 +304,6 @@ const getLeaderBoardByPages = async (req, res) => {
             msg : "Leader board fetched successfully"
            });
     } catch (error) {
-        console.log(" error -- " + error);
         logger.error("Error occured while fetching leader board. ", error);
         res.status(400).json({
             status: "400",
@@ -313,52 +312,49 @@ const getLeaderBoardByPages = async (req, res) => {
     }
 }
 
-const getLeaderBoardByPagesText = async (req, res) => {
+const getLeaderBoardBySearchText = async (req, res) => {
+    const searchString = req.body.search;
+
     try {
-        const page = req.params.page || 1;
-        const pageSize = req.params.pageSize || 10; 
-        const search = req.query.search;
-  
-        if(search !== '' && search !== undefined){
-          const total = await games.find({gameName:{ $regex: search, $options: "i" }}).count({});
-          const data = await games.find({ gameName: { $regex: search, $options: "i" },  approvalStatus: "approved" }).limit(pageSize).skip(pageSize * page);
-          return res.status(200).json({ 
-            data:data,
-            total:total,
-            page:page,
-            pageSize:pageSize, 
-            msg : "Game List Successfully"
+        const userQuests = await UserQuest.find()
+            .sort({ "totalGPY": -1 })
+        const topQuesters = [];
+        let rank = 0;
+        for (const quest of userQuests) {
+            rank++;
+            const userDetails = await user.users.findById(quest.userId);
+            if (user) {
+                const quester = {
+                    name: userDetails.username,
+                    rank: rank,
+                    userImg: userDetails.profilePic,
+                    countryImg: "",
+                    countryName: userDetails.country,
+                    gpyPoints: quest.totalGPY
+                }
+                topQuesters.push(quester);
+            } else {
+                console.log("User details not found - " + quest.userId);
+            }
+        }
+
+        const filteredUsers = topQuesters.filter(e => e.name.toLowerCase().includes(searchString.toLowerCase()));
+        //const totalUsers = filteredUsers.length;
+        //filteredUsers.splice(0, page * pageSize)
+
+        return res.status(200).json({ 
+            data: filteredUsers,
+            total: filteredUsers.length,
+            msg : "Leader board by usernames fetched successfully"
            });
-        }
-        const total = await games.find().count({});
-        const type = req.body.type;
-        const typeTotal = await games.find({type:req.body.type}).count({});
-        if(type != null){
-            const data = await games.find({ $and: [ {type:{$elemMatch:{"$in":type, "$exists":true}}}, {approvalStatus : "approved"}]}).limit(pageSize).skip(pageSize * page);
-            res.status(200).json({ 
-              data:data,
-              total:typeTotal,
-              page:page,
-              pageSize:pageSize, 
-              msg : "Game Type Successfully"
-             });
-        }else{
-            const data = await games.find({approvalStatus : "approved"}).limit(pageSize).skip(pageSize * page);
-            res.status(200).json({ 
-              data: data,
-              total:total,
-              page:page,
-              pageSize:pageSize, 
-              msg: "Data Fetched Successfully" }); 
-        }
-    } catch (err) {
-      console.log(err)
-        logger.info(err);
-        res.status(500).json({
-            err: "Internal server error!",
+    } catch (error) {
+        logger.error("Error occured while fetching leader board by user names ", error);
+        res.status(400).json({
+            status: "400",
+            msg: "Error while fetching leader board data.",
         });
     }
-  };
+}
 
 
-module.exports = { addQuest, getQuests, addUserQuest, getLeaderBoard, getLeaderBoardByPages }
+module.exports = { addQuest, getQuests, addUserQuest, getLeaderBoard, getLeaderBoardByPages, getLeaderBoardBySearchText }
