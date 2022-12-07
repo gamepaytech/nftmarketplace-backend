@@ -78,6 +78,24 @@ const addUserQuest = async (req, res) => {
     }
 };
 
+const isQuestClaimed = async (userId, quest) => {
+    switch (quest.questFrequency) {
+        case "one-time":
+            return await checkIfOneTimeQuestIsClaimed(quest._id, userId);
+        case "daily":
+            return await checkIfDailyQuestIsClaimed(quest._id, userId);
+        case "weekly":
+            console.log("It is a Tuesday.");
+            return await checkIfWeeklyQuestIsClaimed(quest._id, userId);
+        case "monthly":
+            console.log("It is a Wednesday.");
+            return await checkIfMonthlyQuestIsClaimed(quest._id, userId)
+        default:
+            console.log("No such day exists!");
+            return true;
+            break;
+    }
+};
 
 const getQuests = async (req, res) => {
     try {
@@ -99,31 +117,41 @@ const getQuests = async (req, res) => {
 
         console.log("UserId -- " + userId);
         const userQuests = [];
-        quests.forEach(async (quest) => {
-            let removeQuest = false;
-            console.log("quest.questFrequency  :: " + quest.questFrequency + " id " + quest._id);
-            switch (quest.questFrequency) {
-                case "one-time":
-                    removeQuest = await checkIfOneTimeQuestIsClaimed(quest._id, userId);
-                    break;
-                case "daily":
-                    removeQuest = await checkIfDailyQuestIsClaimed(quest._id, userId);
-                    break;
-                case "weekly":
-                    console.log("It is a Tuesday.");
-                    break;
-                case "monthly":
-                    console.log("It is a Wednesday.");
-                    break;
-                default:
-                    console.log("No such day exists!");
-                    break;
+        for (let i = 0; i < quests.length; i++) {
+            // console.log(" quests " + quests[i]);
+            const questClaimed = await isQuestClaimed(userId, quests[i]);
+            console.log("questClaimed -- " + questClaimed);
+            if (!questClaimed) {
+                userQuests.push(quests[i]);
             }
-            if (!removeQuest) {
-                userQuests.push(quest);
-            }
+            console.log("End of iteration -- " + i);
+        }
+        console.log("-- end of for loop -- ");
+        // quests.forEach(async (quest) => {
+        //     let removeQuest = false;
+        //     console.log("quest.questFrequency  :: " + quest.questFrequency + " id " + quest._id);
+        //     switch (quest.questFrequency) {
+        //         case "one-time":
+        //             removeQuest = await checkIfOneTimeQuestIsClaimed(quest._id, userId);
+        //             break;
+        //         case "daily":
+        //             removeQuest = await checkIfDailyQuestIsClaimed(quest._id, userId);
+        //             break;
+        //         case "weekly":
+        //             console.log("It is a Tuesday.");
+        //             break;
+        //         case "monthly":
+        //             console.log("It is a Wednesday.");
+        //             break;
+        //         default:
+        //             console.log("No such day exists!");
+        //             break;
+        //     }
+        //     if (!removeQuest) {
+        //         userQuests.push(quest);
+        //     }
 
-        });
+        // });
 
         // groupBy on the userQuests
 
@@ -134,6 +162,7 @@ const getQuests = async (req, res) => {
         });
     }
     catch (err) {
+        console.log("Error Unable to fetch quests." + err);
         logger.error(err)
         res.status(500).json("Unable to fetch quests.")
     }
@@ -141,95 +170,138 @@ const getQuests = async (req, res) => {
 
 async function checkIfOneTimeQuestIsClaimed(questId, userId) {
     try {
-        // get questId from user_quests
-        const getQuest = await findLatestQuestByUserIdAndQuestId(userId, questId);
+        const oneTimeQuest = await UserQuest.findOne(
+            {
+                "userId": userId,
+                "transactions.questId": questId
+            }
+        ).sort({ "transactions.updatedAt": -1 })
+            .limit(1);
 
-        if (getQuest) {
-            console.log(" checkIfOneTimeQuestIsClaimed --- " + "Quest claimed");
+        if (oneTimeQuest) {
             return true;
         }
-        console.log(" checkIfOneTimeQuestIsClaimed --- " + "Quest not claimed");
         return false;
     } catch (error) {
-        console.log("error in checkIfOneTimeQuestIsClaimed" + error);
-        logger.error();
+        logger.error("Error in checkIfOneTimeQuestIsClaimed - " + error);
         return false;
     }
 };
 
 async function checkIfDailyQuestIsClaimed(questId, userId) {
     try {
-        // get questId from user_quests
-        // const getQuest = await UserQuest.aggregate(
-        //     { "userId": userId },
-        //     { $unwind: "$transactions" },
-        //     { $match: { "transactions.questId": questId } },
-        //     { $match: { "transactions.updatedAt": { $eq : new Date()} } },
-        //     { $sort: { "transactions.updatedAt": -1 } },
-        //     { $limit: 1 },
-        //     function (err, result) {
-        //         console.log(result);
-        //     }
-        // );
-
-        const getQuest = await UserQuest.find(
+        let getQuest = await UserQuest.findOne(
             {
                 "userId": userId,
-                "transactions.questId": questId,
-                "transactions.updatedAt": new Date()
+                "transactions.questId": questId
             }
-        ).sort({ "transactions.updatedAt": -1 })
-            .limit(1);
-
-        console.log("getQuest " + getQuest);
+        );
         if (getQuest) {
-            console.log("Already claimed!!");
-            // get the timestamp of the latest claimed quest and check if the Date(updatedAt) < today's Date
-
-            // if Date(updatedAt) === today's Date{
-            //    return true
-            // }
-            return true;
+            let questTransactions = getQuest.transactions;
+            questTransactions = questTransactions.filter(e => {
+                return e.questId == questId;
+            });
+            if (questTransactions && questTransactions.length > 0) {
+                questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
+                return new Date(questTransactions[0].updatedAt).toLocaleDateString() === new Date().toLocaleDateString();
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
-        console.log("Quest Not claimed!!");
-        return false;
     } catch (error) {
-        console.log("Quest Not claimed error" + error);
-        logger.error();
+        logger.error("Error occured while checking if daily quest claimed - " + error);
         return false;
     }
 };
 
-async function findLatestQuestByUserIdAndQuestId(userId, questId) {
-    // return await UserQuest.aggregate(
-    //     { "userId": userId },
-    //     { $match: { "transactions.questId": questId } },
-    //     { $sort: { "transactions.createdAt": -1 } },
-    //     { $limit: 1 },
-    //     function (err, result) {
-    //         console.log(result);
-    //     }
-    // );
+async function checkIfWeeklyQuestIsClaimed(questId, userId) {
+    try {
+        const today = new Date();
+        const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+        const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+        console.log("new Date(new Date(firstDay).setHours(00, 00, 00)) " + new Date(new Date(firstDay).setHours(00, 00, 00)));
+        console.log("new Date(new Date(lastDay).setHours(23, 59, 59)) " + new Date(new Date(lastDay).setHours(23, 59, 59)));
+        const weeklyQuest = await UserQuest.findOne(
+            {
+                "userId": userId,
+                "transactions.questId": questId,
+                "transactions.updatedAt": {
+                    $gte: new Date(new Date(firstDay).setHours(00, 00, 00)),
+                    $lt: new Date(new Date(lastDay).setHours(23, 59, 59))
+                }
+            }
+        );
+        console.log("weeklyQuest -- " + weeklyQuest);
+        if (weeklyQuest) {
+            console.log("Inside if ");
+            return true;
+            // let questTransactions = weeklyQuest.transactions;
+            // questTransactions = questTransactions.filter(e => {
+            //     return e.questId == questId;
+            // });
+            // if (questTransactions && questTransactions.length > 0) {
+            //     questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
 
-    const oneTimeQuest = await UserQuest.find(
-        { "userId": userId },
-        { transactions: { questId: questId } }
-    ).sort({ "transactions.updatedAt": -1 })
-        .limit(1);
-
-    console.log("oneTimeQuest - " + oneTimeQuest);
-
-    if (oneTimeQuest) {
-        console.log("oneTimeQuest claimed ");
-        return true;
+            //     console.log("firstDay   " + firstDay.toLocaleDateString());
+            //     console.log("lastDay   " + lastDay.toLocaleDateString());
+            //     console.log("new Date(questTransactions[0].updatedAt).toLocaleDateString()   " + new Date(questTransactions[0].updatedAt).toLocaleDateString());
+            //     console.log("((new Date(questTransactions[0].updatedAt).toLocaleDateString() >=firstDay.toLocaleDateString()) && (new Date(questTransactions[0].updatedAt).toLocaleDateString() <=lastDay.toLocaleDateString()))  ", ((new Date(questTransactions[0].updatedAt).toLocaleDateString() >= firstDay.toLocaleDateString()) && (new Date(questTransactions[0].updatedAt).toLocaleDateString() <= lastDay.toLocaleDateString())));
+            //     return ((new Date(questTransactions[0].updatedAt).toLocaleDate() >= firstDay.toLocaleDate()) && (new Date(questTransactions[0].updatedAt).toLocaleDate() <= lastDay.toLocaleDate()));
+            // } else {
+            //     return false;
+            // }
+        } else {
+            console.log("Inside else ");
+            return false;
+        }
+    } catch (error) {
+        console.log("Error occured while checking if daily weekly quest claimed - " + error);
+        logger.error("Error occured while checking if daily weekly quest claimed - " + error);
+        return false;
     }
-    console.log("oneTimeQuest not claimed");
-    return false;
-}
+};
+
+async function checkIfMonthlyQuestIsClaimed(questId, userId) {
+    const today = new Date();
+    //const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+    //const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    console.log(firstDay); // 👉️ Sat Oct 01 2022 ...
+
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    console.log(lastDay);
+    try {
+        const monthlyQuest = await UserQuest.findOne(
+            {
+                "userId": userId,
+                "transactions.questId": questId
+            }
+        );
+        if (monthlyQuest) {
+            let questTransactions = monthlyQuest.transactions;
+            questTransactions = questTransactions.filter(e => {
+                return e.questId == questId;
+            });
+            if (questTransactions && questTransactions.length > 0) {
+                questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
+                return (new Date(questTransactions[0].updatedAt) >= firstDay && new Date(questTransactions[0].updatedAt) <= lastDay);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } catch (error) {
+        logger.error("Error occured while checking if daily weekly quest claimed - " + error);
+        return false;
+    }
+};
 
 
 // add pagination
-// 
 const getLeaderBoard = async (req, res) => {
     const noOfRanks = req.body.noOfRanks;
     try {
@@ -271,7 +343,7 @@ const getLeaderBoard = async (req, res) => {
 
 const getLeaderBoardByPages = async (req, res) => {
     const page = req.params.page || 1;
-    const pageSize = req.params.pageSize || 10; 
+    const pageSize = req.params.pageSize || 10;
     try {
         const total = await UserQuest.find().count();
         const userQuests = await UserQuest.find()
@@ -296,13 +368,13 @@ const getLeaderBoardByPages = async (req, res) => {
                 console.log("User details not found - " + quest.userId);
             }
         }
-        return res.status(200).json({ 
-            data:topQuesters,
-            total:total,
-            page:page,
-            pageSize:pageSize, 
-            msg : "Leader board fetched successfully"
-           });
+        return res.status(200).json({
+            data: topQuesters,
+            total: total,
+            page: page,
+            pageSize: pageSize,
+            msg: "Leader board fetched successfully"
+        });
     } catch (error) {
         logger.error("Error occured while fetching leader board. ", error);
         res.status(400).json({
@@ -342,11 +414,11 @@ const getLeaderBoardBySearchText = async (req, res) => {
         //const totalUsers = filteredUsers.length;
         //filteredUsers.splice(0, page * pageSize)
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             data: filteredUsers,
             total: filteredUsers.length,
-            msg : "Leader board by usernames fetched successfully"
-           });
+            msg: "Leader board by usernames fetched successfully"
+        });
     } catch (error) {
         logger.error("Error occured while fetching leader board by user names ", error);
         res.status(400).json({
