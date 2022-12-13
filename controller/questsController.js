@@ -41,38 +41,98 @@ const addQuest = async (req, res) => {
 
 const addUserQuest = async (req, res) => {
     try {
-
-        const keys = ["userId", "questId", "points"];
+        const keys = ["userId", "questId"];
         for (i in keys) {
             if (req.body[keys[i]] == undefined || req.body[keys[i]] == "") {
                 res.json({ status: 400, msg: keys[i] + " are required" });
                 return;
             }
         }
+
         const {
-            userId, questId, points
-        } = req.body
+            userId, questId
+        } = req.body;
 
-        const transactions = [
-            {
-                questId: questId
+        const userExists = await user.users.findById(userId);
+        console.log("find user ", user);
+        if (!userExists) {
+            return res.json({
+                status: 400,
+                msg: "User not found"
+            });
+        }
+
+        const userQuest = await UserQuest.findOne({ "userId": userId });
+
+        console.log("userQuest fetched from db..." + userQuest);
+
+        const quest = await Quest.findById(questId);
+
+        if (userQuest) {
+            console.log("User Quest is already present..");
+
+            if (!quest) {
+                console.log("Quest is not found!!");
+                return res.json({
+                    status: 400,
+                    msg: "Quest not found!!"
+                });
             }
-        ]
+            const questTransactions = userQuest.transactions;
+            questTransactions.push({ questId: questId });
+            userQuest.transactions = questTransactions;
+            userQuest.totalGPY = userQuest.totalGPY + quest.eligiblePoints;
 
-        const addQuest = new UserQuest({
-            userId,
-            totalGPY: points,
-            transactions: transactions
-        });
+            console.log("userQuest --- ", userQuest);
 
-        const data = await addQuest.save();
-        return res.status(201).json({
-            status: "200",
-            msg: "Quest added successfully.",
-            data: data,
-        });
+            const userData = await userQuest.save();
 
+            if (userData) {
+                console.log("Quest added successfully..");
+                return res.status(201).json({
+                    status: "200",
+                    msg: "Quest added successfully.",
+                    data: userData,
+                });
+            } else {
+                console.log("Error occured while adding quest");
+                return res.status(500).json({
+                    status: "500",
+                    msg: "Error occured while adding user quest."
+                });
+            }
+        } else {
+            console.log("oneTimeQuest is not present.. creating one..");
+
+            if (!quest) {
+                console.log("Quest is not found!!");
+                return res.json({
+                    status: 400,
+                    msg: "Quest not found!!"
+                });
+            }
+
+            const transactions = [
+                {
+                    questId: questId
+                }
+            ]
+
+            const addQuest = new UserQuest({
+                userId,
+                totalGPY: quest.eligiblePoints,
+                transactions: transactions
+            });
+
+            const data = await addQuest.save();
+            return res.status(201).json({
+                status: "200",
+                msg: "Quest added successfully.",
+                data: data,
+            });
+        }
     } catch (error) {
+        console.log(" Error occured - ", error)
         logger.error(" Error occured - " + error)
         res.status(500).json("Error occured while adding quest");
     }
@@ -85,15 +145,11 @@ const isQuestClaimed = async (userId, quest) => {
         case "daily":
             return await checkIfDailyQuestIsClaimed(quest._id, userId);
         case "weekly":
-            console.log("It is a Tuesday.");
             return await checkIfWeeklyQuestIsClaimed(quest._id, userId);
         case "monthly":
-            console.log("It is a Wednesday.");
             return await checkIfMonthlyQuestIsClaimed(quest._id, userId)
         default:
-            console.log("No such day exists!");
             return true;
-            break;
     }
 };
 
@@ -118,7 +174,6 @@ const getQuests = async (req, res) => {
         console.log("UserId -- " + userId);
         const userQuests = [];
         for (let i = 0; i < quests.length; i++) {
-            // console.log(" quests " + quests[i]);
             const questClaimed = await isQuestClaimed(userId, quests[i]);
             console.log("questClaimed -- " + questClaimed);
             if (!questClaimed) {
@@ -126,33 +181,6 @@ const getQuests = async (req, res) => {
             }
             console.log("End of iteration -- " + i);
         }
-        console.log("-- end of for loop -- ");
-        // quests.forEach(async (quest) => {
-        //     let removeQuest = false;
-        //     console.log("quest.questFrequency  :: " + quest.questFrequency + " id " + quest._id);
-        //     switch (quest.questFrequency) {
-        //         case "one-time":
-        //             removeQuest = await checkIfOneTimeQuestIsClaimed(quest._id, userId);
-        //             break;
-        //         case "daily":
-        //             removeQuest = await checkIfDailyQuestIsClaimed(quest._id, userId);
-        //             break;
-        //         case "weekly":
-        //             console.log("It is a Tuesday.");
-        //             break;
-        //         case "monthly":
-        //             console.log("It is a Wednesday.");
-        //             break;
-        //         default:
-        //             console.log("No such day exists!");
-        //             break;
-        //     }
-        //     if (!removeQuest) {
-        //         userQuests.push(quest);
-        //     }
-
-        // });
-
         // groupBy on the userQuests
 
         return res.status(200).json({
@@ -162,7 +190,6 @@ const getQuests = async (req, res) => {
         });
     }
     catch (err) {
-        console.log("Error Unable to fetch quests." + err);
         logger.error(err)
         res.status(500).json("Unable to fetch quests.")
     }
@@ -203,7 +230,8 @@ async function checkIfDailyQuestIsClaimed(questId, userId) {
             });
             if (questTransactions && questTransactions.length > 0) {
                 questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
-                return new Date(questTransactions[0].updatedAt).toLocaleDateString() === new Date().toLocaleDateString();
+                const compareDate = new Date(questTransactions[0].updatedAt);
+                return compareDate.toLocaleDateString().toString() === new Date().toLocaleDateString().toString();
             } else {
                 return false;
             }
@@ -221,39 +249,25 @@ async function checkIfWeeklyQuestIsClaimed(questId, userId) {
         const today = new Date();
         const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
         const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
-        console.log("new Date(new Date(firstDay).setHours(00, 00, 00)) " + new Date(new Date(firstDay).setHours(00, 00, 00)));
-        console.log("new Date(new Date(lastDay).setHours(23, 59, 59)) " + new Date(new Date(lastDay).setHours(23, 59, 59)));
         const weeklyQuest = await UserQuest.findOne(
             {
                 "userId": userId,
-                "transactions.questId": questId,
-                "transactions.updatedAt": {
-                    $gte: new Date(new Date(firstDay).setHours(00, 00, 00)),
-                    $lt: new Date(new Date(lastDay).setHours(23, 59, 59))
-                }
+                "transactions.questId": questId
             }
         );
-        console.log("weeklyQuest -- " + weeklyQuest);
         if (weeklyQuest) {
-            console.log("Inside if ");
-            return true;
-            // let questTransactions = weeklyQuest.transactions;
-            // questTransactions = questTransactions.filter(e => {
-            //     return e.questId == questId;
-            // });
-            // if (questTransactions && questTransactions.length > 0) {
-            //     questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
-
-            //     console.log("firstDay   " + firstDay.toLocaleDateString());
-            //     console.log("lastDay   " + lastDay.toLocaleDateString());
-            //     console.log("new Date(questTransactions[0].updatedAt).toLocaleDateString()   " + new Date(questTransactions[0].updatedAt).toLocaleDateString());
-            //     console.log("((new Date(questTransactions[0].updatedAt).toLocaleDateString() >=firstDay.toLocaleDateString()) && (new Date(questTransactions[0].updatedAt).toLocaleDateString() <=lastDay.toLocaleDateString()))  ", ((new Date(questTransactions[0].updatedAt).toLocaleDateString() >= firstDay.toLocaleDateString()) && (new Date(questTransactions[0].updatedAt).toLocaleDateString() <= lastDay.toLocaleDateString())));
-            //     return ((new Date(questTransactions[0].updatedAt).toLocaleDate() >= firstDay.toLocaleDate()) && (new Date(questTransactions[0].updatedAt).toLocaleDate() <= lastDay.toLocaleDate()));
-            // } else {
-            //     return false;
-            // }
+            let questTransactions = weeklyQuest.transactions;
+            questTransactions = questTransactions.filter(e => {
+                return e.questId == questId;
+            });
+            if (questTransactions && questTransactions.length > 0) {
+                questTransactions.sort((a, b) => b.updatedAt - a.updatedAt);
+                const compareDate = new Date(questTransactions[0].updatedAt);
+                return (compareDate >= new Date(firstDay) && compareDate <= new Date(lastDay));
+            } else {
+                return false;
+            }
         } else {
-            console.log("Inside else ");
             return false;
         }
     } catch (error) {
@@ -265,14 +279,8 @@ async function checkIfWeeklyQuestIsClaimed(questId, userId) {
 
 async function checkIfMonthlyQuestIsClaimed(questId, userId) {
     const today = new Date();
-    //const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
-    //const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
-
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    console.log(firstDay); // 👉️ Sat Oct 01 2022 ...
-
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    console.log(lastDay);
     try {
         const monthlyQuest = await UserQuest.findOne(
             {
@@ -299,7 +307,6 @@ async function checkIfMonthlyQuestIsClaimed(questId, userId) {
         return false;
     }
 };
-
 
 // add pagination
 const getLeaderBoard = async (req, res) => {
@@ -366,6 +373,7 @@ const getLeaderBoardByPages = async (req, res) => {
                 topQuesters.push(quester);
             } else {
                 console.log("User details not found - " + quest.userId);
+                logger.info("User details not found - " + quest.userId);
             }
         }
         return res.status(200).json({
@@ -407,13 +415,11 @@ const getLeaderBoardBySearchText = async (req, res) => {
                 topQuesters.push(quester);
             } else {
                 console.log("User details not found - " + quest.userId);
+                logger.error("User details not found - " + quest.userId);
             }
         }
 
         const filteredUsers = topQuesters.filter(e => e.name.toLowerCase().includes(searchString.toLowerCase()));
-        //const totalUsers = filteredUsers.length;
-        //filteredUsers.splice(0, page * pageSize)
-
         return res.status(200).json({
             data: filteredUsers,
             total: filteredUsers.length,
@@ -427,6 +433,5 @@ const getLeaderBoardBySearchText = async (req, res) => {
         });
     }
 }
-
 
 module.exports = { addQuest, getQuests, addUserQuest, getLeaderBoard, getLeaderBoardByPages, getLeaderBoardBySearchText }
