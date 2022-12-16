@@ -138,6 +138,41 @@ const addUserQuest = async (req, res) => {
     }
 };
 
+const getGPYPoints = async (req, res) => {
+    try {
+
+        const {userId} = req.body;
+
+        if (userId == undefined || userId == "") {
+            res.json({ status: 400, msg: keys[i] + " are required" });
+            return;
+        }
+
+        const userValid = await user.users.findById(userId);
+        if (!userValid) {
+            return res.json({
+                status: 400,
+                msg: "User not found"
+            });
+        }
+
+        const userQuest = await UserQuest.findOne({ "userId": userId });
+
+        const gpyPoints = userQuest ? userQuest.totalGPY : 0;
+
+        return res.status(200).json({
+            status: "200",
+            points: gpyPoints,
+            msg: "GPY points fetched successfully for given user.",
+        });
+
+    } catch (error) {
+        console.log(" Error occured while fetching GPY points - ", error)
+        logger.error(" Error occured while fetching GPY points - " + error)
+        res.status(500).json("Error occured while fetching GPY points");
+    }
+};
+
 const isQuestClaimed = async (userId, quest) => {
     switch (quest.questFrequency) {
         case "one-time":
@@ -434,4 +469,4 @@ const getLeaderBoardBySearchText = async (req, res) => {
     }
 }
 
-module.exports = { addQuest, getQuests, addUserQuest, getLeaderBoard, getLeaderBoardByPages, getLeaderBoardBySearchText }
+module.exports = { addQuest, getQuests, addUserQuest, getLeaderBoard, getLeaderBoardByPages, getLeaderBoardBySearchText, getGPYPoints }
