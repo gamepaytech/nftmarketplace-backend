@@ -39,6 +39,7 @@ const gameResearchRouter = require("./routes/gamepay-listing/gameResearch")
 const userSteamInfo = require("./routes/userSteamInfoRoute")
 const questsRouter = require("./routes/questsRoute");
 const leaderBoardRouter = require("./routes/leaderBoardRouter");
+const StoreRouter = require("./routes/StoreRoute");
 
 const allgameRouter= require('./routes/allGameRoute');
 // const nftPresaleRouter = require('./routes/nftPresaleRoute');
@@ -100,6 +101,7 @@ app.use("/game-research", gameResearchRouter)
 app.use("/user-steam-info", userSteamInfo)
 app.use("/quests",questsRouter)
 app.use("/leader-board",leaderBoardRouter)
+app.use("/store",StoreRouter)
 
 // app.use('/nftPresale',nftPresaleRouter)
  
