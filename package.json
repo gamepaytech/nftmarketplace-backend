@@ -30,6 +30,7 @@
     "fs": "^0.0.1-security",
     "ip-address": "^8.1.0",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
     "migrate-mongo": "^9.0.0",
     "mongoose": "^6.1.5",
     "moralis": "^1.7.0",

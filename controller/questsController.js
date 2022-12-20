@@ -2,6 +2,7 @@ const Quest = require('../models/Quest')
 const UserQuest = require('../models/UserQuest')
 const logger = require('../logger');
 const user = require('../models/User');
+const lodash = require("lodash"); 
 
 const addQuest = async (req, res) => {
     try {
@@ -217,14 +218,16 @@ const getQuests = async (req, res) => {
             console.log("End of iteration -- " + i);
         }
         // groupBy on the userQuests
-
+        let grouped_data = lodash.groupBy(userQuests, 'questCategory' )
+  
         return res.status(200).json({
-            data: userQuests,
-            total: userQuests.length,
+            data: grouped_data,
+            // total:userQuests.length,
             msg: "Quests fetched successfully."
         });
     }
     catch (err) {
+        console.log(err);
         logger.error(err)
         res.status(500).json("Unable to fetch quests.")
     }
