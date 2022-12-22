@@ -83,5 +83,19 @@ const getStore = async (req, res) => {
     }
 }
 
+const getStoreId = async (req, res) => {
+    try {
+        const data = await Store.findById(req.body.id);
+        return res.status(200).json({
+            data: data,
+            msg: "Data Get Successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        //   logger.error(error)
+        res.status(500).json(error)
+    }
+}
 
-module.exports = { gpyStore, Purchase, getStore };
+
+module.exports = { gpyStore, Purchase, getStore,getStoreId };
